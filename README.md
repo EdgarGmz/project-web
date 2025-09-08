@@ -1,8 +1,8 @@
-# Project Web
+# 🚀 Project Web
 
 Este es un proyecto universitario. A continuación se detallan los pasos para configurar el entorno y clonar el repositorio.
 
-## Configuración de la clave SSH para GitHub
+## 🔑 Configuración de la clave SSH para GitHub
 
 Para clonar el repositorio usando SSH, primero necesitas generar una clave SSH y agregarla a tu cuenta de GitHub. Los pasos varían ligeramente según tu sistema operativo.
 
@@ -20,7 +20,7 @@ Cuando te pida "Enter a file in which to save the key", puedes presionar Enter p
 
 Este paso es diferente para cada sistema operativo.
 
-#### Windows
+#### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="20" height="20"/> Windows
 
 Abre Git Bash o PowerShell y ejecuta los siguientes comandos:
 
@@ -32,7 +32,7 @@ eval $(ssh-agent -s)
 ssh-add ~/.ssh/id_ed25519
 ```
 
-#### macOS
+#### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="20" height="20"/> macOS
 
 Ejecuta los siguientes comandos en la Terminal:
 
@@ -52,7 +52,7 @@ echo "Host *
 ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 ```
 
-#### Linux
+#### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="20" height="20"/> Linux
 
 Ejecuta los siguientes comandos en la terminal:
 
@@ -97,7 +97,7 @@ Copia la salida completa del comando. Luego, sigue estos pasos en GitHub:
 5.  Pega tu clave en el campo "Key".
 6.  Haz clic en "Add SSH key".
 
-## Clonar el Repositorio
+## 📥 Clonar el Repositorio
 
 Una vez que tu clave SSH esté configurada y agregada a GitHub, puedes clonar el repositorio.
 
