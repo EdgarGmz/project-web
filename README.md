@@ -2,6 +2,16 @@
 
   Este es un proyecto universitario. A continuación se detallan los pasos para configurar el entorno y clonar el repositorio.
 
+## 🛠️ Stack Tecnologico
+|Area                        | Tecnologia|
+|----------------------------|-------------|
+|**Frontend**| Next Js|
+|**Backend**| Express|
+|**Base de Datos**| SQL Server|
+|**Dev Ops** | GitGub, Git|
+|**Automatizaciones**| Docker|
+
+
 ## 🔑 Configuración de la clave SSH para GitHub
 
   Para clonar el repositorio usando SSH, primero necesitas generar una clave SSH y agregarla a tu cuenta de GitHub. Los pasos varían ligeramente según tu        sistema operativo.
