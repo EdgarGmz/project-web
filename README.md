@@ -32,11 +32,27 @@
 
 #### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="20" height="20"/> Windows
 
-  Abre Git Bash o PowerShell y ejecuta los siguientes comandos:
+  Puedes usar Git Bash o PowerShell para este paso.
+
+  **Opción 1: Git Bash**
+
+  Abre Git Bash y ejecuta los siguientes comandos:
 
   ```bash
   # Inicia el ssh-agent en segundo plano
   eval $(ssh-agent -s)
+  
+  # Agrega tu clave SSH privada al ssh-agent
+  ssh-add ~/.ssh/id_ed25519
+  ```
+
+  **Opción 2: PowerShell**
+
+  Abre PowerShell y ejecuta los siguientes comandos:
+
+  ```powershell
+  # Inicia el ssh-agent
+  Start-SshAgent
   
   # Agrega tu clave SSH privada al ssh-agent
   ssh-add ~/.ssh/id_ed25519
@@ -92,6 +108,10 @@
 -   **Windows (en Git Bash):**
     ```bash
     cat ~/.ssh/id_ed25519.pub | clip
+    ```
+-   **Windows (en PowerShell):**
+    ```powershell
+    Get-Content ~/.ssh/id_ed25519.pub | Set-Clipboard
     ```
 -   **O manualmente en cualquier SO:** Muestra la clave en la terminal y cópiala manualmente.
     ```bash
