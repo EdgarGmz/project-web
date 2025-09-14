@@ -2,15 +2,19 @@
 
   Este es un proyecto universitario. A continuación se detallan los pasos para configurar el entorno y clonar el repositorio.
 
-## 🛠️ Stack Tecnologico
-|Area                        | Tecnologia|
-|----------------------------|-------------|
-|**Frontend**| Next Js|
-|**Backend**| Express|
-|**Base de Datos**| SQL Server|
-|**Dev Ops** | GitGub, Git|
-|**Automatizaciones**| Docker|
+## 🛠️ Stack Tecnológico
 
+| Área                | Tecnología  | Enlace / Descarga |
+|---------------------|-------------|-------------------|
+| **Frontend**        | [Next.js](https://nextjs.org/) | [Documentación](https://nextjs.org/docs) |
+| **Backend**         | [Express.js](https://expressjs.com/) <br> [Node.js](https://nodejs.org/) | [Express Docs](https://expressjs.com/en/starter/installing.html) <br> [Descargar Node.js](https://nodejs.org/en/download/) |
+| **Base de Datos**   | [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) | [Descargar SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) |
+| **DevOps**          | [GitHub](https://github.com/) <br> [Git](https://git-scm.com/) | [Regístrate en GitHub](https://github.com/join) <br> [Descargar Git](https://git-scm.com/downloads) |
+| **Automatizaciones**| [Docker](https://www.docker.com/) | [Descargar Docker](https://www.docker.com/products/docker-desktop/) |
+
+> **Notas**:
+> - Se recomienda revisar los requisitos de cada tecnología antes de instalar.
+> - Los enlaces llevan a las páginas oficiales y documentación de cada herramienta.
 
 ## 🔑 Configuración de la clave SSH para GitHub
 
@@ -138,3 +142,26 @@ Copia la salida completa del comando. Luego, sigue estos pasos en GitHub:
   ```
 
   Esto creará una carpeta llamada `project-web` en tu directorio actual con todos los archivos del proyecto.
+
+### Pasos para levantar la Web (Frontend)
+
+1. Una vez clonado el repositorio, abre una nueva terminal (PowerShell, Git Bash, o Terminal).
+2. Ubícate en la carpeta del proyecto frontend. Por ejemplo:
+    ```terminal
+    cd api-web
+    ```
+    > **Asegúrate de que el nombre de la carpeta corresponde al frontend (Next.js). Si tu carpeta se llama diferente, usa el nombre correcto.**
+3. Instala las dependencias:
+    ```bash
+    npm install
+    ```
+4. Levanta el proyecto en modo desarrollo:
+    ```bash
+    npm run dev
+    ```
+5. Accede a la aplicación en tu navegador, normalmente en [http://localhost:3000](http://localhost:3000).
+
+> **Requisitos previos:** Tener instalado [Node.js](https://nodejs.org/en/download/) y [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
+
+> **Nota:** Si el puerto 3000 está ocupado, Next.js sugerirá otro puerto automáticamente.
+    
