@@ -1,223 +1,305 @@
-# 🚀 **Project Web**
-
-> **Proyecto universitario**  
-> Guía visual paso a paso para configurar el entorno, clonar el repositorio y trabajar colaborativamente, ideal para quienes nunca han usado **Git** ni **GitHub**.
+# 🛒 Proyecto 7: Sistema de Gestión de Inventario y Punto de Venta
 
 ---
 
-## 🧩 **Prerrequisitos antes de comenzar**
+## 📚 Menú de Navegación
 
-¡Asegúrate de instalar y configurar todo lo necesario antes de seguir con la guía!  
-| 💻 Software            | 📋 Descripción             | 🔗 Enlace de descarga                |
-|-----------------------|---------------------------|--------------------------------------|
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="24"/> **Windows** <br> <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="24"/> **macOS** <br> <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="24"/> **Linux** | Sistema Operativo | — |
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" width="24"/> **Node.js + npm** | Entorno de ejecución de JavaScript y gestor de paquetes. | [Descargar Node.js](https://nodejs.org/en/download/) |
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" width="24"/> **Git** | Control de versiones | [Descargar Git](https://git-scm.com/downloads) |
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" width="24"/> **GitHub** | Plataforma colaborativa | [Regístrate en GitHub](https://github.com/join) |
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" width="24"/> **Docker** | Automatización de despliegues (opcional) | [Descargar Docker](https://www.docker.com/products/docker-desktop/) |
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg" width="24"/> **SQL Server** | Base de datos | [Descargar SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) |
-
-> 💡 **Tip:** Si usas Windows, instala [Git Bash](https://git-scm.com/downloads) para ejecutar comandos de Git fácilmente.
+- [📝 Descripción General](#descripcion-general)
+- [🦺 S-SDLC (Secure Software Development Life Cycle)](#s-sdlc)
+- [🏗️ Arquitectura Recomendada](#arquitectura)
+- [🚀 Requerimientos Funcionales Clave](#requerimientos)
+- [🗂️ Modelo de Datos Sugerido](#modelo-datos)
+- [📆 Milestones Semanales](#milestones)
+- [🛠️ Tecnologías Sugeridas](#tecnologias)
+- [📚 Cobertura de Temas del Cronograma](#cobertura)
+- [🔌 Realtime y Comunicación](#realtime)
+- [🧩 Prerrequisitos Antes de Comenzar](#prerrequisitos)
+- [🔗 Navegación Rápida](#navegacion)
+- [🛡️ Configurar clave SSH para GitHub](#clave-ssh)
+- [📥 Clonar el repositorio](#clonar)
+- [🏁 Primeros pasos para iniciar el proyecto](#iniciar)
+- [🔄 Flujo de trabajo con Git & GitHub](#flujo-git)
+- [🚩 Pull Requests](#pull-request)
+- [🖼️ Ayudas Visuales](#ayudas)
+- [🆘 Dudas o Problemas](#dudas)
 
 ---
 
-## 🔗 **Navegación rápida**
+<a name="descripcion-general"></a>
+## 📝 Descripción General
+Plataforma integral para la gestión de inventarios, ventas y facturación de **PYMES**. Permite a propietarios, empleados y supervisores gestionar productos, procesar ventas, controlar stock y generar reportes en tiempo real.
 
-- [Configurar clave SSH para GitHub](#clave-ssh)
-- [Clonar el repositorio](#clonar)
-- [Primeros pasos con el proyecto](#iniciar)
-- [Flujo de trabajo con Git y GitHub](#flujo-git)
-- [Cómo crear un Pull Request](#pull-request)
+[🔝 Volver al menú](#-menú-de-navegación)
+
+---
+
+<a name="s-sdlc"></a>
+## 🦺 S-SDLC (Secure Software Development Life Cycle)
+
+El **S-SDLC** es un enfoque que integra la seguridad en todas las fases del ciclo de desarrollo de software, garantizando que desde el análisis y diseño hasta el despliegue y mantenimiento, la seguridad sea prioritaria.
+
+### 🔒 Fases del S-SDLC
+1. **Requerimientos seguros:** Identificación de amenazas y requisitos de seguridad desde el inicio.
+2. **Diseño seguro:** Modelado de amenazas, diseño de controles y arquitecturas seguras.
+3. **Programación segura:** Uso de buenas prácticas de codificación y revisión de código.
+4. **Pruebas de seguridad:** Tests automatizados y manuales, análisis de vulnerabilidades.
+5. **Despliegue y mantenimiento seguro:** Monitoreo, parches y gestión de incidentes.
+
+[🔝 Volver al menú](#-menú-de-navegación)
+
+---
+
+<a name="arquitectura"></a>
+## 🏗️ Arquitectura Clean/Hexagonal + Microservicios (o Modular Monolito)
+
+- **Clean/Hexagonal Architecture:** Promueve una separación estricta entre el dominio del negocio, la lógica de aplicación y las dependencias externas.
+- **Microservicios:** Cada módulo crítico (usuarios, inventario, ventas, reportes, etc.) puede ser desplegado y escalado de forma independiente.
+- **Modular Monolito:** Si el sistema inicia pequeño, se puede desarrollar como un monolito bien organizado en módulos, permitiendo migrar fácilmente a microservicios en el futuro.
+
+### 🧩 Componentes Clave
+- **API Gateway**
+- **Frontend desacoplado (SPA)**
+- **Backend Modular**
+- **Base de datos relacional (PostgreSQL)**
+- **Caché y colas (Redis, RabbitMQ)**
+- **Comunicación en tiempo real (Socket.IO)**
+
+### 📊 Diagrama Resumido
+
+```
+[Frontend SPA]
+     |
+[API Gateway] ---- [Auth Service]
+     |                   |
+-------------------------------
+|   |   |   |   |   |   |   |
+Inv Prod Vent Fact Rep Notif Sucur
+|   |   |   |   |   |   |   |
+-------------- PostgreSQL -------------
+                    |
+               [Redis/Cache]
+```
+
+[🔝 Volver al menú](#-menú-de-navegación)
+
+---
+
+<a name="requerimientos"></a>
+## 🚀 Requerimientos Funcionales Clave
+
+### 🧩 Funcionalidades Básicas
+- 🔐 Autenticación por roles
+- 📦 Gestión completa de inventario con alertas
+- 🛍️ Punto de venta (POS) con código de barras
+- 🧾 Facturación electrónica
+- 🏪 Control de múltiples sucursales
+- 📊 Reportes de ventas
+- 🚚 Gestión de proveedores
+
+### ✨ Funcionalidades Avanzadas
+- ⚠️ Notificaciones automáticas
+- 📈 Dashboard en tiempo real
+- ↩️ Sistema de devoluciones
+- 💳 Integración con pagos
+- 👀 Auditoría completa
+
+[🔝 Volver al menú](#-menú-de-navegación)
+
+---
+
+<a name="modelo-datos"></a>
+## 🗂️ Modelo de Datos Sugerido
+
+Incluye tablas como:  
+`users`, `branches`, `products`, `inventory`, `sales`, `sale_items`, `customers`, `user_sessions`
+
+[🔝 Volver al menú](#-menú-de-navegación)
+
+---
+
+<a name="milestones"></a>
+## 📆 Milestones Semanales
+
+| 📅 Semana | 🎯 Entregable | 🧩 Cobertura |
+|--------|------------|-----------|
+| **1** | Arquitectura base | Estructura WEB |
+| **2** | Login, roles y permisos | Autenticación |
+| **3** | Control de acceso | Protección de rutas |
+| **4** | Inventario y productos | CRUD |
+| **5** | Punto de Venta | Validación, pagos |
+| **6** | Dashboard dinámico | Gráficos |
+| **7** | Recuperación acceso | Auditoría |
+| **8** | Reportes y analytics | Exportación |
+| **9** | Optimización | Seguridad |
+| **10**| Despliegue | Documentación |
+
+[🔝 Volver al menú](#-menú-de-navegación)
+
+---
+
+<a name="tecnologias"></a>
+## 🛠️ Tecnologías Sugeridas
+
+- **Frontend:** React / Vue.js
+- **Backend:** Node.js / Express o Laravel
+- **API Gateway:** Kong, Nginx
+- **Base de Datos:** PostgreSQL
+- **Realtime:** Socket.io
+- **Caché/Colas:** Redis, RabbitMQ
+- **Reports:** jsPDF, ExcelJS
+- **Pagos:** Stripe, PayPal
+
+[🔝 Volver al menú](#-menú-de-navegación)
+
+---
+
+<a name="cobertura"></a>
+## 📚 Cobertura de Temas del Cronograma
+
+- 🏗️ Estructura del sitio WEB  
+- 🔍 Búsquedas avanzadas  
+- ✔️ Validaciones  
+- 🔄 Actualizaciones dinámicas  
+- 🟢 Notificaciones en tiempo real  
+- 🎞️ Animaciones  
+- 🛡️ Multirol empresarial  
+- 🔁 Multisesiones POS  
+- 🔑 Reset seguro  
+- 🚦 Autorización granular  
+
+[🔝 Volver al menú](#-menú-de-navegación)
+
+---
+
+<a name="realtime"></a>
+## 🔌 Realtime y Comunicación
+**Socket.IO** para actualizaciones en tiempo real de stock, ventas y notificaciones.
+
+[🔝 Volver al menú](#-menú-de-navegación)
+
+---
+
+<a name="prerrequisitos"></a>
+## 🧩 Prerrequisitos Antes de Comenzar
+
+| 💻 Software      | 📋 Descripción             | 🔗 Enlace |
+|-----------------|---------------------------|-----------|
+| Node.js + npm   | Entorno JS    | [Descargar](https://nodejs.org/en/download/) |
+| Git             | Control de versiones | [Descargar](https://git-scm.com/downloads) |
+| GitHub          | Plataforma colaborativa | [Regístrate](https://github.com/join) |
+| Docker          | Automatización despliegues | [Descargar](https://www.docker.com/products/docker-desktop/) |
+| PostgreSQL/SQL Server | Base de datos | [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) |
+
+[🔝 Volver al menú](#-menú-de-navegación)
+
+---
+
+<a name="navegacion"></a>
+## 🔗 Navegación Rápida
+
+- [Configurar clave SSH](#clave-ssh)  
+- [Clonar repositorio](#clonar)  
+- [Iniciar proyecto](#iniciar)  
+- [Flujo de Git](#flujo-git)  
+- [Pull Requests](#pull-request)  
+
+[🔝 Volver al menú](#-menú-de-navegación)
 
 ---
 
 <a name="clave-ssh"></a>
-## 🛡️ **Configurar clave SSH para GitHub**
-
-Antes de clonar, necesitas vincular tu computadora con tu cuenta de GitHub usando una clave SSH.
-
-### 1️⃣ **Generar clave SSH**
-
-Abre tu terminal y ejecuta:
+## 🛡️ Configurar clave SSH para GitHub
 
 ```bash
 ssh-keygen -t ed25519 -C "tu_email@example.com"
 ```
-Presiona **Enter** para aceptar la ubicación por defecto, y establece una contraseña si lo deseas.
 
----
+Luego agregar la clave pública en GitHub > Settings > SSH and GPG keys.
 
-### 2️⃣ **Agregar la clave SSH al agente**
-
-#### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" width="20"/> **Windows (elige tu terminal)**
-
-<details>
-<summary>🖥️ <b>PowerShell</b></summary>
-
-1. **Inicia el agente SSH:**
-    ```powershell
-    Start-Service ssh-agent
-    ```
-    > Si ves un error de permisos, ejecuta PowerShell como administrador.
-
-2. **Verifica que el servicio esté corriendo:**
-    ```powershell
-    Get-Service ssh-agent
-    ```
-    Debe mostrar el estado como `Running`.
-
-3. **Agrega tu clave privada al agente:**
-    ```powershell
-    ssh-add $env:USERPROFILE\.ssh\id_ed25519
-    ```
-    > Si ves el mensaje `Could not open a connection to your authentication agent`, cierra y vuelve a abrir PowerShell.
-</details>
-
-<details>
-<summary>💻 <b>Git Bash</b></summary>
-
-1. **Inicia el agente SSH:**
-    ```bash
-    eval $(ssh-agent -s)
-    ```
-
-2. **Agrega tu clave privada al agente:**
-    ```bash
-    ssh-add ~/.ssh/id_ed25519
-    ```
-</details>
-
----
-
-#### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" width="20"/> **macOS**
-```bash
-eval "$(ssh-agent -s)"
-touch ~/.ssh/config
-echo "Host *\n  AddKeysToAgent yes\n  UseKeychain yes\n  IdentityFile ~/.ssh/id_ed25519" >> ~/.ssh/config
-ssh-add --apple-use-keychain ~/.ssh/id_ed25519
-```
-
-#### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" width="20"/> **Linux**
-```bash
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
-```
-
----
-
-### 3️⃣ **Agregar la clave SSH a GitHub**
-
-- Copia tu clave pública:
-    - **macOS:** `pbcopy < ~/.ssh/id_ed25519.pub`
-    - **Linux:** `xclip -selection clipboard < ~/.ssh/id_ed25519.pub`
-    - **Windows (Git Bash):** `cat ~/.ssh/id_ed25519.pub | clip`
-    - **Windows (PowerShell):** `Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub | Set-Clipboard`
-    - **Cualquier SO (manual):** `cat ~/.ssh/id_ed25519.pub`
-- Ve a **GitHub > Settings > SSH and GPG keys > New SSH key**  
-    Pega tu clave y ponle un nombre identificable (ej. "Mi Laptop").
+[🔝 Volver al menú](#-menú-de-navegación)
 
 ---
 
 <a name="clonar"></a>
-## 📥 **Clonar el repositorio**
-
-Abre tu terminal y ejecuta:
+## 📥 Clonar el repositorio
 
 ```bash
 git clone git@github.com:EdgarGmz/project-web.git
 ```
-Esto creará la carpeta `project-web` con todos los archivos.
+
+[🔝 Volver al menú](#-menú-de-navegación)
 
 ---
 
 <a name="iniciar"></a>
-## 🏁 **Primeros pasos para iniciar el proyecto (Frontend)**
+## 🏁 Primeros pasos para iniciar el proyecto (Frontend)
 
-1. Abre una terminal y navega a la carpeta del proyecto:
-    ```bash
-    cd project-web/api-web
-    ```
-    > 💡 Si tu carpeta del frontend tiene otro nombre, reemplázalo.
+```bash
+cd project-web/api-web
+npm install
+npm run dev
+```
 
-2. Instala las dependencias:
-    ```bash
-    npm install
-    ```
+Abrir: [http://localhost:3000](http://localhost:3000)
 
-3. Inicia el servidor en modo desarrollo:
-    ```bash
-    npm run dev
-    ```
-
-4. Abre tu navegador en [http://localhost:3000](http://localhost:3000)
-
-> **Requisitos previos:** Tener instalado [Node.js](https://nodejs.org/en/download/) y [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
->  
-> ⚠️ Si el puerto 3000 está ocupado, Next.js sugerirá otro puerto automáticamente.
+[🔝 Volver al menú](#-menú-de-navegación)
 
 ---
 
 <a name="flujo-git"></a>
-## 🔄 **Flujo de trabajo con Git & GitHub**
+## 🔄 Flujo de trabajo con Git & GitHub
 
-### 🌳 **Ramas principales**
+- **main:** Producción  
+- **develop:** Integración  
+- **feature/**, **fix/**, **hotfix/**  
 
-- **main**: Rama de producción (¡No hagas cambios directos aquí!)
-- **develop**: Rama de pruebas, aquí se integran los cambios antes de pasar a producción.
-- **feature/**, **fix/**, **hotfix/**: Ramas individuales para cada issue/tarea. Ejemplo: `feature/login-page`.
+Ejemplo de flujo:
 
-### 📝 **¿Cómo trabajo una issue?**
+```bash
+git checkout develop
+git pull
+git checkout -b feature/nombre-issue
+git add .
+git commit -m "cambios"
+git push origin feature/nombre-issue
+```
 
-1. **Crea una rama desde `develop`** (usando el nombre de la issue/tarea):
-    ```bash
-    git checkout develop
-    git pull
-    git checkout -b feature/nombre-issue
-    ```
-
-2. **Realiza tus cambios y guarda tu trabajo**:
-    ```bash
-    git add .
-    git commit -m "Descripción breve de los cambios"
-    git push origin feature/nombre-issue
-    ```
-
-3. **Cuando termines tu tarea, crea un Pull Request**.  
-    [Ver cómo hacerlo](#pull-request)
+[🔝 Volver al menú](#-menú-de-navegación)
 
 ---
 
 <a name="pull-request"></a>
-## 🚩 **¿Qué hacer después de terminar una issue? (Pull Request)**
+## 🚩 Pull Requests
 
-1. Ve al repositorio en GitHub.  
-2. Haz clic en **"Compare & pull request"** para tu rama.
-3. Llena los siguientes campos:
-    - **Title:** Nombre corto y descriptivo de la tarea.
-    - **Description:** Explica lo que hiciste, incluye referencias a la issue (ejemplo: `Closes #12`).
-    - **Base branch:** Debe ser `develop`.
-    - **Compare branch:** Tu rama (ej. `feature/nombre-issue`).
-4. Haz clic en **"Create Pull Request"**.
+1. Subir tu rama.  
+2. Click en **Compare & pull request**.  
+3. Seleccionar `develop` como base.  
+4. Crear el PR.  
 
-> 💡 **La Pull Request será revisada y, al aprobarse, se integrará a `develop`.**
+[🔝 Volver al menú](#-menú-de-navegación)
 
 ---
 
-## 🖼️ **Ayudas visuales**
+<a name="ayudas"></a>
+## 🖼️ Ayudas Visuales
 
-- <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" width="20"/> &nbsp;[Guía oficial de GitHub para Pull Requests](https://docs.github.com/en/pull-requests)
-- <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" width="20"/> &nbsp;[Conceptos básicos de Git](https://git-scm.com/book/es/v2/Empezando-Conceptos-básicos-de-Git)
-- <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" width="20"/> &nbsp;[Documentación de Node.js](https://nodejs.org/en/docs/)
-- <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" width="20"/> &nbsp;[Documentación de Next.js](https://nextjs.org/docs)
-- <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" width="20"/> &nbsp;[Guía rápida de Docker](https://docs.docker.com/get-started/overview/)
+- [Guía oficial de GitHub para Pull Requests](https://docs.github.com/en/pull-requests)  
+- [Documentación de Node.js](https://nodejs.org/en/docs/)  
+- [Documentación de Next.js](https://nextjs.org/docs)  
+- [Guía rápida de Docker](https://docs.docker.com/get-started/overview/)  
 
----
-
-## 🆘 **¿Dudas o problemas?**
-
-- Consulta la [documentación oficial de GitHub](https://docs.github.com/en)
-- Pregunta al equipo en el canal de comunicación interna.
+[🔝 Volver al menú](#-menú-de-navegación)
 
 ---
 
-> **¡Listo! Con esta guía puedes instalar, clonar y comenzar a colaborar en el proyecto de forma segura y ordenada.**
+<a name="dudas"></a>
+## 🆘 Dudas o Problemas
+
+- Revisar [documentación oficial de GitHub](https://docs.github.com/en)  
+- Consultar al equipo en el canal de comunicación interna.  
+
+[🔝 Volver al menú](#-menú-de-navegación)
+
+---
+
+> ✅ Ahora cada sección tiene un link para volver al menú principal.  
