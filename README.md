@@ -113,6 +113,144 @@ Inv Prod Vent Fact Rep Notif Sucur
 Incluye tablas como:  
 `users`, `branches`, `products`, `inventory`, `sales`, `sale_items`, `customers`, `user_sessions`
 
+# Tablas del Sistema
+
+## Tabla: `users`
+| Campo        | Tipo                                   | Descripción              |
+|--------------|----------------------------------------|--------------------------|
+| id           | INT PRIMARY KEY                        | Identificador único      |
+| email        | VARCHAR(255) UNIQUE                    | Email del usuario        |
+| password     | VARCHAR(255)                           | Contraseña encriptada    |
+| first_name   | VARCHAR(100)                           | Nombre                   |
+| last_name    | VARCHAR(100)                           | Apellido                 |
+| role         | ENUM('owner', 'supervisor', 'cashier', 'admin', 'auditor') | Rol          |
+| employee_id  | VARCHAR(20) UNIQUE                     | ID de empleado           |
+| phone        | VARCHAR(20)                            | Teléfono                 |
+| hire_date    | DATE                                   | Fecha de contratación    |
+| branch_id    | INT FOREIGN KEY                        | ID de sucursal asignada  |
+| permissions  | JSON                                   | Permisos específicos     |
+| is_active    | BOOLEAN                                | Estado activo            |
+| last_login   | TIMESTAMP                              | Último acceso            |
+| reset_token  | VARCHAR(255)                           | Token de reset           |
+
+---
+
+## Tabla: `branches`
+| Campo        | Tipo           | Descripción          |
+|--------------|----------------|----------------------|
+| id           | INT PRIMARY KEY| Identificador único  |
+| name         | VARCHAR(255)   | Nombre de la sucursal|
+| address      | TEXT           | Dirección            |
+| phone        | VARCHAR(20)    | Teléfono             |
+| manager_id   | INT FOREIGN KEY| ID del gerente       |
+| is_active    | BOOLEAN        | Sucursal activa      |
+| opening_hours| JSON           | Horarios de apertura |
+| created_at   | TIMESTAMP      | Fecha de creación    |
+
+---
+
+## Tabla: `products`
+| Campo         | Tipo                | Descripción         |
+|---------------|---------------------|---------------------|
+| id            | INT PRIMARY KEY     | Identificador único |
+| sku           | VARCHAR(50) UNIQUE  | Código SKU          |
+| barcode       | VARCHAR(100)        | Código de barras    |
+| name          | VARCHAR(255)        | Nombre del producto |
+| description   | TEXT                | Descripción         |
+| category_id   | INT FOREIGN KEY     | ID de categoría     |
+| supplier_id   | INT FOREIGN KEY     | ID del proveedor    |
+| cost_price    | DECIMAL(10,2)       | Precio de costo     |
+| selling_price | DECIMAL(10,2)       | Precio de venta     |
+| tax_rate      | DECIMAL(5,2)        | Tasa de impuesto    |
+| unit_of_measure| VARCHAR(20)        | Unidad de medida    |
+| image_url     | VARCHAR(255)        | URL de imagen       |
+| is_active     | BOOLEAN             | Producto activo     |
+| created_at    | TIMESTAMP           | Fecha de creación   |
+| updated_at    | TIMESTAMP           | Última actualización|
+
+---
+
+## Tabla: `inventory`
+| Campo           | Tipo            | Descripción          |
+|-----------------|-----------------|----------------------|
+| id              | INT PRIMARY KEY | Identificador único  |
+| product_id      | INT FOREIGN KEY | ID del producto      |
+| branch_id       | INT FOREIGN KEY | ID de la sucursal    |
+| current_stock   | INT             | Stock actual         |
+| minimum_stock   | INT             | Stock mínimo         |
+| maximum_stock   | INT             | Stock máximo         |
+| reserved_stock  | INT             | Stock reservado      |
+| last_restock_date| DATE           | Fecha último restock |
+| expiry_date     | DATE            | Fecha de vencimiento |
+| location        | VARCHAR(100)    | Ubicación en almacén |
+| last_count_date | DATE            | Fecha último conteo  |
+
+---
+
+## Tabla: `sales`
+| Campo           | Tipo                                   | Descripción          |
+|-----------------|----------------------------------------|----------------------|
+| id              | INT PRIMARY KEY                        | Identificador único  |
+| invoice_number  | VARCHAR(50) UNIQUE                     | Número de factura    |
+| branch_id       | INT FOREIGN KEY                        | ID de sucursal       |
+| cashier_id      | INT FOREIGN KEY                        | ID del cajero        |
+| customer_id     | INT FOREIGN KEY                        | ID del cliente       |
+| sale_date       | TIMESTAMP                              | Fecha de venta       |
+| subtotal        | DECIMAL(12,2)                          | Subtotal             |
+| tax_amount      | DECIMAL(12,2)                          | Monto de impuestos   |
+| discount_amount | DECIMAL(12,2)                          | Monto de descuento   |
+| total_amount    | DECIMAL(12,2)                          | Total                |
+| payment_method  | VARCHAR(50)                            | Método de pago       |
+| payment_status  | ENUM('pending', 'paid', 'partial', 'refunded') | Estado       |
+| notes           | TEXT                                   | Notas adicionales    |
+| is_voided       | BOOLEAN                                | Venta anulada        |
+
+---
+
+## Tabla: `sale_items`
+| Campo              | Tipo            | Descripción          |
+|--------------------|-----------------|----------------------|
+| id                 | INT PRIMARY KEY | Identificador único  |
+| sale_id            | INT FOREIGN KEY | ID de la venta       |
+| product_id         | INT FOREIGN KEY | ID del producto      |
+| quantity           | DECIMAL(10,2)   | Cantidad             |
+| unit_price         | DECIMAL(10,2)   | Precio unitario      |
+| discount_percentage| DECIMAL(5,2)    | Porcentaje de descuento|
+| line_total         | DECIMAL(12,2)   | Total de línea       |
+
+---
+
+## Tabla: `customers`
+| Campo           | Tipo                | Descripción              |
+|-----------------|---------------------|--------------------------|
+| id              | INT PRIMARY KEY     | Identificador único      |
+| customer_code   | VARCHAR(20) UNIQUE  | Código de cliente        |
+| first_name      | VARCHAR(100)        | Nombre                   |
+| last_name       | VARCHAR(100)        | Apellido                 |
+| email           | VARCHAR(255)        | Email                    |
+| phone           | VARCHAR(20)         | Teléfono                 |
+| address         | TEXT                | Dirección                |
+| tax_id          | VARCHAR(50)         | RUC/NIT                  |
+| credit_limit    | DECIMAL(12,2)       | Límite de crédito        |
+| current_balance | DECIMAL(12,2)       | Saldo actual             |
+| is_active       | BOOLEAN             | Cliente activo           |
+| registration_date| TIMESTAMP          | Fecha de registro        |
+
+---
+
+## Tabla: `user_sessions`
+| Campo        | Tipo                  | Descripción            |
+|--------------|-----------------------|------------------------|
+| id           | VARCHAR(255) PRIMARY KEY | ID de sesión        |
+| user_id      | INT FOREIGN KEY       | ID del usuario         |
+| branch_id    | INT FOREIGN KEY       | ID de sucursal         |
+| ip_address   | VARCHAR(45)           | Dirección IP           |
+| pos_terminal | VARCHAR(50)           | Terminal POS           |
+| created_at   | TIMESTAMP             | Fecha de creación      |
+| expires_at   | TIMESTAMP             | Fecha de expiración    |
+| last_activity| TIMESTAMP             | Última actividad       |
+
+
 [🔝 Volver al menú](#-menú-de-navegación)
 
 ---
