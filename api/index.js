@@ -1,5 +1,6 @@
 // Cargar variables de entorno
 require('dotenv').config()
+
 const express = require('express')
 const app = express()
 
@@ -11,7 +12,7 @@ app.use(express.json())
 
 // Endpoint de prueba
 app.get('/', (req, res) => {
-    res.send('API is running')
+    res.send('🚀 API is running')
 })
 
 // Levantar el servidor
