@@ -2,25 +2,33 @@ require('dotenv').config();
 
 module.exports = {
   development: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT || 5432,
-    dialect: 'postgres',
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
-    pool: {
-      max: 10,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
-    },
-    dialectOptions: {
-      dateStrings: true,
-      typeCast: true,
-      timeZone: '+00:00'
-    },
-    timezone: '+00:00'
+    // Si existe DATABASE_URL (SQLite), usalo
+    ...(process.env.DATABASE_URL ? {
+      dialect: 'sqlite',
+      storage: './database.sqlite',
+      logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    } : {
+      // Configuración PostgreSQL
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT || 5432,
+      dialect: 'postgres',
+      logging: process.env.NODE_ENV === 'development' ? console.log : false,
+      pool: {
+        max: 10,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+      },
+      dialectOptions: {
+        dateStrings: true,
+        typeCast: true,
+        timeZone: '+00:00'
+      },
+      timezone: '+00:00'
+    })
   },
   test: {
     username: process.env.DB_USER,
