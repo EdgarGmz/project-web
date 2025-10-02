@@ -1,5 +1,5 @@
 const { DataTypes, Op } = require('sequelize')
-const { sequelize } = require('../config/database')
+const { sequelize } = require('../../../config/database')
 
 const Inventory = sequelize.define('Inventory', {
     // Campos aqui

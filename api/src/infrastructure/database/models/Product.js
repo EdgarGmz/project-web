@@ -1,5 +1,5 @@
 const { DataTypes, Op } = require('sequelize')
-const { sequelize } = require('../config/database')
+const { sequelize } = require('../../../config/database')
 
 const Product = sequelize.define('Product', {
     // Campos
@@ -223,10 +223,10 @@ Product.associate = (models) => {
     })
 
     // Un product puede pertenecer a una Category
-    Product.belongsTo(models.Category, {
-        foreignKey: 'category_id',
-        as: 'category'
-    })
+    // Product.belongsTo(models.Category, {
+        // foreignKey: "category_id",
+        // as: "category"
+    //})
 }
 
 module.exports = Product

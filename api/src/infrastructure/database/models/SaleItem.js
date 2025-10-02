@@ -1,5 +1,5 @@
 const { DataTypes, Op } = require('sequelize')
-const { sequelize } = require('../config/database')
+const { sequelize } = require('../../../config/database')
 
 const SaleItem = sequelize.define('SaleItem', {
 
