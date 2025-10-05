@@ -1,57 +1,33 @@
-require('dotenv').config();
+require('dotenv').config()
 
 module.exports = {
   development: {
-    // Si existe DATABASE_URL (SQLite), usalo
-    ...(process.env.DATABASE_URL ? {
-      dialect: 'sqlite',
-      storage: './database.sqlite',
-      logging: process.env.NODE_ENV === 'development' ? console.log : false,
-    } : {
-      // Configuración PostgreSQL
-      username: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      host: process.env.DB_HOST,
-      port: process.env.DB_PORT || 5432,
-      dialect: 'postgres',
-      logging: process.env.NODE_ENV === 'development' ? console.log : false,
-      pool: {
-        max: 10,
-        min: 0,
-        acquire: 30000,
-        idle: 10000
-      },
-      dialectOptions: {
-        dateStrings: true,
-        typeCast: true,
-        timeZone: '+00:00'
-      },
-      timezone: '+00:00'
-    })
+    dialect: 'sqlite',
+    storage: './src/infrastructure/database/database.sqlite',
+    logging: console.log,
+    define: {
+      timestamps: true,
+      underscored: false,
+      freezeTableName: false,
+      paranoid: true
+    }
   },
+
   test: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME + '_test',
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT || 5432,
-    dialect: 'postgres',
+    dialect: 'sqlite',
+    storage: ':memory:',
     logging: false
   },
+  
   production: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT || 5432,
-    dialect: 'postgres',
+    dialect: 'sqlite',
+    storage: './src/infrastructure/database/database.sqlite',
     logging: false,
-    pool: {
-      max: 20,
-      min: 5,
-      acquire: 30000,
-      idle: 10000
+    define: {
+      timestamps: true,
+      underscored: false,
+      freezeTableName: false,
+      paranoid: true
     }
   }
-};
+}

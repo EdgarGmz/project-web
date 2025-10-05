@@ -58,29 +58,29 @@ module.exports = {
         unique: true
       },
 
-      // 👤 MANAGER - LO AGREGAREMOS DESPUÉS en otra migración
-      // manager_id: {
-      //   type: Sequelize.INTEGER,
-      //   allowNull: true,
-      //   references: {
-      //     model: 'users',
-      //     key: 'id'
-      //   }
-      // },
-      
+      //👤 MANAGER - LO AGREGAREMOS DESPUÉS en otra migración
+      manager_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'users',
+          key: 'id'
+        }
+      },
+
       is_active: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: true
       },
-      
-      createdAt: {
+
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       },
 
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
@@ -96,6 +96,7 @@ module.exports = {
     await queryInterface.addIndex('branches', ['name'], { unique: true });
     await queryInterface.addIndex('branches', ['code'], { unique: true });
     await queryInterface.addIndex('branches', ['email'], { unique: true });
+    await queryInterface.addIndex('branches', ['manager_id']);
     await queryInterface.addIndex('branches', ['city', 'state']);
     await queryInterface.addIndex('branches', ['is_active']);
   },

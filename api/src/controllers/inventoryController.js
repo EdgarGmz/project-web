@@ -21,16 +21,16 @@ const getAllInventory = async (req, res) => {
             where: whereClause,
             limit,
             offset,
-            order: [['updated_at', 'DESC']],
+            order: [['updatedAt', 'DESC']],
             include: [
                 {
                     model: Product,
-                    as: 'product',
-                    attributes: ['id', 'name', 'sku', 'price', 'minimum_stock', 'maximum_stock']
+                    as: 'Product',
+                    attributes: ['id', 'name', 'sku', 'price']
                 },
                 {
                     model: Branch,
-                    as: 'branch',
+                    as: 'Branch',
                     attributes: ['id', 'name', 'address']
                 }
             ]
@@ -76,12 +76,12 @@ const getInventoryById = async (req, res) => {
             include: [
                 {
                     model: Product,
-                    as: 'product',
+                    as: 'Product',
                     attributes: ['id', 'name', 'sku', 'price', 'minimum_stock', 'maximum_stock']
                 },
                 {
                     model: Branch,
-                    as: 'branch',
+                    as: 'Branch',
                     attributes: ['id', 'name', 'address']
                 }
             ]
@@ -166,12 +166,12 @@ const createInventory = async (req, res) => {
             include: [
                 {
                     model: Product,
-                    as: 'product',
+                    as: 'Product',
                     attributes: ['id', 'name', 'sku']
                 },
                 {
                     model: Branch,
-                    as: 'branch',
+                    as: 'Branch',
                     attributes: ['id', 'name']
                 }
             ]
@@ -230,12 +230,12 @@ const updateInventory = async (req, res) => {
             include: [
                 {
                     model: Product,
-                    as: 'product',
+                    as: 'Product',
                     attributes: ['id', 'name', 'sku']
                 },
                 {
                     model: Branch,
-                    as: 'branch',
+                    as: 'Branch',
                     attributes: ['id', 'name']
                 }
             ]

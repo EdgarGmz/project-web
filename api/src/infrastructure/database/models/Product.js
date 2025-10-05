@@ -2,7 +2,6 @@ const { DataTypes, Op } = require('sequelize')
 const { sequelize } = require('../../../config/database')
 
 const Product = sequelize.define('Product', {
-    // Campos
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -11,12 +10,12 @@ const Product = sequelize.define('Product', {
     },
 
     name: {
-        type: DataTypes.STRING(150),
+        type: DataTypes.STRING(200),
         allowNull: false,
         unique: true,
         validate: {
             notEmpty: true,
-            len: [2, 150]
+            len: [2, 200]
         }
     },
 
@@ -40,67 +39,95 @@ const Product = sequelize.define('Product', {
     },
 
     barcode: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(100),
         allowNull: true,
         unique: true,
         validate: {
-            isNumeric: true,
-            len: [8, 20]
+            len: [8, 100]
         }
+        },
+
+        category: {
+        type: DataTypes.ENUM(
+            'Consola',
+            'Videojuego',
+            'Accesorio',
+            'Tarjeta de regalo',
+            'Coleccionable',
+            'Merchandising',
+            'PC Gaming',
+            'Realidad Virtual',
+            'Suscripción',
+            'Juguete'
+        ),
+        allowNull: false
+        },
+
+        subcategory: {
+        type: DataTypes.STRING(100),
+        allowNull: true
     },
 
-    unit_price: {
-        type: DataTypes.DECIMAL(10, 2),
+    cost: {
+        type: DataTypes.DECIMAL(15, 2),
         allowNull: false,
+        defaultValue: 0,
         validate: {
             min: 0.01,
             isDecimal: true
         }
     },
 
-    cost_price: {
-        type: DataTypes.DECIMAL(10, 2),
+    price: {
+        type: DataTypes.DECIMAL(15, 2),
         allowNull: false,
+        defaultValue: 0,
         validate: {
             min: 0.01,
             isDecimal: true
         }
+    },
+
+    unit_measure: {
+        type: DataTypes.STRING(50),
+        defaultValue: 'unit',
+        validate: {
+            isIn: [[
+                [
+                    'unit',         // Unidad individual
+                    'caja',         // Caja
+                    'paquete',      // Paquete
+                    'set',          // Set
+                    'pieza',        // Pieza
+                    'bundle',       // Bundle (consola + juego)
+                    'digital',      // Producto digital (descarga)
+                    'tarjeta',      // Tarjeta (gift card)
+                    'edición',      // Edición especial/coleccionista
+                    'accesorio',    // Accesorio
+                    'juego',        // Videojuego físico
+                    'suscripción'   // Suscripción digital
+                ]
+            ]]
+        }
+    },
+
+    weight: {
+        type: DataTypes.DECIMAL(8, 3),
+        allowNull: true
+    },
+
+    dimensions: {
+        type: DataTypes.JSON,
+        allowNull: true
     },
 
     tax_rate: {
         type: DataTypes.DECIMAL(5, 2),
         allowNull: false,
-        defaultValue: 0.16,
+        defaultValue: 0,
         validate: {
             min: 0.00,
             max: 1.00
-        }
-    },
-
-    unit_measure: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-        defaultValue: 'pza',
-        validate: {
-            isIn: [['pza', 'kg', 'm', 'litro', 'm2', 'm3', 'caja', 'paquete']]
-        }
-    },
-
-    min_stock: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 5,
-        validate: {
-            min: 0
-        }
-    },
-
-    max_stock: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 1000,
-        validate: {
-            min: 1
         }
     },
 
@@ -108,6 +135,16 @@ const Product = sequelize.define('Product', {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: true
+    },
+
+    metadata: {
+        type: DataTypes.JSON,
+        allowNull: true
+    },
+
+    tags: {
+        type: DataTypes.JSON,
+        allowNull: true
     }
 }, {
     tableName: 'products',
@@ -120,41 +157,27 @@ const Product = sequelize.define('Product', {
     scopes: {
         all: { where: {} },
 
-        // Basado en stock
-        lowStock: {
-            where: sequelize.where(
-                sequelize.col('current_stock'),
-                Op.lte,
-                sequelize.col('min_stock')
-            )
-        },
-
-        // Basado en precios
-        expensive: {
+        // Scopes para videojuegos
+        byPlatform: (platform) => ({
             where: {
-                unit_price: { [Op.gt]: 1000 }
+                category: platform
             }
-        },
-
-        cheap: {
-            where: {
-                unit_price: { [Op.lte]: 100 }
-            }
-        },
-
-        // Basado en codigos
-        withBarcode: {
-            where: {
-                barcode: { [Op.not]: null }
-            }
-        },
-
-        // Busqueda por categoria
-        byCategory: (categoryId) => ({
-            where: { category_id: categoryId }
         }),
 
-        // Busqueda por nombre/SKU
+        expensive: {
+            where: {
+                price: { [Op.gt]: 1000 }
+            }
+        },
+
+        newReleases: {
+            where: {
+                created_at: {
+                    [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Últimos 30 días
+                }
+            }
+        },
+
         search: (term) => ({
             where: {
                 [Op.or]: [
@@ -163,70 +186,41 @@ const Product = sequelize.define('Product', {
                     { description: { [Op.iLike]: `%${term}%` } }
                 ]
             }
-        }),
+        })
     },
 
-    // Indices
-    indexes: [
-        { fields: ['name'], unique: true },
-        { fields: ['sku'], unique: true },
-        { fields: ['barcode'], unique: true },
-        { fields: ['is_active'] } ,
-        { fields: ['unit_price'] } ,
-        { fields: ['min_stock', 'max_stock'] } ,
-        { fields: ['created_at'] } ,
-    ],
-    
-    // Validadcion a nivel modelo
+    // Validación a nivel modelo - CORREGIDA
     validate: {
         priceGreaterThenCost() {
-            if (this.unit_price <= this.cost_price) {
+            if (this.price <= this.cost) {  // ← CORREGIDO: nombres coinciden con migración
                 throw new Error('El precio de venta debe ser mayor al costo')
-            }
-        },
-
-        stockLogic() {
-            if (this.min_stock >= this.max_stock) {
-                throw new Error('El stock minimo debe ser menor al maximo')
             }
         }
     }
 })
 
-// Metodos de instancias utiles
+// Métodos de instancia - CORREGIDOS
 Product.prototype.calculateMargin = function () {
-    return ((this.unit_price - this.cost_price) / this.cost_price * 100).toFixed(2)
-}
-
-Product.prototype.isLowStock = function (currentStock) {
-    return currentStock < this.min_stock
+    return ((this.price - this.cost) / this.cost * 100).toFixed(2)  // ← CORREGIDO
 }
 
 Product.prototype.calculateTotalPrice = function (quantity) {
-    const subtotal = this.unit_price * quantity
+    const subtotal = this.price * quantity  // ← CORREGIDO
     const tax = subtotal * this.tax_rate
     return (subtotal + tax).toFixed(2)
 }
 
-// Relaciones 
+// Relaciones
 Product.associate = (models) => {
-    // Un product puede estar en muchos SalesItem
     Product.hasMany(models.SaleItem, {
         foreignKey: 'product_id',
         as: 'sales_items'
     })
 
-    // Un product puede tener inventario en muchas sucursales
     Product.hasMany(models.Inventory, {
         foreignKey: 'product_id',
         as: 'inventories'
     })
-
-    // Un product puede pertenecer a una Category
-    // Product.belongsTo(models.Category, {
-        // foreignKey: "category_id",
-        // as: "category"
-    //})
 }
 
 module.exports = Product

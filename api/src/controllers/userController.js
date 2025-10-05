@@ -29,7 +29,7 @@ const getAllUsers = async (req, res) => {
                     attributes: ['id', 'name']
                 }
             ],
-            attributes: { exclude: ['password_hash'] } // No devolver password
+            attributes: { exclude: ['password'] } // No devolver password
         })
 
         res.json({
@@ -97,22 +97,14 @@ const getUserById = async (req, res) => {
 // Crear un nuevo usuario
 const createUser = async (req, res) => {
     try {
-        const { username, email, password, role, branch_id, is_active } = req.body
+        // Cambiar campos para que coincidan con el modelo
+        const { first_name, last_name, email, password, role, employee_id, phone, hire_date, branch_id, is_active } = req.body
 
         // Validaciones básicas
-        if (!username || !email || !password) {
+        if (!first_name || !last_name || !email || !password) {
             return res.status(400).json({
                 success: false,
-                message: 'Username, email y password son obligatorios'
-            })
-        }
-
-        // Verificar si el username ya existe
-        const existingUsername = await User.findOne({ where: { username } })
-        if (existingUsername) {
-            return res.status(400).json({
-                success: false,
-                message: 'El username ya está en uso'
+                message: 'Nombre, apellido, email y password son obligatorios'
             })
         }
 
@@ -123,6 +115,17 @@ const createUser = async (req, res) => {
                 success: false,
                 message: 'El email ya está registrado'
             })
+        }
+
+        // Verificar employee_id duplicado si se proporciona
+        if (employee_id) {
+            const existingEmployeeId = await User.findOne({ where: { employee_id } })
+            if (existingEmployeeId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'El ID de empleado ya está en uso'
+                })
+            }
         }
 
         // Verificar que la sucursal existe (si se proporciona)
@@ -136,20 +139,22 @@ const createUser = async (req, res) => {
             }
         }
 
-        // TODO: Aquí deberías hashear la contraseña con bcrypt
-        // Por ahora, guardamos el password como texto plano (NO RECOMENDADO en producción)
         const newUser = await User.create({
-            username,
+            first_name,
+            last_name,
             email,
-            password_hash: password, // TODO: bcrypt.hash(password, 10)
-            role: role || 'employee',
+            password, // El hook se encargará del hash
+            role: role || 'cashier',
+            employee_id,
+            phone,
+            hire_date,
             branch_id,
             is_active: is_active !== false
         })
 
         // No devolver el password en la respuesta
         const userResponse = { ...newUser.toJSON() }
-        delete userResponse.password_hash
+        delete userResponse.password
 
         res.status(201).json({
             success: true,
@@ -166,7 +171,6 @@ const createUser = async (req, res) => {
         })
     }
 }
-
 
 // Actualizar un usuario
 

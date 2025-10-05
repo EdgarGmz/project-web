@@ -26,7 +26,8 @@ const getAllBranches = async (req, res) => {
             where: whereClause,
             limit,
             offset,
-            order: [['created_at', 'DESC']]
+            order: [['createdAt', 'DESC']],
+            attributes: { exclude: ['deletedAt']}
         })
 
         res.json({

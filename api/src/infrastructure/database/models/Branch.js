@@ -116,6 +116,8 @@ const Branch = sequelize.define('Branch', {
     timestamps: true,
     paranoid: true,
 
+   
+
     defaultScope: {
         where: { is_active: true }
     }, 
