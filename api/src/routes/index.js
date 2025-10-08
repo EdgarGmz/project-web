@@ -8,6 +8,7 @@ const branchRoutes = require('./branches')
 const customerRoutes = require('./customers')
 const saleRoutes = require('./sales')
 const inventoryRoutes = require('./inventory')
+const authRoutes = require('./auth')
 
 // Rutas de la API
 router.get('/', (req, res) => {
@@ -20,7 +21,8 @@ router.get('/', (req, res) => {
             branches: '/api/branches',
             customers: '/api/customers',
             sales: '/api/sales',
-            inventory: '/api/inventory'
+            inventory: '/api/inventory',
+            auth: '/api/auth'
         }
     })
 })
@@ -32,5 +34,6 @@ router.use('/branches', branchRoutes)
 router.use('/customers', customerRoutes)
 router.use('/sales', saleRoutes)
 router.use('/inventory', inventoryRoutes)
+router.use('/auth', authRoutes)
 
 module.exports = router

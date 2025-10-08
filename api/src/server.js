@@ -15,6 +15,7 @@ const startServer = async () => {
             console.log(`📱 Health check: http://localhost:${PORT}/health`)
             console.log(`🔗 API base: http://localhost:${PORT}/api`)
             console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`)
+            console.log(`📝 Swagger: http://localhost:${PORT}/api-docs`)
         })
     } catch (error) {
         console.error('❌ Error al iniciar el servidor:', error)

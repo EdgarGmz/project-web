@@ -4,213 +4,110 @@ require('dotenv').config()
 const swaggerDefinition = {
     openapi: '3.0.0',
     info: {
-        title: 'API Sistema de Gestión de Inventario y Ventas',
-        version: '1.0.0',
-        description: 'API RESTful para gestión de inventario, ventas y clientes',
+  title: 'API de Gestión Empresarial',
+  version: '1.0.0',
+  description: `
+        API completa para sistema de gestión de APEXStore, una tienda en el giro de venta videojuegos
+
+        🧩 Características principales:
+            • Gestión de usuarios y roles con diferentes niveles de acceso
+            • Administración de sucursales multi•ubicación
+            • Control de productos e inventario en tiempo real
+            • Gestión completa de clientes (personas físicas y empresas)
+            • Sistema de ventas con múltiples métodos de pago
+            • Reportes detallados de ventas, inventario y rendimiento
+
+        Autenticación: JWT Bearer Token
+        Formato de respuesta: JSON estándar con estructura \`success/message/data\`
+        `,
+
         contact: {
-            name: 'EdgarGmz',
-            email: 'edgar_gomez90@outlook.com'
-        }
+            name: 'Edgar Gómez',
+            email: 'edgar_gomez90@outlook.com',
+            url: 'https://github.com/EdgarGmz'
+        },
+        license: {
+            name: 'MIT',
+            url: 'https://opensource.org/licenses/MIT'
+        },
+        termsOfService: 'https://proyecto.com/terms'
     },
     servers: [
         {
+            url: `http://localhost:${process.env.PORT || 3000}`,
+            description: '🔧 Servidor de desarrollo local'
+        },
+        {
             url: `http://localhost:${process.env.PORT || 3000}${process.env.API_BASE_PATH || '/api'}`,
-            description: 'Servidor de desarrollo - Prueba de API'
+            description: '🔧 API Base - Desarrollo'
+        },
+        {
+            url: 'https://api.proyecto.com',
+            description: '🚀 Servidor de producción'
         }
     ],
+    tags: [
+        {
+            name: 'Users',
+            description: '👥 Gestión completa de usuarios del sistema con roles y permisos'
+        },
+        {
+            name: 'Branches',
+            description: '🏢 Administración de sucursales y ubicaciones'
+        },
+        {
+            name: 'Products',
+            description: '📦 Catálogo completo de productos con códigos SKU y precios'
+        },
+        {
+            name: 'Customers',
+            description: '👤 Gestión de clientes personas físicas y empresas'
+        },
+        {
+            name: 'Inventory',
+            description: '📊 Control de inventario en tiempo real por sucursal'
+        },
+    ],
     components: {
+        securitySchemes: {
+            bearerAuth: {
+                type: 'http',
+                scheme: 'bearer',
+                bearerFormat: 'JWT',
+                description: 'Token JWT para autenticación'
+            }
+        },
         schemas: {
-            Product: {
-                type: 'object',
-                required: ['name', 'price'],
-                properties: {
-                    id: {
-                        type: 'integer',
-                        description: 'ID único del producto'
-                    },
-                    name: {
-                        type: 'string',
-                        description: 'Nombre del producto',
-                        example: 'Laptop Dell XPS 13'
-                    },
-                    description: {
-                        type: 'string',
-                        description: 'Descripción del producto',
-                        example: 'Laptop ultrabook con procesador Intel i7'
-                    },
-                    price: {
-                        type: 'number',
-                        format: 'decimal',
-                        description: 'Precio de venta',
-                        example: 1299.99
-                    },
-                    cost: {
-                        type: 'number',
-                        format: 'decimal',
-                        description: 'Costo del producto',
-                        example: 899.99
-                    },
-                    sku: {
-                        type: 'string',
-                        description: 'Código SKU único',
-                        example: 'DELL-XPS13-001'
-                    },
-                    barcode: {
-                        type: 'string',
-                        description: 'Código de barras',
-                        example: '1234567890123'
-                    },
-                    unit_of_measure: {
-                        type: 'string',
-                        enum: ['unit', 'kg', 'liter', 'meter', 'box'],
-                        description: 'Unidad de medida',
-                        example: 'unit'
-                    },
-                    minimum_stock: {
-                        type: 'integer',
-                        description: 'Stock mínimo',
-                        example: 5
-                    },
-                    maximum_stock: {
-                        type: 'integer',
-                        description: 'Stock máximo',
-                        example: 100
-                    },
-                    is_active: {
-                        type: 'boolean',
-                        description: 'Estado del producto',
-                        example: true
-                    },
-                    created_at: {
-                        type: 'string',
-                        format: 'date-time',
-                        description: 'Fecha de creación'
-                    },
-                    updated_at: {
-                        type: 'string',
-                        format: 'date-time',
-                        description: 'Fecha de actualización'
-                    }
-                }
-            },
-
-            Branch: {
-                type: 'object',
-                required: ['name', 'address'],
-                properties: {
-                    id: { type: 'integer' },
-                    name: { type: 'string', example: 'Sucursal Centro' },
-                    address: { type: 'string', example: 'Av. Principal #123' },
-                    phone: { type: 'string', example: '+52 555 123 4567' },
-                    email: { type: 'string', example: 'centro@empresa.com' },
-                    is_active: { type: 'boolean', example: true }
-                }
-            },
-
-            Customer: {
-                type: 'object',
-                required: ['name', 'email'],
-                properties: {
-                    id: { type: 'integer' },
-                    name: { type: 'string', example: 'Juan Pérez' },
-                    email: { type: 'string', example: 'juan@email.com' },
-                    phone: { type: 'string', example: '+52 555 987 6543' },
-                    address: { type: 'string', example: 'Calle Secundaria #456' },
-                    is_active: { type: 'boolean', example: true }
-                }
-            },
-
-            User: {
-                type: 'object',
-                required: ['username', 'email', 'password'],
-                properties: {
-                    id: { type: 'integer' },
-                    username: { type: 'string', example: 'admin' },
-                    email: { type: 'string', example: 'admin@empresa.com' },
-                    role: { 
-                        type: 'string', 
-                        enum: ['admin', 'manager', 'employee'],
-                        example: 'admin' 
-                    },
-                    branch_id: { type: 'integer', example: 1 },
-                    is_active: { type: 'boolean', example: true }
-                }
-            },
-
-            Sale: {
-                type: 'object',
-                properties: {
-                    id: { type: 'integer' },
-                    total_amount: { type: 'number', example: 299.99 },
-                    payment_method: { 
-                        type: 'string',
-                        enum: ['cash', 'card', 'transfer'],
-                        example: 'card'
-                    },
-                    customer_id: { type: 'integer', example: 1 },
-                    user_id: { type: 'integer', example: 1 },
-                    branch_id: { type: 'integer', example: 1 }
-                }
-            },
-
-            Inventory: {
-                type: 'object',
-                properties: {
-                    id: { type: 'integer' },
-                    current_stock: { type: 'integer', example: 25 },
-                    reserved_stock: { type: 'integer', example: 5 },
-                    product_id: { type: 'integer', example: 1 },
-                    branch_id: { type: 'integer', example: 1 }
-                }
-            },
-            ProductInput: {
-                type: 'object',
-                required: ['name', 'price'],
-                properties: {
-                    name: {
-                        type: 'string',
-                        example: 'Laptop Dell XPS 13'
-                    },
-                    description: {
-                        type: 'string',
-                        example: 'Laptop ultrabook con procesador Intel i7'
-                    },
-                    price: {
-                        type: 'number',
-                        example: 1299.99
-                    },
-                    cost: {
-                        type: 'number',
-                        example: 899.99
-                    },
-                    sku: {
-                        type: 'string',
-                        example: 'DELL-XPS13-001'
-                    },
-                    barcode: {
-                        type: 'string',
-                        example: '1234567890123'
-                    },
-                    unit_of_measure: {
-                        type: 'string',
-                        enum: ['unit', 'kg', 'liter', 'meter', 'box'],
-                        example: 'unit'
-                    },
-                    minimum_stock: {
-                        type: 'integer',
-                        example: 5
-                    },
-                    maximum_stock: {
-                        type: 'integer',
-                        example: 100
-                    },
-                    is_active: {
-                        type: 'boolean',
-                        example: true
-                    }
-                }
-            },
+            // ==========================================
+            // ESQUEMAS DE RESPUESTA ESTÁNDAR
+            // ==========================================
             Error: {
+                type: 'object',
+                properties: {
+                    success: {
+                        type: 'boolean',
+                        example: false,
+                        description: 'Indica si la operación fue exitosa'
+                    },
+                    message: {
+                        type: 'string',
+                        example: 'Descripción del error',
+                        description: 'Mensaje descriptivo del error'
+                    },
+                    error: {
+                        type: 'string',
+                        example: 'Información técnica del error',
+                        description: 'Detalles técnicos del error (solo en desarrollo)'
+                    },
+                    code: {
+                        type: 'string',
+                        example: 'VALIDATION_ERROR',
+                        description: 'Código de error para manejo programático'
+                    }
+                }
+            },
+            
+            ValidationError: {
                 type: 'object',
                 properties: {
                     success: {
@@ -219,14 +116,34 @@ const swaggerDefinition = {
                     },
                     message: {
                         type: 'string',
-                        example: 'Error message'
+                        example: 'Error de validación'
                     },
-                    error: {
-                        type: 'string',
-                        example: 'Detailed error information'
+                    errors: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                field: {
+                                    type: 'string',
+                                    example: 'email',
+                                    description: 'Campo que causó el error'
+                                },
+                                message: {
+                                    type: 'string',
+                                    example: 'El email es requerido',
+                                    description: 'Descripción específica del error'
+                                },
+                                value: {
+                                    type: 'string',
+                                    example: 'valor-inválido',
+                                    description: 'Valor que causó el error'
+                                }
+                            }
+                        }
                     }
                 }
             },
+
             PaginatedResponse: {
                 type: 'object',
                 properties: {
@@ -236,12 +153,13 @@ const swaggerDefinition = {
                     },
                     message: {
                         type: 'string',
-                        example: 'Productos obtenidos exitosamente'
+                        example: 'Datos obtenidos exitosamente'
                     },
                     data: {
                         type: 'array',
                         items: {
-                            $ref: '#/components/schemas/Product'
+                            type: 'object',
+                            description: 'Array de elementos del tipo correspondiente'
                         }
                     },
                     pagination: {
@@ -249,31 +167,644 @@ const swaggerDefinition = {
                         properties: {
                             total: {
                                 type: 'integer',
-                                example: 25
+                                example: 150,
+                                description: 'Total de elementos disponibles'
                             },
                             page: {
                                 type: 'integer',
-                                example: 1
+                                example: 1,
+                                description: 'Página actual'
                             },
                             limit: {
                                 type: 'integer',
-                                example: 10
+                                example: 10,
+                                description: 'Elementos por página'
                             },
                             pages: {
                                 type: 'integer',
-                                example: 3
+                                example: 15,
+                                description: 'Total de páginas disponibles'
+                            },
+                            hasNext: {
+                                type: 'boolean',
+                                example: true,
+                                description: 'Indica si hay página siguiente'
+                            },
+                            hasPrev: {
+                                type: 'boolean',
+                                example: false,
+                                description: 'Indica si hay página anterior'
                             }
                         }
                     }
                 }
+            },
+
+            // ==========================================
+            // ESQUEMAS DE PRODUCTOS
+            // ==========================================
+            Product: {
+                type: 'object',
+                required: ['name', 'price'],
+                properties: {
+                    id: {
+                        type: 'integer',
+                        description: 'ID único del producto',
+                        example: 1
+                    },
+                    name: {
+                        type: 'string',
+                        description: 'Nombre del producto',
+                        example: 'PlayStation 5 Console',
+                        minLength: 2,
+                        maxLength: 255
+                    },
+                    description: {
+                        type: 'string',
+                        description: 'Descripción detallada del producto',
+                        example: 'Consola de videojuegos de nueva generación con tecnología ray tracing',
+                        maxLength: 1000
+                    },
+                    price: {
+                        type: 'number',
+                        format: 'decimal',
+                        description: 'Precio de venta al público',
+                        example: 599.99,
+                        minimum: 0
+                    },
+                    cost: {
+                        type: 'number',
+                        format: 'decimal',
+                        description: 'Costo de adquisición del producto',
+                        example: 450.00,
+                        minimum: 0
+                    },
+                    sku: {
+                        type: 'string',
+                        description: 'Código SKU único del producto',
+                        example: 'PS5-CONSOLE-001',
+                        maxLength: 50
+                    },
+                    barcode: {
+                        type: 'string',
+                        description: 'Código de barras para lectura óptica',
+                        example: '1234567890123',
+                        maxLength: 50
+                    },
+                    category: {
+                        type: 'string',
+                        description: 'Categoría del producto',
+                        example: 'Electrónicos > Consolas',
+                        maxLength: 100
+                    },
+                    brand: {
+                        type: 'string',
+                        description: 'Marca del producto',
+                        example: 'Sony',
+                        maxLength: 100
+                    },
+                    unit_of_measure: {
+                        type: 'string',
+                        enum: ['unit', 'kg', 'liter', 'meter', 'box', 'pack'],
+                        description: 'Unidad de medida para el producto',
+                        example: 'unit'
+                    },
+                    minimum_stock: {
+                        type: 'integer',
+                        description: 'Cantidad mínima de stock requerida',
+                        example: 5,
+                        minimum: 0
+                    },
+                    maximum_stock: {
+                        type: 'integer',
+                        description: 'Cantidad máxima de stock permitida',
+                        example: 100,
+                        minimum: 0
+                    },
+                    is_active: {
+                        type: 'boolean',
+                        description: 'Estado activo del producto',
+                        example: true
+                    },
+                    created_at: {
+                        type: 'string',
+                        format: 'date-time',
+                        description: 'Fecha y hora de creación del producto',
+                        example: '2024-10-01T08:00:00Z'
+                    },
+                    updated_at: {
+                        type: 'string',
+                        format: 'date-time',
+                        description: 'Fecha y hora de última actualización',
+                        example: '2024-10-06T14:30:00Z'
+                    }
+                }
+            },
+
+            ProductInput: {
+                type: 'object',
+                required: ['name', 'price'],
+                properties: {
+                    name: {
+                        type: 'string',
+                        minLength: 2,
+                        maxLength: 255,
+                        example: 'Xbox Series X'
+                    },
+                    description: {
+                        type: 'string',
+                        maxLength: 1000,
+                        example: 'Consola de videojuegos de alta gama con 4K nativo'
+                    },
+                    price: {
+                        type: 'number',
+                        format: 'decimal',
+                        minimum: 0,
+                        example: 549.99
+                    },
+                    cost: {
+                        type: 'number',
+                        format: 'decimal',
+                        minimum: 0,
+                        example: 420.00
+                    },
+                    sku: {
+                        type: 'string',
+                        maxLength: 50,
+                        example: 'XBOX-SX-001'
+                    },
+                    barcode: {
+                        type: 'string',
+                        maxLength: 50,
+                        example: '9876543210987'
+                    },
+                    category: {
+                        type: 'string',
+                        maxLength: 100,
+                        example: 'Electrónicos > Consolas'
+                    },
+                    brand: {
+                        type: 'string',
+                        maxLength: 100,
+                        example: 'Microsoft'
+                    },
+                    unit_of_measure: {
+                        type: 'string',
+                        enum: [
+                                'unit',
+                                'caja',
+                                'paquete',
+                                'set',
+                                'pieza',
+                                'bundle',
+                                'digital',
+                                'tarjeta',
+                                'edición',
+                                'accesorio',
+                                'juego',
+                                'suscripción'
+                        ],
+                        default: 'unit',
+                        example: 'unit'
+                    },
+                    minimum_stock: {
+                        type: 'integer',
+                        minimum: 0,
+                        default: 0,
+                        example: 3
+                    },
+                    maximum_stock: {
+                        type: 'integer',
+                        minimum: 0,
+                        example: 50
+                    },
+                    is_active: {
+                        type: 'boolean',
+                        default: true,
+                        example: true
+                    }
+                }
+            },
+
+            // ==========================================
+            // ESQUEMAS DE USUARIOS
+            // ==========================================
+            User: {
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    first_name: {
+                        type: 'string',
+                        example: 'Juan',
+                        maxLength: 100
+                    },
+                    last_name: {
+                        type: 'string',
+                        example: 'Pérez',
+                        maxLength: 100
+                    },
+                    email: {
+                        type: 'string',
+                        format: 'email',
+                        example: 'juan.perez@empresa.com'
+                    },
+                    role: {
+                        type: 'string',
+                        enum: ['admin', 'manager', 'cashier'],
+                        example: 'cashier'
+                    },
+                    employee_id: {
+                        type: 'string',
+                        example: 'EMP001',
+                        maxLength: 20
+                    },
+                    phone: {
+                        type: 'string',
+                        example: '81-1234-5678',
+                        maxLength: 20
+                    },
+                    branch_id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    is_active: {
+                        type: 'boolean',
+                        example: true
+                    },
+                    hire_date: {
+                        type: 'string',
+                        format: 'date',
+                        example: '2024-01-15'
+                    },
+                    last_login: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-10-06T10:30:00Z'
+                    },
+                    created_at: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-10-01T08:00:00Z'
+                    },
+                    updated_at: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-10-06T10:30:00Z'
+                    }
+                }
+            },
+
+            // ==========================================
+            // ESQUEMAS DE SUCURSALES
+            // ==========================================
+            Branch: {
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    name: {
+                        type: 'string',
+                        example: 'Sucursal Centro',
+                        maxLength: 100
+                    },
+                    code: {
+                        type: 'string',
+                        example: 'CTR-001',
+                        maxLength: 20
+                    },
+                    address: {
+                        type: 'string',
+                        example: 'Av. Juárez #123, Centro',
+                        maxLength: 255
+                    },
+                    city: {
+                        type: 'string',
+                        example: 'Monterrey',
+                        maxLength: 100
+                    },
+                    state: {
+                        type: 'string',
+                        example: 'Nuevo León',
+                        maxLength: 100
+                    },
+                    postal_code: {
+                        type: 'string',
+                        example: '64000',
+                        maxLength: 10
+                    },
+                    phone: {
+                        type: 'string',
+                        example: '81-1234-5678',
+                        maxLength: 20
+                    },
+                    email: {
+                        type: 'string',
+                        format: 'email',
+                        example: 'centro@empresa.com'
+                    },
+                    manager_id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    is_active: {
+                        type: 'boolean',
+                        example: true
+                    },
+                    created_at: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-10-01T08:00:00Z'
+                    },
+                    updated_at: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-10-06T10:30:00Z'
+                    }
+                }
+            },
+
+            // ==========================================
+            // ESQUEMAS DE CLIENTES
+            // ==========================================
+            Customer: {
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    first_name: {
+                        type: 'string',
+                        example: 'Ana',
+                        maxLength: 100
+                    },
+                    last_name: {
+                        type: 'string',
+                        example: 'Martínez',
+                        maxLength: 100
+                    },
+                    email: {
+                        type: 'string',
+                        format: 'email',
+                        example: 'ana.martinez@email.com'
+                    },
+                    phone: {
+                        type: 'string',
+                        example: '81-1234-5678',
+                        maxLength: 20
+                    },
+                    address: {
+                        type: 'string',
+                        example: 'Calle Falsa 123, Colonia Centro',
+                        maxLength: 255
+                    },
+                    city: {
+                        type: 'string',
+                        example: 'Monterrey',
+                        maxLength: 100
+                    },
+                    state: {
+                        type: 'string',
+                        example: 'Nuevo León',
+                        maxLength: 100
+                    },
+                    postal_code: {
+                        type: 'string',
+                        example: '64000',
+                        maxLength: 10
+                    },
+                    company_name: {
+                        type: 'string',
+                        example: 'Tecnología Avanzada S.A.',
+                        maxLength: 150
+                    },
+                    tax_id: {
+                        type: 'string',
+                        example: 'MATA850315AB1',
+                        maxLength: 20
+                    },
+                    is_active: {
+                        type: 'boolean',
+                        example: true
+                    },
+                    created_at: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-10-01T08:00:00Z'
+                    },
+                    updated_at: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-10-06T10:30:00Z'
+                    }
+                }
+            },
+
+            // ==========================================
+            // ESQUEMAS DE INVENTARIO
+            // ==========================================
+            Inventory: {
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    product_id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    branch_id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    current_stock: {
+                        type: 'integer',
+                        example: 25,
+                        minimum: 0
+                    },
+                    minimum_stock: {
+                        type: 'integer',
+                        example: 5,
+                        minimum: 0
+                    },
+                    maximum_stock: {
+                        type: 'integer',
+                        example: 100,
+                        minimum: 0
+                    },
+                    reserved_stock: {
+                        type: 'integer',
+                        example: 3,
+                        minimum: 0
+                    },
+                    location: {
+                        type: 'string',
+                        example: 'A1-B2-C3',
+                        maxLength: 50
+                    },
+                    last_restock_date: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-10-01T10:00:00Z'
+                    },
+                    created_at: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-09-15T08:00:00Z'
+                    },
+                    updated_at: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-10-06T14:30:00Z'
+                    }
+                }
+            },
+
+            // ==========================================
+            // ESQUEMAS DE VENTAS
+            // ==========================================
+            Sale: {
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    sale_number: {
+                        type: 'string',
+                        example: 'VEN-2024-000001'
+                    },
+                    customer_id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    user_id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    branch_id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    sale_date: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-10-06T14:30:00Z'
+                    },
+                    status: {
+                        type: 'string',
+                        enum: ['pending', 'completed', 'cancelled', 'refunded'],
+                        example: 'completed'
+                    },
+                    payment_method: {
+                        type: 'string',
+                        enum: ['cash', 'card', 'transfer', 'mixed'],
+                        example: 'card'
+                    },
+                    subtotal: {
+                        type: 'number',
+                        format: 'float',
+                        example: 599.99
+                    },
+                    tax_amount: {
+                        type: 'number',
+                        format: 'float',
+                        example: 95.99
+                    },
+                    discount_amount: {
+                        type: 'number',
+                        format: 'float',
+                        example: 50.00
+                    },
+                    total_amount: {
+                        type: 'number',
+                        format: 'float',
+                        example: 645.98
+                    },
+                    notes: {
+                        type: 'string',
+                        example: 'Cliente frecuente - Descuento aplicado',
+                        maxLength: 500
+                    },
+                    created_at: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-10-06T14:30:00Z'
+                    },
+                    updated_at: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2024-10-06T14:35:00Z'
+                    }
+                }
+            },
+
+            SaleItem: {
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    sale_id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    product_id: {
+                        type: 'integer',
+                        example: 1
+                    },
+                    quantity: {
+                        type: 'integer',
+                        example: 2,
+                        minimum: 1
+                    },
+                    unit_price: {
+                        type: 'number',
+                        format: 'float',
+                        example: 599.99
+                    },
+                    discount_percentage: {
+                        type: 'number',
+                        format: 'float',
+                        example: 5.0,
+                        minimum: 0,
+                        maximum: 100
+                    },
+                    discount_amount: {
+                        type: 'number',
+                        format: 'float',
+                        example: 30.00
+                    },
+                    subtotal: {
+                        type: 'number',
+                        format: 'float',
+                        example: 1169.98
+                    }
+                }
             }
         }
-    }
+    },
+    security: [
+        {
+            bearerAuth: []
+        }
+    ]
 }
 
 const options = {
     definition: swaggerDefinition,
-    apis: ['./src/routes/*.js', './src/controllers/*.js'] // Archivos que contienen documentación
+    apis: [
+        './src/routes/*.js',
+        './src/controllers/*.js',
+        './src/app.js'
+    ]
 }
 
 const swaggerSpec = swaggerJSDoc(options)

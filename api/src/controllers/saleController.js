@@ -145,7 +145,6 @@ const getSaleById = async (req, res) => {
 
 
 // Crear una nueva venta
-
 const createSale = async (req, res) => {
     const transaction = await db.sequelize.transaction()
     
@@ -328,7 +327,6 @@ const createSale = async (req, res) => {
 
 
 // Actualizar una venta (solo campos limitados)
-
 const updateSale = async (req, res) => {
     try {
         const { id } = req.params

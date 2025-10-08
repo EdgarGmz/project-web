@@ -10,6 +10,13 @@ const productController = require('../controllers/productController')
 
 /**
  * @swagger
+ * tags:
+ *   name: Products
+ *   description: Gestión de productos
+ */
+
+/**
+ * @swagger
  * /api/products:
  *   get:
  *     summary: Obtener todos los productos
