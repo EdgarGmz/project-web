@@ -2,8 +2,8 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
-    // Tabla USERS - Basada en modelo User.js
+  async up(queryInterface, Sequelize) {
+    
     await queryInterface.createTable('users', {
       id: {
         allowNull: false,
@@ -12,26 +12,37 @@ module.exports = {
         type: Sequelize.INTEGER
       },
 
-      username: {
-        type: Sequelize.STRING(50),
-        allowNull: false,
-        unique: true
-      },
-
-      full_name: {
-        type: Sequelize.STRING(200),
-        allowNull: false
-      },
-
       email: {
-        type: Sequelize.STRING(100),
+        type: Sequelize.STRING(255),
         allowNull: false,
         unique: true
       },
 
-      password_hash: {
+      password: {
         type: Sequelize.STRING(255),
         allowNull: false
+      },
+
+      first_name: {
+        type: Sequelize.STRING(100),
+        allowNull: false
+      },
+
+      last_name: {
+        type: Sequelize.STRING(100),
+        allowNull: false
+      },
+
+      role: {
+        type: Sequelize.ENUM('owner', 'supervisor', 'cashier', 'admin', 'auditor'),
+        allowNull: false,
+        defaultValue: 'cashier'
+      },
+
+      employee_id: {
+        type: Sequelize.STRING(20),
+        allowNull: true,
+        unique: true
       },
 
       phone: {
@@ -39,20 +50,18 @@ module.exports = {
         allowNull: true
       },
 
-      department: {
-        type: Sequelize.STRING(100),
+      hire_date: {
+        type: Sequelize.DATEONLY,
         allowNull: true
       },
 
-      position: {
-        type: Sequelize.STRING(100),
-        allowNull: true
-      },
-
-      role: {
-        type: Sequelize.ENUM('admin', 'manager', 'cashier', 'viewer'),
-        allowNull: false,
-        defaultValue: 'viewer'
+      branch_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'branches',
+          key: 'id'
+        }
       },
 
       permissions: {
@@ -71,56 +80,36 @@ module.exports = {
         allowNull: true
       },
 
-      login_attempts: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 0
-      },
-
-      locked_until: {
-        type: Sequelize.DATE,
-        allowNull: true
-      },
-
-      password_changed_at: {
-        type: Sequelize.DATE,
-        allowNull: true
-      },
-
-      avatar: {
+      reset_token: {
         type: Sequelize.STRING(255),
         allowNull: true
       },
 
-      notes: {
-        type: Sequelize.TEXT,
-        allowNull: true
-      },
-
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       },
 
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       },
 
-      deletedAt: {
+      deleted_at: {
         type: Sequelize.DATE,
         allowNull: true
       }
-    });
+    })
 
-    // Indices basados en el modelo
-    await queryInterface.addIndex('users', ['username'], { unique: true });
+    // Índices
     await queryInterface.addIndex('users', ['email'], { unique: true });
-    await queryInterface.addIndex('users', ['role']);
+    await queryInterface.addIndex('users', ['employee_id'], { unique: true });
     await queryInterface.addIndex('users', ['is_active']);
-    await queryInterface.addIndex('users', ['department']);
+    await queryInterface.addIndex('users', ['role']);
+    await queryInterface.addIndex('users', ['branch_id']);
+    await queryInterface.addIndex('users', ['role', 'is_active']);
   },
 
   async down (queryInterface, Sequelize) {

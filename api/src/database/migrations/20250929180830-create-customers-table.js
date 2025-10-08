@@ -70,19 +70,19 @@ module.exports = {
         defaultValue: true
       },
 
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       },
 
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       },
 
-      deletedAt: {
+      deleted_at: {
         type: Sequelize.DATE,
         allowNull: true
       }
@@ -94,7 +94,7 @@ module.exports = {
     await queryInterface.addIndex('customers', ['company_name']);
     await queryInterface.addIndex('customers', ['is_active']);
     await queryInterface.addIndex('customers', ['city', 'state']);
-    await queryInterface.addIndex('customers', ['createdAt']);
+    await queryInterface.addIndex('customers', ['created_at']);
   },
 
   async down (queryInterface, Sequelize) {

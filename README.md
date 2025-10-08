@@ -350,29 +350,24 @@ La elección de cada tecnología se fundamenta en criterios clave alineados con 
 ---
 
 #### 2️⃣ 📁 Copiar la clave pública
+Ejecuta el siguiente comando para copiar la clave pública al portapapeles según tu sistema operativo:
 
-- Ejecuta el siguiente comando para copiar la clave al portapapeles:
-
-  - **Windows (Git Bash):**
-    ```bash
-    cat ~/.ssh/id_ed25519.pub | clip
-    ```
-    <kbd>Copiar</kbd>
-  - **PowerShell:**
-    ```powershell
-    Get-Content ~/.ssh/id_ed25519.pub | Set-Clipboard
-    ```
-    <kbd>Copiar</kbd>
-  - **macOS:**
-    ```bash
-    pbcopy < ~/.ssh/id_ed25519.pub
-    ```
-    <kbd>Copiar</kbd>
-  - **Linux:**
-    ```bash
-    cat ~/.ssh/id_ed25519.pub | xclip -selection clipboard
-    ```
-    <kbd>Copiar</kbd>
+- **Windows (Git Bash):**
+  ```bash
+  clip < ~/.ssh/id_ed25519.pub
+  ```
+- **PowerShell:**
+  ```powershell
+  Get-Content ~/.ssh/id_ed25519.pub | Set-Clipboard
+  ```
+- **macOS:**
+  ```bash
+  pbcopy < ~/.ssh/id_ed25519.pub
+  ```
+- **Linux:**
+  ```bash
+  xclip -sel clip < ~/.ssh/id_ed25519.pub
+  ```
 
 ---
 
@@ -389,7 +384,7 @@ La elección de cada tecnología se fundamenta en criterios clave alineados con 
 ```bash
 ssh -T git@github.com
 ```
-<kbd>Copiar</kbd>
+
 - Si ves un mensaje de bienvenida, ¡la configuración fue exitosa!
 
 ---
@@ -400,7 +395,7 @@ ssh -T git@github.com
 git config --global user.name "Tu Nombre"
 git config --global user.email "tu-email@ejemplo.com"
 ```
-<kbd>Copiar</kbd>
+
 
 ---
 
@@ -417,13 +412,13 @@ git config --global user.email "tu-email@ejemplo.com"
 ```bash
 git clone git@github.com:EdgarGmz/project-web.git
 ```
-<kbd>Copiar</kbd>
+
 
 3️⃣ Ingresa al directorio del proyecto:
 
 ```bash
 cd project-web
 ```
-<kbd>Copiar</kbd>
+
 
 ¡Listo! Ahora tienes el repositorio en tu dispositivo.

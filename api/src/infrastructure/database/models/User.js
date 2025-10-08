@@ -1,12 +1,9 @@
 const { DataTypes } = require('sequelize')
 const bcrypt = require('bcryptjs')
-const { sequelize } = require('../config/database')
+const { sequelize } = require('../../../config/database')
 const crypto = require('crypto')
 
 const User = sequelize.define('User', {
-    // AQUI VAN LOS CAMPOS
-
-    // ID - Clave primaria
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -14,7 +11,6 @@ const User = sequelize.define('User', {
         allowNull: false
     },
 
-    // EMAIL - Unico y valido
     email: {
         type: DataTypes.STRING(255),
         allowNull: false,
@@ -25,16 +21,14 @@ const User = sequelize.define('User', {
         }
     },
 
-    // PASSWORD - Encriptada
     password: {
         type: DataTypes.STRING(255),
         allowNull: false,
         validate: {
-            len: [8, 100],
+            len: [8, 255]
         }
     },
 
-    // Nombre
     first_name: {
         type: DataTypes.STRING(100),
         allowNull: false,
@@ -53,20 +47,6 @@ const User = sequelize.define('User', {
         }
     },
 
-    // Fecha de contratacion
-    hire_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-        defaultValue: DataTypes.NOW
-    },
-
-    // Ultimo Loggin (puede ser nulo)
-    last_login: {
-        type: DataTypes.DATE,
-        allowNull: true
-    },
-
-    // ROL - Lista de valores permitidos
     role: {
         type: DataTypes.ENUM('owner', 'supervisor', 'cashier', 'admin', 'auditor'),
         allowNull: false,
@@ -79,43 +59,15 @@ const User = sequelize.define('User', {
         }
     },
 
-    // ID de empleado - unico
     employee_id: {
         type: DataTypes.STRING(20),
-        allowNull: false,
+        allowNull: true,
         unique: true,
         validate: {
-            notEmpty: true,
-            isAlphanumeric: true,
             len: [3, 20]
         }
     },
 
-    // Permisos - JSON flexible
-    permissions: {
-        type: DataTypes.JSON,
-        allowNull: true,
-        defaultValue: {}
-    },
-
-    // Estado activo
-    is_active: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: true
-    },
-
-    // Sucursal - Relacion con 'Branch'
-    branch_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'branches',// <-- nombre de la tabla
-            key: 'id' // <-- campo con el que se relaciona
-        }
-    },
-
-    // Telefono
     phone: {
         type: DataTypes.STRING(20),
         allowNull: true,
@@ -127,41 +79,68 @@ const User = sequelize.define('User', {
         }
     },
 
-    // Token para resetear password
+    hire_date: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+    },
+
+    branch_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'branches',
+            key: 'id'
+        }
+    },
+
+    permissions: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: {}
+    },
+
+    is_active: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+    },
+
+    last_login: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+
     reset_token: {
         type: DataTypes.STRING(255),
-        allowNull: true,
-        unique: true
+        allowNull: true
     }
+
 }, {
-    // AQUI VAN LAS OPCIONES
     tableName: 'users',
-
-    // TIMESTAMPS automaticos
     timestamps: true,
-
-    // BORRADO suave, no borra realmente, solo marca como deleted_at
     paranoid: true,
+    
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
 
     scopes: {
         active: { where: { is_active: true } },
         withPassword: { attributes: {} },
         byRole: (role) => ({ where: { role } }),
-        withBranch: { include: 'branch' },
-        withSessions: { include: 'sessions' }
+        byBranch: (branch_id) => ({ where: { branch_id } })
     },
 
     defaultScope: {
-        attributes: { exclude: ['password', 'reset_token'] }
+        attributes: { exclude: ['password'] }
     },
 
     indexes: [
         { fields: ['email'], unique: true },
         { fields: ['employee_id'], unique: true },
-        { fields: ['branch_id'] },
         { fields: ['is_active'] },
         { fields: ['role'] },
-        { fields: ['branch_id', 'is_active'] },
+        { fields: ['branch_id'] },
         { fields: ['role', 'is_active'] }
     ],
 
@@ -171,10 +150,10 @@ const User = sequelize.define('User', {
                 user.password = await bcrypt.hash(user.password, 10)
             }
         }
-    },
-
+    }
 })
 
+// Métodos de instancia
 User.prototype.checkPassword = async function (password) {
     return await bcrypt.compare(password, this.password)
 }
@@ -191,19 +170,21 @@ User.prototype.generateResetToken = function () {
     this.reset_token = crypto.randomBytes(32).toString('hex')
     return this.reset_token
 }
+
 User.prototype.clearResetToken = function () {
     this.reset_token = null
 }
 
+// Relaciones 
 User.associate = function (models) {
     User.belongsTo(models.Branch, {
         foreignKey: 'branch_id',
         as: 'branch'
     })
-
-    User.hasMany(models.UserSession, {
+    
+    User.hasMany(models.Sale, {
         foreignKey: 'user_id',
-        as: 'sessions'
+        as: 'sales'
     })
 }
 

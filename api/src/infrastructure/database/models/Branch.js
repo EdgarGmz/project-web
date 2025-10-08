@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize')
-const { sequelize } = require('../config/database')
+const { sequelize } = require('../../../config/database')
 
 const Branch = sequelize.define('Branch', {
     // ID - Clave primaria
@@ -115,6 +115,8 @@ const Branch = sequelize.define('Branch', {
     tableName: 'branches',
     timestamps: true,
     paranoid: true,
+
+   
 
     defaultScope: {
         where: { is_active: true }

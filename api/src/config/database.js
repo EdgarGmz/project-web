@@ -1,39 +1,34 @@
+require('dotenv').config()
 const { Sequelize } = require('sequelize')
 
-// Configuracion de la base de datos usando variables de entorno
-const sequelize = new Sequelize({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT || 5432,
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    dialect: 'postgres',
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
-    pool: {
-        max: 10,
-        min: 0, 
-        acquire: 30000,
-        idle: 10000
-    },
-    dialectOptions: {
-        dateStrings: true,
-        typeCast: true,
-        timeZone: '+00:00'
-    },
-    timezone: '+00:00'
-})
+const config = {
+  dialect: 'sqlite',
+  storage: './src/infrastructure/database/database.sqlite',
+  logging: process.env.NODE_ENV === 'development' ? console.log : false,
+  define: {
+    timestamps: true,
+    underscored: false,
+    freezeTableName: false,
+    paranoid: true
+  }
+}
 
-// Funcion para probar la conexion
+const sequelize = new Sequelize(config)
+
 const testConnection = async () => {
-    try {
-        await sequelize.authenticate()
-        console.log('✅Conexion a PostgreSQL establecida correctamente.')
-    } catch (error) {
-        console.error(' No se pudo conectar a la base de datos: ', error.message)
-    }
+  try {
+    await sequelize.authenticate()
+    console.log('✅ Conexión a base de datos SQLite establecida correctamente')
+    
+    return true
+  } catch (error) {
+    console.error('❌ Error de conexión a base de datos:', error)
+    throw error
+  }
 }
 
 module.exports = {
-    sequelize, 
-    testConnection
+  sequelize,
+  config,
+  testConnection
 }

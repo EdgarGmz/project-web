@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    // Tabla PRODUCTS - Basada en modelo Product.js
+    
     await queryInterface.createTable('products', {
       id: {
         allowNull: false,
@@ -35,7 +35,17 @@ module.exports = {
       },
 
       category: {
-        type: Sequelize.ENUM('Criatura', 'Hechizo', 'Artefacto', 'Encantamiento', 'Planeswalker', 'Tierra', 'Instantaneo', 'Tribal'),
+        type: Sequelize.ENUM(
+            'Consola',
+            'Videojuego',
+            'Accesorio',
+            'Tarjeta de regalo',
+            'Coleccionable',
+            'Merchandising',
+            'PC Gaming',
+            'Realidad Virtual',
+            'Suscripción',
+            'Juguete'),
         allowNull: false
       },
 

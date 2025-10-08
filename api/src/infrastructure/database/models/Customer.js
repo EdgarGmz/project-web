@@ -1,5 +1,5 @@
 const { DataTypes, Op } = require('sequelize')
-const { sequelize } = require('../config/database')
+const { sequelize } = require('../../../config/database')
 
 const Customer = sequelize.define('Customer', {
 
@@ -108,6 +108,10 @@ const Customer = sequelize.define('Customer', {
     tableName: 'customers',
     timestamps: true,
     paranoid: true,
+    underscored: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
 
     defaultScope: {
         where: { is_active: true },
@@ -160,12 +164,11 @@ const Customer = sequelize.define('Customer', {
     },
 
     indexes: [
-        { fields: ['email'], unique: true},
-        { fields: ['tax_id'], unique: true},
-        { fields: ['company_name'] },
-        { fields: ['is_active']},
-        { fields: ['city', 'state']},
-        { fields: ['created_at']},
+            { fields: ['email'], unique: true},
+            { fields: ['tax_id'], unique: true},
+            { fields: ['company_name'] },
+            { fields: ['is_active']},
+            { fields: ['city', 'state']},
         ],
 })
     

@@ -3,13 +3,13 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    // Tabla INVENTORY - Basada en modelo Inventory.js
     await queryInterface.createTable('inventory', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        comment: 'Identificador único'
       },
 
       product_id: {
@@ -20,7 +20,8 @@ module.exports = {
           key: 'id'
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
+        comment: 'ID del producto'
       },
 
       branch_id: {
@@ -31,78 +32,53 @@ module.exports = {
           key: 'id'
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
+        comment: 'ID de la sucursal'
       },
 
-      stock_current: {
-        type: Sequelize.DECIMAL(10, 3),
+      current_stock: {
+        type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 0,
+        comment: 'Stock actual'
       },
 
-      stock_minimum: {
-        type: Sequelize.DECIMAL(10, 3),
+      minimum_stock: {
+        type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 0,
+        comment: 'Stock mínimo'
       },
 
-      stock_maximum: {
-        type: Sequelize.DECIMAL(10, 3),
-        allowNull: true
+      maximum_stock: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        comment: 'Stock máximo'
       },
 
-      stock_reserved: {
-        type: Sequelize.DECIMAL(10, 3),
+      reserved_stock: {
+        type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 0,
+        comment: 'Stock reservado'
       },
 
-      average_cost: {
-        type: Sequelize.DECIMAL(15, 4),
-        allowNull: false,
-        defaultValue: 0
-      },
-
-      total_value: {
-        type: Sequelize.DECIMAL(15, 2),
-        allowNull: false,
-        defaultValue: 0
+      last_restock_date: {
+        type: Sequelize.DATE,
+        allowNull: true,
+        comment: 'Fecha último restock'
       },
 
       location: {
         type: Sequelize.STRING(100),
-        allowNull: true
-      },
-
-      zone: {
-        type: Sequelize.STRING(50),
-        allowNull: true
-      },
-
-      status: {
-        type: Sequelize.ENUM('active', 'inactive', 'blocked', 'audit'),
-        allowNull: false,
-        defaultValue: 'active'
+        allowNull: true,
+        comment: 'Ubicación en almacén'
       },
 
       last_count_date: {
         type: Sequelize.DATE,
-        allowNull: true
-      },
-
-      last_count_quantity: {
-        type: Sequelize.DECIMAL(10, 3),
-        allowNull: true
-      },
-
-      last_count_difference: {
-        type: Sequelize.DECIMAL(10, 3),
-        allowNull: true
-      },
-
-      notes: {
-        type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
+        comment: 'Fecha último conteo'
       },
 
       createdAt: {
@@ -116,18 +92,37 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       },
-
+      
       deletedAt: {
         type: Sequelize.DATE,
         allowNull: true
       }
     });
 
-    // Indices basados en el modelo
-    await queryInterface.addIndex('inventory', ['product_id', 'branch_id'], { unique: true });
-    await queryInterface.addIndex('inventory', ['branch_id', 'status']);
-    await queryInterface.addIndex('inventory', ['stock_current', 'stock_minimum']);
-    await queryInterface.addIndex('inventory', ['branch_id', 'zone']);
+    await queryInterface.addIndex('inventory', ['product_id', 'branch_id'], { 
+      unique: true,
+      name: 'idx_inventory_product_branch_unique'
+    });
+
+    await queryInterface.addIndex('inventory', ['branch_id'], {
+      name: 'idx_inventory_branch'
+    });
+
+    await queryInterface.addIndex('inventory', ['current_stock', 'minimum_stock'], {
+      name: 'idx_inventory_stock_alerts'
+    });
+
+    await queryInterface.addIndex('inventory', ['location'], {
+      name: 'idx_inventory_location'
+    });
+
+    await queryInterface.addIndex('inventory', ['last_restock_date'], {
+      name: 'idx_inventory_last_restock'
+    });
+
+    await queryInterface.addIndex('inventory', ['last_count_date'], {
+      name: 'idx_inventory_last_count'
+    });
   },
 
   async down (queryInterface, Sequelize) {
