@@ -4,70 +4,90 @@ require('dotenv').config()
 const swaggerDefinition = {
     openapi: '3.0.0',
     info: {
-  title: 'API de Gestión Empresarial',
-  version: '1.0.0',
-  description: `
-        API completa para sistema de gestión de APEXStore, una tienda en el giro de venta videojuegos
+        title: 'API de Gestión Empresarial',
+        version: '1.0.0',
+        description: `
+                API completa para sistema de gestión de APEXStore, una tienda en el giro de venta videojuegos
 
-        🧩 Características principales:
-            • Gestión de usuarios y roles con diferentes niveles de acceso
-            • Administración de sucursales multi•ubicación
-            • Control de productos e inventario en tiempo real
-            • Gestión completa de clientes (personas físicas y empresas)
-            • Sistema de ventas con múltiples métodos de pago
-            • Reportes detallados de ventas, inventario y rendimiento
+                🧩 Características principales:
+                    • Gestión de usuarios y roles con diferentes niveles de acceso
+                    • Administración de sucursales multi•ubicación
+                    • Control de productos e inventario en tiempo real
+                    • Gestión completa de clientes (personas físicas y empresas)
+                    • Sistema de ventas con múltiples métodos de pago
+                    • Reportes detallados de ventas, inventario y rendimiento
 
-        Autenticación: JWT Bearer Token
-        Formato de respuesta: JSON estándar con estructura \`success/message/data\`
-        `,
+                Autenticación: JWT Bearer Token
+                Formato de respuesta: JSON estándar con estructura \`success/message/data\`
+                `,
 
         contact: {
             name: 'Edgar Gómez',
             email: 'edgar_gomez90@outlook.com',
             url: 'https://github.com/EdgarGmz'
         },
+
         license: {
             name: 'MIT',
             url: 'https://opensource.org/licenses/MIT'
         },
+
         termsOfService: 'https://proyecto.com/terms'
     },
+
     servers: [
         {
-            url: `http://localhost:${process.env.PORT || 3000}`,
-            description: '🔧 Servidor de desarrollo local'
+            url: process.env.API_URL || 'http://localhost:3000',
+            description: 'Servidor de Desarrollo'
         },
         {
-            url: `http://localhost:${process.env.PORT || 3000}${process.env.API_BASE_PATH || '/api'}`,
-            description: '🔧 API Base - Desarrollo'
+            url: 'https://api.gamingstore.com',
+            description: 'Servidor de Producción'
         },
         {
-            url: 'https://api.proyecto.com',
-            description: '🚀 Servidor de producción'
+            url: 'https://staging-api.gamingstore.com',
+            description: 'Servidor de Staging'
         }
     ],
+
     tags: [
-        {
-            name: 'Users',
-            description: '👥 Gestión completa de usuarios del sistema con roles y permisos'
-        },
-        {
-            name: 'Branches',
-            description: '🏢 Administración de sucursales y ubicaciones'
-        },
-        {
-            name: 'Products',
-            description: '📦 Catálogo completo de productos con códigos SKU y precios'
-        },
-        {
-            name: 'Customers',
-            description: '👤 Gestión de clientes personas físicas y empresas'
-        },
-        {
-            name: 'Inventory',
-            description: '📊 Control de inventario en tiempo real por sucursal'
-        },
-    ],
+    {
+        name: 'Authentication',
+        description: '🔐 Autenticación y autorización de usuarios. Login, logout y gestión de sesiones JWT.',
+        externalDocs: {
+            description: 'Documentación de JWT',
+            url: 'https://jwt.io/'
+        }
+    },
+    {
+        name: 'Users',
+        description: '👥 Gestión completa de usuarios del sistema. Creación, actualización, roles y permisos por sucursal.'
+    },
+    {
+        name: 'Branches',
+        description: '🏢 Administración de sucursales y ubicaciones. Configuración de datos de contacto y estado.'
+    },
+    {
+        name: 'Products',
+        description: '📦 Catálogo completo de productos gaming. Gestión de SKU, precios, categorías y metadatos.'
+    },
+    {
+        name: 'Customers',
+        description: '👤 Gestión de clientes personas físicas y empresas. Datos de contacto y facturación.'
+    },
+    {
+        name: 'Inventory',
+        description: '📊 Control de inventario en tiempo real por sucursal. Stock disponible, mínimos y reservas.'
+    },
+    {
+        name: 'Sales',
+        description: '💰 Sistema de ventas y facturación. Procesamiento de órdenes e items de venta.'
+    },
+    {
+        name: 'Reports',
+        description: '📈 Reportes y estadísticas del negocio. Ventas, inventario y rendimiento por sucursal.'
+    }
+],
     components: {
         securitySchemes: {
             bearerAuth: {
@@ -788,7 +808,108 @@ const swaggerDefinition = {
                         example: 1169.98
                     }
                 }
-            }
+            },
+
+            LoginRequest: {
+                type: 'object',
+                required: ['email', 'password'],
+                properties: {
+                    email: {
+                        type: 'string',
+                        format: 'email',
+                        example: 'owner@gamingstore.com',
+                        description: 'Email del usuario registrado'
+                    },
+                    password: {
+                        type: 'string',
+                        minLength: 6,
+                        example: 'admin123',
+                        description: 'Contraseña del usuario'
+                    }
+                }
+            },
+
+            LoginResponse: {
+                type: 'object',
+                properties: {
+                    success: { type: 'boolean', example: true },
+                    message: { type: 'string', example: 'Login exitoso' },
+                    data: {
+                        type: 'object',
+                        properties: {
+                            user: { $ref: '#/components/schemas/User' },
+                            token: {
+                                type: 'string',
+                                example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzU5OTg0NzA4LCJleHAiOjE3NjAwNzExMDh9.s_5_85iKnUDGYLkLCLYCGgVPoH3mP2NTaQfJTF7QNb4',
+                                description: 'JWT token para autenticación'
+                            },
+                            expires_in: { type: 'string', example: '24h' }
+                        }
+                    }
+                }
+            },
+
+            SuccessResponse: {
+                type: 'object',
+                properties: {
+                    success: { type: 'boolean', example: true },
+                    message: { type: 'string', example: 'Operación exitosa' },
+                    data: { type: 'object' }
+                }
+            },
+
+            ErrorResponse: {
+                type: 'object',
+                properties: {
+                    success: { type: 'boolean', example: false },
+                    message: { type: 'string', example: 'Error en la operación' },
+                    error: { type: 'string', example: 'Descripción detallada del error' },
+                    code: { type: 'string', example: 'VALIDATION_ERROR' }
+                }
+            },
+
+            PaginationResponse: {
+                type: 'object',
+                properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { 
+                        type: 'array', 
+                        items: { type: 'object' },
+                        description: 'Array de elementos'
+                    },
+                    pagination: {
+                        type: 'object',
+                        properties: {
+                            page: { type: 'integer', example: 1, description: 'Página actual' },
+                            limit: { type: 'integer', example: 10, description: 'Elementos por página' },
+                            total: { type: 'integer', example: 100, description: 'Total de elementos' },
+                            totalPages: { type: 'integer', example: 10, description: 'Total de páginas' }
+                        }
+                    }
+                }
+},
+
+UserSession: {
+    type: 'object',
+    properties: {
+        id: { type: 'integer', example: 1 },
+        user_id: { type: 'integer', example: 1 },
+        session_token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+        refresh_token: { type: 'string', example: 'refresh_token_example' },
+        ip_address: { type: 'string', example: '192.168.1.100' },
+        user_agent: { type: 'string', example: 'Mozilla/5.0...' },
+        login_at: { type: 'string', format: 'date-time' },
+        last_activity: { type: 'string', format: 'date-time' },
+        expires_at: { type: 'string', format: 'date-time' },
+        is_active: { type: 'boolean', example: true },
+        logout_at: { type: 'string', format: 'date-time', nullable: true },
+        created_at: { type: 'string', format: 'date-time' },
+        updated_at: { type: 'string', format: 'date-time' }
+    }
+}
+
+
+
         }
     },
     security: [

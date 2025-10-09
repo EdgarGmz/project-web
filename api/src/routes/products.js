@@ -3,16 +3,62 @@ const router = express.Router()
 
 // Importar controlador
 const productController = require('../controllers/productController')
+const { authenticate, authorize } = require('../middleware/auth')
 
-// ===========================================
-// RUTAS DE PRODUCTOS CON DOCUMENTACIÓN SWAGGER
-// ===========================================
+router.use(authenticate)
 
 /**
  * @swagger
  * tags:
- *   name: Products
- *   description: Gestión de productos
+ *   - name: Products
+ *     description: Gestión de productos
+ * components:
+ *   schemas:
+ *     Product:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         name:
+ *           type: string
+ *         price:
+ *           type: number
+ *         description:
+ *           type: string
+ *     ProductInput:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *         price:
+ *           type: number
+ *         description:
+ *           type: string
+ *     PaginatedResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *         message:
+ *           type: string
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Product'
+ *         total:
+ *           type: integer
+ *         page:
+ *           type: integer
+ *         limit:
+ *           type: integer
+ *     Error:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         message:
+ *           type: string
  */
 
 /**
@@ -78,10 +124,8 @@ router.get('/', productController.getAllProducts)
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Producto obtenido exitosamente"
  *                 data:
  *                   $ref: '#/components/schemas/Product'
  *       404:
@@ -121,10 +165,8 @@ router.get('/:id', productController.getProductById)
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Producto creado exitosamente"
  *                 data:
  *                   $ref: '#/components/schemas/Product'
  *       400:
@@ -140,7 +182,7 @@ router.get('/:id', productController.getProductById)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', productController.createProduct)
+router.post('/', authorize('admin', 'manager'), productController.createProduct)
 
 /**
  * @swagger
@@ -171,10 +213,8 @@ router.post('/', productController.createProduct)
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Producto actualizado exitosamente"
  *                 data:
  *                   $ref: '#/components/schemas/Product'
  *       404:
@@ -190,7 +230,7 @@ router.post('/', productController.createProduct)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', productController.updateProduct)
+router.put('/:id', authorize('admin', 'manager'), productController.updateProduct)
 
 /**
  * @swagger
@@ -215,10 +255,8 @@ router.put('/:id', productController.updateProduct)
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Producto eliminado exitosamente"
  *       404:
  *         description: Producto no encontrado
  *         content:
@@ -232,6 +270,6 @@ router.put('/:id', productController.updateProduct)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete('/:id', productController.deleteProduct)
+router.delete('/:id', authorize('admin'), productController.deleteProduct)
 
 module.exports = router

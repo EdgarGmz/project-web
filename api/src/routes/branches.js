@@ -1,227 +1,137 @@
 const express = require('express')
 const router = express.Router()
 
-// Importar controlador
-const userController = require('../controllers/userController')
+const branchController = require('../controllers/branchController')
+const { authenticate, authorize } = require('../middleware/auth')
 
-// ===========================================
-// DOCUMENTACIÓN SWAGGER - USUARIOS
-// ===========================================
+// Todas las rutas requieren autenticación
+router.use(authenticate)
 
 /**
  * @swagger
  * tags:
- *   name: Users
- *   description: Gestión de usuarios
- */
-
-/**
- * @swagger
+ *   - name: Branches
+ *     description: Gestión de sucursales
  * components:
  *   schemas:
- *     User:
+ *     Branch:
  *       type: object
  *       properties:
  *         id:
  *           type: integer
- *           description: ID único del usuario
  *           example: 1
- *         email:
+ *         name:
  *           type: string
- *           format: email
- *           description: Email único del usuario
- *           example: "juan.perez@empresa.com"
- *         first_name:
+ *           example: "Sucursal Centro"
+ *         code:
  *           type: string
- *           description: Nombre del usuario
- *           example: "Juan"
- *         last_name:
+ *           example: "CTR-001"
+ *           description: "Código único de la sucursal"
+ *         address:
  *           type: string
- *           description: Apellido del usuario
- *           example: "Pérez"
- *         role:
+ *           example: "Av. Juárez #123, Centro, Ciudad de Monterrey"
+ *         city:
  *           type: string
- *           enum: [admin, manager, cashier]
- *           description: Rol del usuario en el sistema
- *           example: "cashier"
- *         employee_id:
+ *           example: "Monterrey"
+ *         state:
  *           type: string
- *           description: ID único del empleado
- *           example: "EMP001"
+ *           example: "Nuevo León"
+ *         postal_code:
+ *           type: string
+ *           example: "64000"
  *         phone:
  *           type: string
- *           description: Teléfono del usuario
  *           example: "81-1234-5678"
- *         hire_date:
+ *         email:
  *           type: string
- *           format: date
- *           description: Fecha de contratación
- *           example: "2024-01-15"
- *         branch_id:
- *           type: integer
- *           description: ID de la sucursal asignada
- *           example: 1
+ *           example: "sucursal_centro@empresa.com"
  *         is_active:
  *           type: boolean
- *           description: Estado activo del usuario
  *           example: true
- *         last_login:
+ *         createdAt:
  *           type: string
  *           format: date-time
- *           description: Última fecha de login
- *           example: "2024-10-06T10:30:00Z"
- *         created_at:
+ *           example: "2024-01-01T08:00:00Z"
+ *         updatedAt:
  *           type: string
  *           format: date-time
- *           description: Fecha de creación
- *           example: "2024-10-01T08:00:00Z"
- *         updated_at:
- *           type: string
- *           format: date-time
- *           description: Fecha de última actualización
- *           example: "2024-10-06T10:30:00Z"
- *         branch:
- *           $ref: '#/components/schemas/Branch'
- *     
- *     UserInput:
+ *           example: "2024-01-10T10:00:00Z"
+ *     BranchInput:
  *       type: object
  *       required:
- *         - first_name
- *         - last_name
- *         - email
- *         - password
+ *         - name
+ *         - code
  *       properties:
- *         first_name:
+ *         name:
  *           type: string
- *           minLength: 2
- *           maxLength: 100
- *           example: "Juan"
- *         last_name:
+ *           example: "Sucursal Norte"
+ *         code:
  *           type: string
- *           minLength: 2
- *           maxLength: 100
- *           example: "Pérez"
- *         email:
+ *           example: "NTE-002"
+ *           description: "Código único de la sucursal"
+ *         address:
  *           type: string
- *           format: email
- *           example: "juan.perez@empresa.com"
- *         password:
+ *           example: "Av. Constitución #456, Centro, Ciudad de Guadalupe"
+ *         city:
  *           type: string
- *           minLength: 6
- *           example: "password123"
- *         role:
+ *           example: "Guadalupe"
+ *         state:
  *           type: string
- *           enum: [admin, manager, cashier]
- *           default: "cashier"
- *           example: "cashier"
- *         employee_id:
+ *           example: "Nuevo León"
+ *         postal_code:
  *           type: string
- *           maxLength: 20
- *           example: "EMP001"
+ *           example: "67000"
  *         phone:
  *           type: string
- *           maxLength: 20
- *           example: "81-1234-5678"
- *         hire_date:
+ *           example: "81-2468-1357"
+ *         email:
  *           type: string
- *           format: date
- *           example: "2024-01-15"
- *         branch_id:
- *           type: integer
- *           example: 1
+ *           example: "sucursal_norte@empresa.com"
  *         is_active:
  *           type: boolean
  *           default: true
- *           example: true
- *     
- *     UserUpdate:
+ *     BranchUpdate:
  *       type: object
  *       properties:
- *         first_name:
+ *         name:
  *           type: string
- *           example: "Juan Carlos"
- *         last_name:
+ *           example: "Sucursal Norte"
+ *         address:
  *           type: string
- *           example: "Pérez González"
- *         email:
- *           type: string
- *           format: email
- *           example: "juan.carlos@empresa.com"
- *         role:
- *           type: string
- *           enum: [admin, manager, cashier]
- *           example: "manager"
- *         employee_id:
- *           type: string
- *           example: "EMP001"
+ *           example: "Calle Secundaria 456, Monterrey"
  *         phone:
  *           type: string
  *           example: "81-9876-5432"
- *         hire_date:
- *           type: string
- *           format: date
- *           example: "2024-01-15"
- *         branch_id:
- *           type: integer
- *           example: 2
  *         is_active:
  *           type: boolean
- *           example: true
+ *           example: false
+ *     Error:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         message:
+ *           type: string
+ *           example: "Error interno del servidor"
+ *   responses:
+ *     UnauthorizedError:
+ *       description: Token inválido o no proporcionado
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Error'
  */
 
 /**
  * @swagger
- * /api/users:
+ * /api/branches:
  *   get:
- *     summary: Obtener todos los usuarios
- *     description: Retorna una lista paginada de todos los usuarios del sistema
- *     tags: [Users]
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           minimum: 1
- *           default: 1
- *         description: Número de página
- *         example: 1
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           minimum: 1
- *           maximum: 100
- *           default: 10
- *         description: Cantidad de elementos por página
- *         example: 10
- *       - in: query
- *         name: search
- *         schema:
- *           type: string
- *         description: Búsqueda por nombre, apellido o email
- *         example: "juan"
- *       - in: query
- *         name: role
- *         schema:
- *           type: string
- *           enum: [admin, manager, cashier]
- *         description: Filtrar por rol
- *         example: "cashier"
- *       - in: query
- *         name: branch_id
- *         schema:
- *           type: integer
- *         description: Filtrar por sucursal
- *         example: 1
- *       - in: query
- *         name: is_active
- *         schema:
- *           type: boolean
- *         description: Filtrar por estado activo
- *         example: true
+ *     summary: Obtener todas las sucursales
+ *     tags: [Branches]
  *     responses:
  *       200:
- *         description: Lista de usuarios obtenida exitosamente
+ *         description: Lista de sucursales
  *         content:
  *           application/json:
  *             schema:
@@ -230,55 +140,54 @@ const userController = require('../controllers/userController')
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Usuarios obtenidos exitosamente"
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/User'
- *                 pagination:
- *                   type: object
- *                   properties:
- *                     total:
- *                       type: integer
- *                       example: 25
- *                     page:
- *                       type: integer
- *                       example: 1
- *                     limit:
- *                       type: integer
- *                       example: 10
- *                     pages:
- *                       type: integer
- *                       example: 3
+ *                     $ref: '#/components/schemas/Branch'
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: 1
+ *                   name: "Sucursal Centro"
+ *                   code: "CTR-001"
+ *                   address: "Av. Juárez #123, Centro, Ciudad de Monterrey"
+ *                   city: "Monterrey"
+ *                   state: "Nuevo León"
+ *                   postal_code: "64000"
+ *                   phone: "81-1234-5678"
+ *                   email: "sucursal_centro@empresa.com"
+ *                   is_active: true
+ *                 - id: 2
+ *                   name: "Sucursal Norte"
+ *                   code: "NTE-002"
+ *                   address: "Av. Constitución #123, Centro, Ciudad de Guadalupe"
+ *                   city: "Guadalupe"
+ *                   state: "Nuevo León"
+ *                   postal_code: "64000"
+ *                   phone: "81-2468-1357"
+ *                   email: "sucursal_norte@empresa.com"
+ *                   is_active: true
  *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get('/', userController.getAllUsers)
+router.get('/', branchController.getAllBranches)
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /api/branches/{id}:
  *   get:
- *     summary: Obtener un usuario por ID
- *     description: Retorna los detalles de un usuario específico
- *     tags: [Users]
+ *     summary: Obtener una sucursal por ID
+ *     tags: [Branches]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID único del usuario
- *         example: 1
+ *         description: ID de la sucursal
  *     responses:
  *       200:
- *         description: Usuario encontrado exitosamente
+ *         description: Sucursal encontrada
  *         content:
  *           application/json:
  *             schema:
@@ -287,73 +196,36 @@ router.get('/', userController.getAllUsers)
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Usuario obtenido exitosamente"
  *                 data:
- *                   $ref: '#/components/schemas/User'
+ *                   $ref: '#/components/schemas/Branch'
  *       404:
- *         description: Usuario no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Usuario no encontrado"
- *       500:
- *         description: Error interno del servidor
+ *         description: Sucursal no encontrada
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get('/:id', userController.getUserById)
+router.get('/:id', branchController.getBranchById)
 
 /**
  * @swagger
- * /api/users:
+ * /api/branches:
  *   post:
- *     summary: Crear un nuevo usuario
- *     description: Crea un nuevo usuario en el sistema
- *     tags: [Users]
+ *     summary: Crear una nueva sucursal
+ *     tags: [Branches]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UserInput'
- *           examples:
- *             admin:
- *               summary: Ejemplo de usuario administrador
- *               value:
- *                 first_name: "María"
- *                 last_name: "García"
- *                 email: "maria.garcia@empresa.com"
- *                 password: "admin123"
- *                 role: "admin"
- *                 employee_id: "ADM001"
- *                 phone: "81-1111-2222"
- *                 hire_date: "2024-01-01"
- *                 branch_id: 1
- *             cashier:
- *               summary: Ejemplo de cajero
- *               value:
- *                 first_name: "Pedro"
- *                 last_name: "López"
- *                 email: "pedro.lopez@empresa.com"
- *                 password: "cashier123"
- *                 role: "cashier"
- *                 employee_id: "CAS001"
- *                 phone: "81-3333-4444"
- *                 branch_id: 2
+ *             $ref: '#/components/schemas/BranchInput'
  *     responses:
  *       201:
- *         description: Usuario creado exitosamente
+ *         description: Sucursal creada exitosamente
  *         content:
  *           application/json:
  *             schema:
@@ -362,79 +234,43 @@ router.get('/:id', userController.getUserById)
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Usuario creado exitosamente"
  *                 data:
- *                   $ref: '#/components/schemas/User'
+ *                   $ref: '#/components/schemas/Branch'
  *       400:
  *         description: Error de validación
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Error de validación"
- *                 errors:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       field:
- *                         type: string
- *                         example: "email"
- *                       message:
- *                         type: string
- *                         example: "El email ya está registrado"
- *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
  *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post('/', userController.createUser)
+router.post('/', authorize('admin'), branchController.createBranch)
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /api/branches/{id}:
  *   put:
- *     summary: Actualizar un usuario
- *     description: Actualiza los datos de un usuario existente
- *     tags: [Users]
+ *     summary: Actualizar una sucursal
+ *     tags: [Branches]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID único del usuario
- *         example: 1
+ *         description: ID de la sucursal
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UserUpdate'
- *           examples:
- *             promotion:
- *               summary: Promoción a manager
- *               value:
- *                 role: "manager"
- *                 branch_id: 3
- *             contact_update:
- *               summary: Actualizar contacto
- *               value:
- *                 phone: "81-5555-6666"
- *                 email: "nuevo.email@empresa.com"
+ *             $ref: '#/components/schemas/BranchUpdate'
  *     responses:
  *       200:
- *         description: Usuario actualizado exitosamente
+ *         description: Sucursal actualizada exitosamente
  *         content:
  *           application/json:
  *             schema:
@@ -443,11 +279,8 @@ router.post('/', userController.createUser)
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Usuario actualizado exitosamente"
  *                 data:
- *                   $ref: '#/components/schemas/User'
+ *                   $ref: '#/components/schemas/Branch'
  *       400:
  *         description: Error de validación
  *         content:
@@ -455,38 +288,34 @@ router.post('/', userController.createUser)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *       404:
- *         description: Usuario no encontrado
+ *         description: Sucursal no encontrada
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.put('/:id', userController.updateUser)
+router.put('/:id', authorize('admin'), branchController.updateBranch)
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /api/branches/{id}:
  *   delete:
- *     summary: Eliminar un usuario (soft delete)
- *     description: Marca un usuario como eliminado (soft delete)
- *     tags: [Users]
+ *     summary: Eliminar una sucursal (soft delete)
+ *     tags: [Branches]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID único del usuario
- *         example: 1
+ *         description: ID de la sucursal
  *     responses:
  *       200:
- *         description: Usuario eliminado exitosamente
+ *         description: Sucursal eliminada exitosamente
  *         content:
  *           application/json:
  *             schema:
@@ -497,20 +326,16 @@ router.put('/:id', userController.updateUser)
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Usuario eliminado exitosamente"
+ *                   example: "Sucursal eliminada exitosamente"
  *       404:
- *         description: Usuario no encontrado
+ *         description: Sucursal no encontrada
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.delete('/:id', userController.deleteUser)
+router.delete('/:id', authorize('admin'), branchController.deleteBranch)
 
 module.exports = router

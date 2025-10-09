@@ -35,12 +35,12 @@ const getAllSales = async (req, res) => {
                 {
                     model: Customer,
                     as: 'customer',
-                    attributes: ['id', 'name', 'email']
+                    attributes: ['id', 'first_name', 'last_name', 'email'] 
                 },
                 {
                     model: User,
-                    as: 'user',
-                    attributes: ['id', 'username', 'email']
+                    as: 'cashier',
+                    attributes: ['id', 'first_name', 'last_name', 'email'] 
                 },
                 {
                     model: Branch,
@@ -53,7 +53,7 @@ const getAllSales = async (req, res) => {
                     include: [
                         {
                             model: Product,
-                            as: 'product',
+                            as: 'Product',
                             attributes: ['id', 'name', 'sku']
                         }
                     ]
@@ -83,7 +83,6 @@ const getAllSales = async (req, res) => {
     }
 }
 
-
 // Obtener una venta por ID
 const getSaleById = async (req, res) => {
     try {
@@ -94,12 +93,12 @@ const getSaleById = async (req, res) => {
                 {
                     model: Customer,
                     as: 'customer',
-                    attributes: ['id', 'name', 'email', 'phone']
+                    attributes: ['id', 'first_name', 'last_name', 'email', 'phone']
                 },
                 {
                     model: User,
-                    as: 'user',
-                    attributes: ['id', 'username', 'email']
+                    as: 'cashier',
+                    attributes: ['id', 'first_name', 'last_name', 'email']
                 },
                 {
                     model: Branch,
@@ -112,7 +111,7 @@ const getSaleById = async (req, res) => {
                     include: [
                         {
                             model: Product,
-                            as: 'product',
+                            as: 'Product',
                             attributes: ['id', 'name', 'sku', 'price']
                         }
                     ]
@@ -142,7 +141,6 @@ const getSaleById = async (req, res) => {
         })
     }
 }
-
 
 // Crear una nueva venta
 const createSale = async (req, res) => {
@@ -197,7 +195,7 @@ const createSale = async (req, res) => {
         const validatedItems = []
 
         for (const item of items) {
-            const { product_id, quantity, unit_price } = item
+            const { product_id, quantity, unit_price, discount_percentage = 0 } = item
 
             if (!product_id || !quantity || quantity <= 0) {
                 await transaction.rollback()
@@ -226,21 +224,28 @@ const createSale = async (req, res) => {
                 await transaction.rollback()
                 return res.status(400).json({
                     success: false,
-                    message: `Stock insuficiente para el producto ${product.name}`
+                    message: `Stock insuficiente para el producto ${product.name}. Disponible: ${inventory?.current_stock || 0}`
                 })
             }
 
             const finalPrice = unit_price || product.price
             const subtotal = finalPrice * quantity
+            const discountAmount = subtotal * (discount_percentage / 100)
+            const total = subtotal - discountAmount
 
             validatedItems.push({
                 product_id,
+                product_name: product.name,
+                product_sku: product.sku,
                 quantity,
                 unit_price: finalPrice,
-                subtotal
+                discount_percentage,
+                subtotal,
+                discount_amount: discountAmount,
+                total
             })
 
-            totalAmount += subtotal
+            totalAmount += total
         }
 
         // Crear la venta
@@ -249,18 +254,24 @@ const createSale = async (req, res) => {
             user_id,
             branch_id,
             total_amount: totalAmount,
-            payment_method: payment_method || 'cash'
+            payment_method: payment_method || 'cash',
+            status: 'completed'
         }, { transaction })
 
         // Crear los items de venta y actualizar inventario
         for (const item of validatedItems) {
-            // Crear item de venta
+            // Crear item de venta - CORREGIDO CON TODOS LOS CAMPOS
             await SaleItem.create({
                 sale_id: newSale.id,
                 product_id: item.product_id,
+                product_name: item.product_name,
+                product_sku: item.product_sku,
                 quantity: item.quantity,
                 unit_price: item.unit_price,
-                subtotal: item.subtotal
+                discount_percentage: item.discount_percentage,
+                subtotal: item.subtotal,
+                discount_amount: item.discount_amount,
+                total: item.total
             }, { transaction })
 
             // Actualizar inventario
@@ -282,12 +293,12 @@ const createSale = async (req, res) => {
                 {
                     model: Customer,
                     as: 'customer',
-                    attributes: ['id', 'name', 'email']
+                    attributes: ['id', 'first_name', 'last_name', 'email']
                 },
                 {
                     model: User,
-                    as: 'user',
-                    attributes: ['id', 'username']
+                    as: 'cashier',
+                    attributes: ['id', 'first_name', 'last_name']
                 },
                 {
                     model: Branch,
@@ -300,7 +311,7 @@ const createSale = async (req, res) => {
                     include: [
                         {
                             model: Product,
-                            as: 'product',
+                            as: 'Product',
                             attributes: ['id', 'name', 'sku']
                         }
                     ]
@@ -325,12 +336,11 @@ const createSale = async (req, res) => {
     }
 }
 
-
 // Actualizar una venta (solo campos limitados)
 const updateSale = async (req, res) => {
     try {
         const { id } = req.params
-        const { customer_id, payment_method } = req.body
+        const { customer_id, payment_method, status } = req.body
 
         const sale = await Sale.findByPk(id)
         if (!sale) {
@@ -344,6 +354,7 @@ const updateSale = async (req, res) => {
         const updateData = {}
         if (customer_id !== undefined) updateData.customer_id = customer_id
         if (payment_method !== undefined) updateData.payment_method = payment_method
+        if (status !== undefined) updateData.status = status
 
         await sale.update(updateData)
 
@@ -363,9 +374,7 @@ const updateSale = async (req, res) => {
     }
 }
 
-
 // Cancelar una venta (restaurar inventario)
-
 const cancelSale = async (req, res) => {
     const transaction = await db.sequelize.transaction()
 
@@ -386,6 +395,14 @@ const cancelSale = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: 'Venta no encontrada'
+            })
+        }
+
+        if (sale.status === 'cancelled') {
+            await transaction.rollback()
+            return res.status(400).json({
+                success: false,
+                message: 'La venta ya está cancelada'
             })
         }
 

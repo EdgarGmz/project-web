@@ -3,11 +3,12 @@ const router = express.Router()
 
 // Importar controlador
 const inventoryController = require('../controllers/inventoryController')
+const { authenticate, authorize, checkBranchAccess } = require('../middleware/auth')
 
-// ===========================================
-// DOCUMENTACIÓN SWAGGER - INVENTARIO
-// ===========================================
+// TODAS las rutas de inventario requieren autenticacion
+router.use(authenticate)
 
+// Todos pueden ver inventario (filtrado por sucursal segun usuario)
 /**
  * @swagger
  * tags:
@@ -351,6 +352,7 @@ router.get('/', inventoryController.getAllInventory)
  */
 router.get('/:id', inventoryController.getInventoryById)
 
+// Solo admin y manager pueden crear registros de inventario
 /**
  * @swagger
  * /api/inventory:
@@ -429,8 +431,9 @@ router.get('/:id', inventoryController.getInventoryById)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', inventoryController.createInventory)
+router.post('/', authorize('admin', 'manager'), checkBranchAccess, inventoryController.createInventory)
 
+// Solo admin y manager pueden actualizar inventario
 /**
  * @swagger
  * /api/inventory/{id}:
@@ -505,8 +508,9 @@ router.post('/', inventoryController.createInventory)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', inventoryController.updateInventory)
+router.put('/:id', authorize('admin', 'manager'),inventoryController.updateInventory)
 
+// Solo admin puede eliminar inventario
 /**
  * @swagger
  * /api/inventory/{id}:
@@ -562,8 +566,9 @@ router.put('/:id', inventoryController.updateInventory)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete('/:id', inventoryController.deleteInventory)
+router.delete('/:id', authorize('admin'), inventoryController.deleteInventory)
 
+// Solo admin y manager pueden reabastecer
 /**
  * @swagger
  * /api/inventory/{id}/adjust:
@@ -679,6 +684,6 @@ router.delete('/:id', inventoryController.deleteInventory)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/:id/adjust', inventoryController.adjustStock)
+router.post('/:id/adjust', authorize('admin', 'manager'), inventoryController.adjustStock)
 
 module.exports = router

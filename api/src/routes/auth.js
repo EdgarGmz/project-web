@@ -8,8 +8,100 @@ const { authenticate, authorize } = require('../middleware/auth')
 /**
  * @swagger
  * tags:
- *   name: Authentication
- *   description: Autenticación y autorización de usuarios
+ *   - name: Authentication
+ *     description: Autenticación y autorización de usuarios
+ *
+ * components:
+ *   schemas:
+ *     AuthLoginRequest:
+ *       type: object
+ *       required: [email, password]
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: "admin@empresa.com"
+ *         password:
+ *           type: string
+ *           example: "password123"
+ *     AuthLoginResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: "Login exitoso"
+ *         data:
+ *           type: object
+ *           properties:
+ *             user:
+ *               $ref: '#/components/schemas/User'
+ *             token:
+ *               type: string
+ *               example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *             expires_in:
+ *               type: string
+ *               example: "24h"
+ *     AuthRegisterRequest:
+ *       type: object
+ *       required: [first_name, last_name, email, password, role]
+ *       properties:
+ *         first_name:
+ *           type: string
+ *           example: "Juan"
+ *         last_name:
+ *           type: string
+ *           example: "Pérez"
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: "juan.perez@empresa.com"
+ *         password:
+ *           type: string
+ *           minLength: 6
+ *           example: "password123"
+ *         role:
+ *           type: string
+ *           enum: [admin, manager, cashier]
+ *           example: "cashier"
+ *         employee_id:
+ *           type: string
+ *           example: "EMP001"
+ *         phone:
+ *           type: string
+ *           example: "81-1234-5678"
+ *         branch_id:
+ *           type: integer
+ *           example: 1
+ *     AuthProfileUpdateRequest:
+ *       type: object
+ *       properties:
+ *         first_name:
+ *           type: string
+ *           example: "Juan"
+ *         last_name:
+ *           type: string
+ *           example: "Pérez"
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: "juan.perez@empresa.com"
+ *         phone:
+ *           type: string
+ *           example: "81-1234-5678"
+ *     AuthChangePasswordRequest:
+ *       type: object
+ *       required: [current_password, new_password]
+ *       properties:
+ *         current_password:
+ *           type: string
+ *           example: "password123"
+ *         new_password:
+ *           type: string
+ *           minLength: 6
+ *           example: "newpassword456"
  */
 
 /**
@@ -17,50 +109,20 @@ const { authenticate, authorize } = require('../middleware/auth')
  * /api/auth/login:
  *   post:
  *     summary: Iniciar sesión
- *     description: Autenticar usuario y obtener token JWT
  *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: "admin@empresa.com"
- *               password:
- *                 type: string
- *                 example: "password123"
+ *             $ref: '#/components/schemas/AuthLoginRequest'
  *     responses:
  *       200:
  *         description: Login exitoso
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Login exitoso"
- *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       $ref: '#/components/schemas/User'
- *                     token:
- *                       type: string
- *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
- *                     expires_in:
- *                       type: string
- *                       example: "24h"
+ *               $ref: '#/components/schemas/AuthLoginResponse'
  *       401:
  *         description: Credenciales inválidas
  */
@@ -71,7 +133,6 @@ router.post('/login', authController.login)
  * /api/auth/register:
  *   post:
  *     summary: Registrar nuevo usuario
- *     description: Crear un nuevo usuario (solo administradores)
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
@@ -80,41 +141,7 @@ router.post('/login', authController.login)
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - first_name
- *               - last_name
- *               - email
- *               - password
- *               - role
- *             properties:
- *               first_name:
- *                 type: string
- *                 example: "Juan"
- *               last_name:
- *                 type: string
- *                 example: "Pérez"
- *               email:
- *                 type: string
- *                 format: email
- *                 example: "juan.perez@empresa.com"
- *               password:
- *                 type: string
- *                 minLength: 6
- *                 example: "password123"
- *               role:
- *                 type: string
- *                 enum: [admin, manager, cashier]
- *                 example: "cashier"
- *               employee_id:
- *                 type: string
- *                 example: "EMP001"
- *               phone:
- *                 type: string
- *                 example: "81-1234-5678"
- *               branch_id:
- *                 type: integer
- *                 example: 1
+ *             $ref: '#/components/schemas/AuthRegisterRequest'
  *     responses:
  *       201:
  *         description: Usuario registrado exitosamente
@@ -128,7 +155,6 @@ router.post('/register', authenticate, authorize('admin'), authController.regist
  * /api/auth/profile:
  *   get:
  *     summary: Obtener perfil del usuario
- *     description: Obtiene la información del usuario autenticado
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
@@ -156,7 +182,6 @@ router.get('/profile', authenticate, authController.getProfile)
  * /api/auth/profile:
  *   put:
  *     summary: Actualizar perfil
- *     description: Actualiza la información del usuario autenticado
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
@@ -165,21 +190,7 @@ router.get('/profile', authenticate, authController.getProfile)
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               first_name:
- *                 type: string
- *                 example: "Juan"
- *               last_name:
- *                 type: string
- *                 example: "Pérez"
- *               email:
- *                 type: string
- *                 format: email
- *                 example: "juan.perez@empresa.com"
- *               phone:
- *                 type: string
- *                 example: "81-1234-5678"
+ *             $ref: '#/components/schemas/AuthProfileUpdateRequest'
  *     responses:
  *       200:
  *         description: Perfil actualizado exitosamente
@@ -191,7 +202,6 @@ router.put('/profile', authenticate, authController.updateProfile)
  * /api/auth/change-password:
  *   put:
  *     summary: Cambiar contraseña
- *     description: Cambia la contraseña del usuario autenticado
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
@@ -200,18 +210,7 @@ router.put('/profile', authenticate, authController.updateProfile)
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - current_password
- *               - new_password
- *             properties:
- *               current_password:
- *                 type: string
- *                 example: "password123"
- *               new_password:
- *                 type: string
- *                 minLength: 6
- *                 example: "newpassword456"
+ *             $ref: '#/components/schemas/AuthChangePasswordRequest'
  *     responses:
  *       200:
  *         description: Contraseña actualizada exitosamente
@@ -223,7 +222,6 @@ router.put('/change-password', authenticate, authController.changePassword)
  * /api/auth/logout:
  *   post:
  *     summary: Cerrar sesión
- *     description: Cierra la sesión del usuario
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
