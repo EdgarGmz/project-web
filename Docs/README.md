@@ -2,208 +2,123 @@
 
 ---
 
-## 📚 Menú de Navegación
+## 🧭 Descripción General
+El **Sistema de Gestión de Inventario y Punto de Venta (POS)** ha sido desarrollado con el objetivo de brindar a las pequeñas y medianas empresas (PYMES) una solución integral, moderna y segura para el manejo de sus operaciones comerciales.  
+Este proyecto busca centralizar la administración de inventarios, ventas, facturación y control de usuarios, bajo un entorno intuitivo y adaptable.  
 
-- [📑 1. Nombre del Proyecto](#-1-nombre-del-proyecto)
-- [🎯 2. Objetivos del Sistema](#-2-objetivos-del-sistema)
-- [🏢 3. Organización Responsable](#-3-organización-responsable)
-- [🔐 4. S-SDLC: Ciclo de Vida de Desarrollo de Software Seguro](#-4-s-sdlc-ciclo-de-vida-de-desarrollo-de-software-seguro)
-- [⚙️ 5. Requisitos Funcionales](#-5-requisitos-funcionales)
-- [🔒 6. Riesgos de Seguridad](#-6-riesgos-de-seguridad)
-- [📌 7. Conclusión](#-7-conclusión)
-
----
-
-## 📑 1. Nombre del Proyecto
-**Plataforma integral para la gestión de inventarios, ventas y facturación de PYMES**.  
-
-[🔝 Volver al Menú](#-menú-de-navegación)
+El sistema prioriza tres pilares fundamentales:
+- **Eficiencia:** Reducción de tiempos en procesos de venta y registro de productos.  
+- **Seguridad:** Incorporación de buenas prácticas y controles de acceso.  
+- **Escalabilidad:** Arquitectura modular preparada para el crecimiento del negocio.  
 
 ---
 
-## 🎯 2. Objetivos del Sistema
-El sistema busca convertirse en una herramienta tecnológica integral que apoye a las PYMES en la administración de sus procesos de inventario, ventas y facturación.  
-
-Los principales objetivos son:  
-- **Gestionar inventarios de manera eficiente**.  
-- **Procesar ventas rápidas y seguras**.  
-- **Control de stock en tiempo real**.  
-- **Generar reportes estratégicos**.  
-- **Accesos diferenciados por roles**.  
-
-[🔝 Volver al Menú](#-menú-de-navegación)
+## 📚 Tabla de Contenidos
+1. [🏁 Introducción](#-introducción)  
+2. [📘 Documentación del Proyecto](#-documentación-del-proyecto)  
+3. [🧩 Diagramas y Modelos](#-diagramas-y-modelos)  
+4. [🖥️ Pantallas y Bocetos](#️-pantallas-y-bocetos)  
+5. [🛡️ Ciclo de Vida y Seguridad (S-SDLC)](#️-ciclo-de-vida-y-seguridad-s-sdlc)  
+6. [📈 Beneficios del Sistema](#-beneficios-del-sistema)  
+7. [🚀 Guía para Nuevos Contribuidores](#-guía-para-nuevos-contribuidores)  
 
 ---
 
-## 🏢 3. Organización Responsable
-- **Departamento de Desarrollo de Software**  
-- **Equipo de TI**  
-- **Área de Administración de Ventas**  
+## 🏁 Introducción
+El presente proyecto busca ofrecer una herramienta profesional para la **gestión integral de inventarios, ventas, facturación electrónica y control administrativo**, diseñada específicamente para PYMES.  
 
-[🔝 Volver al Menú](#-menú-de-navegación)
+Su enfoque combina la facilidad de uso con altos estándares de seguridad informática, permitiendo a los usuarios operar en entornos de múltiples sucursales, roles y niveles de acceso.  
 
----
-
-# 🔐 4. S-SDLC: Ciclo de Vida de Desarrollo de Software Seguro
-
-## 1. Planificación / Requerimientos
-- Análisis de riesgos y amenazas.  
-- Definición de requerimientos de seguridad.  
-- Considerar regulaciones y normas (ISO 27001, GDPR, OWASP SAMM).  
-
-## 2. Diseño
-- Modelado de amenazas (STRIDE).  
-- Patrones y arquitecturas seguras.  
-- Principios de diseño seguro (mínimo privilegio, defensa en profundidad, fail-safe).  
-- Controles de seguridad (cifrado, hashing, firewalls).  
-
-## 3. Desarrollo / Codificación
-- Guías de codificación segura (OWASP).  
-- Revisiones de código.  
-- Escaneo SAST.  
-- Prevención de vulnerabilidades (SQLi, XSS, CSRF).  
-
-## 4. Pruebas / Verificación
-- Pruebas dinámicas de seguridad (DAST).  
-- SCA de dependencias.  
-- Ethical hacking.  
-- Validación de autenticación, autorización y logging.  
-
-## 5. Despliegue / Implementación
-- Configuración segura de servidores y redes.  
-- Parches y actualizaciones.  
-- Revisión de accesos y roles.  
-- Monitoreo inicial.  
-
-## 6. Mantenimiento / Operación
-- Monitoreo de incidentes.  
-- Aplicar parches.  
-- Auditorías periódicas.  
-- Plan de respuesta a incidentes.  
-
-### ✅ Beneficios
-- Reducción de costos de corrección.  
-- Mayor confianza de clientes.  
-- Cumplimiento normativo.  
-- Software más robusto.  
-
-[🔝 Volver al Menú](#-menú-de-navegación)
+Además, el sistema se estructura bajo un modelo de **Desarrollo Seguro (S-SDLC)** que garantiza la protección de la información en cada etapa del ciclo de vida del software.
 
 ---
 
-## ⚙️ 5. Requisitos Funcionales
+## 📘 Documentación del Proyecto
+Toda la documentación técnica y funcional del sistema se encuentra en la carpeta **Docs/Requerimientos**.  
+A continuación se detallan los archivos existentes y los pendientes por incorporar.
 
-### RF001: Autenticación y Autorización por Roles  
-Sistema de login seguro con perfiles: **Propietario, Supervisor, Cajero, Administrador, Auditor**.  
-
-### RF002: Gestión de Inventario  
-CRUD de productos, control de stock y alertas automáticas.  
-
-### RF003: Punto de Venta (POS)  
-Interfaz optimizada para ventas rápidas, cálculo de totales, impuestos y descuentos, generación de tickets/facturas.  
-
-### RF004: Facturación Electrónica y CRM Básico  
-Generación de facturas electrónicas según normativa y registro de clientes.  
-
-### RF005: Control Multi-Sucursal  
-Gestión centralizada de inventario y ventas en múltiples locales.  
-
-### RF006: Reportes y Análisis  
-Reportes de ventas, productos más vendidos, rentabilidad e inventario. Exportables a **PDF y Excel**.  
-
-### RF007: Gestión de Proveedores y Compras  
-Registro de proveedores y órdenes de compra con estados.  
-
-### RF008: Notificaciones Automáticas  
-Alertas de stock bajo, productos por caducar y confirmaciones de compras.  
-
-### RF009: Dashboard en Tiempo Real  
-Métricas de ventas diarias, gráficos y resúmenes en vivo.  
-
-### RF010: Devoluciones y Notas de Crédito  
-Procesar devoluciones y generar notas de crédito automáticas.  
-
-### RF011: Integración con Pagos  
-Compatibilidad con efectivo, tarjetas, transferencias y billeteras digitales.  
-
-### RF012: Auditoría de Transacciones  
-Registro inmutable de cambios críticos y accesible para auditoría.  
+### 📄 Requerimientos y Seguridad
+| 📂 Documento | 📝 Descripción | 🔗 Enlace |
+|---------------|----------------|-----------|
+| **Requerimientos del Sistema** | Describe los requerimientos generales del proyecto, incluyendo especificaciones técnicas, limitaciones, alcance y objetivos principales. Sirve como base para comprender las necesidades del cliente y las condiciones bajo las cuales operará el sistema. | [📎 Ver Documento](Docs/Requerimientos/Requerimientos_Sistema_PYMES.docx) |
+| **Requerimientos Funcionales** | Detalla las funciones que debe cumplir el sistema, los casos de uso, flujos de trabajo y módulos principales. Define la interacción entre el usuario y la aplicación, asegurando que las funcionalidades respondan a los procesos clave del negocio. | [📎 Ver Documento](Docs/Requerimientos/Requisitos_funcionales.docx) |
+| **Requisitos Básicos de Seguridad** | Establece las políticas y medidas mínimas de seguridad necesarias para proteger los datos y garantizar la integridad del sistema. Incluye prácticas como autenticación, control de acceso y manejo de información sensible. | [📎 Ver Documento](Docs/Requerimientos/Requisitos_basicos_de_seguridad.docx) |
+| **Lista de Riesgos de Seguridad** | Identifica posibles amenazas y vulnerabilidades que podrían afectar el sistema. Clasifica los riesgos según su impacto y probabilidad, y propone estrategias de mitigación y respuesta ante incidentes. | [📎 Ver Documento](Docs/Requerimientos/Lista_de_Riesgos_Seguridad_.docx) |
+| **Análisis STRIDE** | Presenta un análisis detallado de amenazas utilizando la metodología STRIDE (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service y Elevation of Privilege). Permite detectar debilidades y definir contramedidas específicas. | [📎 Ver Documento](Docs/Requerimientos/Analisis_STRIDE_Inventario_Ventas.docx) |
+| **Definicion de Roles de Usuario y Permisos** | Este documento detalla la estructura jerárquica y las responsabilidades asignadas a cada tipo de usuario dentro del sistema. Define los niveles de acceso, permisos de lectura, escritura, modificación y eliminación según los módulos (Inventario, Ventas, Facturación, Administración, etc.). | [📎 Ver Documento](Docs/Requerimientos/Roles_y_Permisos_Sistema.docx) |
+| **Controles de Seguridad Avanzados** | Contiene la descripción técnica de las medidas de protección reforzadas aplicadas en el sistema, complementando los requisitos básicos de seguridad. Incluye mecanismos como autenticación multifactor (MFA). | [📎 Ver Documento](Docs/Requerimientos/Controles_seguridad.docx) |
+| **Diagramas de Arquitectura del Sistema** | Presenta la estructura lógica, física y de comunicación del sistema. Describe los componentes principales (frontend, backend, base de datos, API y servicios externos) y la forma en que se interconectan dentro de la infraestructura de despliegue. | [📎 Ver Documento](Docs/Requerimientos/ARQUITECTURA DEL SISTEMA.docx) |
 
 
-[🔝 Volver al Menú](#-menú-de-navegación)
+## 🧩 Diagramas y Modelos
+Los diagramas permiten comprender la estructura interna y las relaciones entre entidades del sistema.  
+Estos recursos visuales se encuentran dentro de `Docs/Requerimientos`.
+
+| 📊 Recurso | 🧠 Descripción | 🔗 Enlace |
+|-------------|----------------|-----------|
+| **Diagrama de Relación Extendida** | Muestra la conexión entre módulos del sistema y entidades clave. | [🖼️ Ver Imagen](Docs/Requerimientos/Diagrama%20de%20realcion%20extendida.jpg) |
+| **Entidad Relación (E-R)** | Representa gráficamente las tablas y relaciones de base de datos. | [🖼️ Ver Imagen](Docs/Requerimientos/Entidad%20Relacion.png) |
+| **Modelo STRIDE** | Ilustración del análisis de amenazas STRIDE aplicado al sistema. | [🖼️ Ver Imagen](Docs/Requerimientos/STRIDE.png) |
+
+> 💡 *Estos diagramas sirven como referencia para los equipos de desarrollo, QA y documentación técnica.*
 
 ---
 
-## 🔒 6. Riesgos de Seguridad
+## 🖥️ Pantallas y Bocetos
+La carpeta `Docs/Screens` contiene los prototipos de diseño y pantallas funcionales del sistema.  
+Cada uno de ellos ofrece una vista previa de la interfaz de usuario y los flujos operativos esperados.
 
-### Lista de Riesgos de Seguridad
+| 🧾 Archivo | 🖋️ Descripción | 🔗 Enlace |
+|-------------|----------------|-----------|
+| **Bocetos del Sistema** | Presenta los diseños base del sistema de inventario y punto de venta. | [📎 Ver PPTX](Docs/Screens/Bocetos_Sistema_Gestion_Inventario_PDV.pptx) |
+| **Pantallas JECO** | Contiene las pantallas finales del módulo POS. | [📎 Ver PPTX](Docs/Screens/PANTALLAS-JECO.pptx) |
+| **Plantilla de Presentaciones** | Formato oficial para presentaciones del proyecto. | [📎 Ver PPTX](Docs/Screens/plantilla.pptx) |
 
-#### 1. Inyección SQL
-- **Descripción**: Entrada de datos maliciosa en login, búsqueda de productos o gestión de clientes que manipule consultas SQL.  
-- **Impacto**: Acceso no autorizado a inventario, ventas o clientes; alteración o eliminación de información crítica.  
-- **Mitigación**: Queries parametrizadas, validación estricta de entradas, principio de mínimo privilegio en BD.  
+> 🧭 *Estos archivos son esenciales para el diseño UI/UX y el onboarding de nuevos desarrolladores.*
 
-#### 2. Fuga de Datos Sensibles
-- **Descripción**: Exposición de datos de clientes o empleados por APIs inseguras o configuraciones erróneas.  
-- **Impacto**: Robo de identidad, incumplimiento legal, sanciones.  
-- **Mitigación**: Cifrado TLS 1.3 y AES-256, control de accesos, exclusión de datos sensibles en logs.  
+---
 
-#### 3. Acceso No Autorizado (Escalada de Privilegios)
-- **Descripción**: Usuario con rol limitado (ej. cajero) obtiene privilegios de supervisor o propietario.  
-- **Impacto**: Manipulación de ventas, facturación falsa, fraude interno.  
-- **Mitigación**: Middleware de autorización, pruebas de acceso, auditoría de cambios críticos.  
+## 🛡️ Ciclo de Vida y Seguridad (S-SDLC)
+El desarrollo del sistema se basa en el modelo **Secure Software Development Life Cycle**, garantizando la inclusión de medidas de seguridad en cada fase.  
 
-#### 4. Gestión Insegura de Sesiones
-- **Descripción**: Tokens o cookies inseguros pueden ser robados en POS compartidos.  
-- **Impacto**: Suplantación de usuarios y acceso a operaciones críticas.  
-- **Mitigación**: Tokens de corta expiración, cookies seguras (HttpOnly/SameSite), cierre por inactividad.  
+### 🔹 Fases Principales
+1. **Planificación y Requerimientos:** Identificación de requisitos funcionales y de seguridad.  
+2. **Diseño:** Creación de modelos seguros, definición de roles, y políticas de acceso.  
+3. **Desarrollo:** Codificación con estándares OWASP, uso de herramientas SAST y revisión de código.  
+4. **Pruebas:** Validación de seguridad (DAST), pruebas de carga, y auditorías internas.  
+5. **Despliegue:** Configuración segura en entorno productivo, revisión de permisos y roles.  
+6. **Mantenimiento:** Actualizaciones periódicas, monitoreo de incidentes y respuesta ante amenazas.
 
-#### 5. Contraseñas Débiles y Recuperación Insegura
-- **Descripción**: Contraseñas almacenadas con hash débil o recuperación insegura.  
-- **Impacto**: Cuentas comprometidas, ataques de fuerza bruta.  
-- **Mitigación**: Hashing con bcrypt/Argon2, políticas robustas, tokens de recuperación con caducidad.  
+### 🔒 Controles Clave
+- Autenticación multifactor (MFA)  
+- Hashing de contraseñas con Argon2  
+- Validaciones de entrada/salida  
+- Monitoreo y logging seguro  
+- Backups cifrados con AES-256  
+- Políticas de contraseñas y sesiones seguras  
 
-#### 6. Ataques XSS
-- **Descripción**: Scripts maliciosos en descripciones, notas o direcciones de clientes.  
-- **Impacto**: Robo de sesiones, manipulación de interfaz POS.  
-- **Mitigación**: Sanitización de entradas, escape en frontend, Content Security Policy (CSP).  
+---
 
-#### 7. Fraude en POS
-- **Descripción**: Alteración de precios, descuentos o métodos de pago desde frontend.  
-- **Impacto**: Pérdidas financieras, ventas falsas, reportes erróneos.  
-- **Mitigación**: Validación en backend, auditoría de cambios de precios, alertas automáticas.  
+## 📈 Beneficios del Sistema
+- 🔹 **Automatización** de procesos administrativos y contables.  
+- 🔹 **Reducción de errores** en inventarios y control de stock.  
+- 🔹 **Reportes en tiempo real** para decisiones estratégicas.  
+- 🔹 **Módulos escalables**, personalizables según la necesidad del negocio.  
+- 🔹 **Seguridad integrada** desde la planificación hasta la operación.  
+- 🔹 **Interfaz intuitiva**, adaptable a distintos perfiles de usuario.
 
-#### 8. Denegación de Servicio (DoS/DDoS)
-- **Descripción**: Saturación del sistema con múltiples solicitudes.  
-- **Impacto**: Caída del POS en horas críticas.  
-- **Mitigación**: Rate limiting, balanceadores de carga, monitoreo de tráfico.  
+---
 
-#### 9. Integraciones Externas Inseguras
-- **Descripción**: APIs o hardware POS mal configurados que exponen credenciales.  
-- **Impacto**: Robo de datos financieros, fraudes.  
-- **Mitigación**: Gestión segura de llaves, rotación de credenciales, certificación PCI DSS.  
+## 🚀 Guía para Nuevos Contribuidores
+Si eres un nuevo desarrollador o colaborador, te recomendamos los siguientes pasos:
 
-#### 10. Backups y Logs sin Protección
-- **Descripción**: Respaldo o logs sensibles almacenados en texto plano o expuestos públicamente.  
-- **Impacto**: Pérdida masiva de datos, incumplimiento legal.  
-- **Mitigación**: Cifrado, acceso restringido, rotación y purga de logs antiguos, plan de continuidad.  
+1. **Leer la sección de Requerimientos Funcionales** para comprender el alcance.  
+2. **Revisar los Diagramas E-R y STRIDE** para entender la estructura del sistema.  
+3. **Analizar los Documentos de Seguridad** para conocer las medidas implementadas.  
+4. **Ejecutar las pruebas iniciales** de desarrollo y verificar los módulos activos.  
+5. **Consultar los Bocetos del Sistema** antes de modificar la interfaz.  
 
-
-### 📊 Tabla Comparativa de Riesgos de Seguridad
-
-| Riesgo | Descripción | Impacto | Mitigación |
-|--------|-------------|---------|------------|
-| Inyección SQL | Entrada maliciosa en login, búsqueda o gestión de clientes. | Acceso no autorizado, alteración/eliminación de datos. | Queries parametrizadas, validación estricta, privilegios mínimos. |
-| Fuga de Datos Sensibles | Exposición de clientes/empleados vía APIs inseguras. | Robo de identidad, sanciones legales. | Cifrado TLS 1.3/AES-256, control de accesos, logs sin datos sensibles. |
-| Acceso No Autorizado | Escalada de privilegios de roles limitados. | Fraude, manipulación de ventas, eliminación de registros. | Middleware de autorización, auditoría de cambios. |
-| Gestión Insegura de Sesiones | Robo de tokens/cookies en POS compartidos. | Suplantación de usuarios, acceso a operaciones críticas. | Tokens cortos, cookies seguras, cierre por inactividad. |
-| Contraseñas Débiles | Hash inseguro o recuperación deficiente. | Compromiso de cuentas, ataques de fuerza bruta. | Hash bcrypt/Argon2, política robusta, tokens con caducidad. |
-| Ataques XSS | Inyección de scripts en formularios. | Robo de sesiones, manipulación del POS. | Sanitización, escape en frontend, CSP. |
-| Fraude en POS | Alteración de precios o descuentos desde frontend. | Pérdidas financieras, ventas falsas. | Validación en backend, auditoría, alertas. |
-| DoS/DDoS | Saturación del sistema con peticiones masivas. | Caída del POS en ventas críticas. | Rate limiting, balanceadores, monitoreo. |
-| Integraciones Inseguras | APIs o hardware mal configurados. | Robo de datos financieros. | Llaves seguras, rotación de credenciales, PCI DSS. |
-| Backups y Logs sin Protección | Respaldo en texto plano o expuesto. | Pérdida de datos, incumplimiento legal. | Cifrado, acceso restringido, rotación de logs. |
-
+> 🧠 *El conocimiento compartido y la documentación actualizada son pilares de este proyecto.*
 
 [🔝 Volver al Menú](#-menú-de-navegación)
 
