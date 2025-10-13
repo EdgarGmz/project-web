@@ -32,9 +32,10 @@ return (
             <Link to="/login" className="btn text-lg px-8 py-3 inline-block text-center">
             Iniciar Sesión
             </Link>
-            <Link to="/register" className="px-8 py-3 border border-accent text-accent rounded-md hover:bg-accent hover:text-bg transition text-lg inline-block text-center">
-            Crear Cuenta
-            </Link>
+            {/* ❌ Quitar enlace de registro público */}
+            <div className="px-8 py-3 border border-slate-600/30 text-muted rounded-md text-lg text-center opacity-50">
+            Contacta al administrador para acceso
+            </div>
         </div>
         </div>
     </main>

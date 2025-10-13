@@ -119,7 +119,7 @@ const checkBranchAccess = (req, res, next) => {
     if (req.user.branch_id !== parseInt(branch_id)){
         return res.status(403).json({
             success: false,
-            message: 'Acceso denegado a esta sucursal', 
+            message: 'Acceso denegado a esta sucursal',
             code: 'BRANCH_ACCESS_DENIED',
         })
     }

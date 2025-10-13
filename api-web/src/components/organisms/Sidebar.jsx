@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const { user, hasPermission } = useAuth()
+  const { user, hasPermission, logout } = useAuth()
   const location = useLocation()
 
   const menuItems = [
@@ -62,17 +62,26 @@ export default function Sidebar() {
       </nav>
 
       <div className="absolute bottom-0 w-full p-4 border-t border-slate-600/20">
-        {!isCollapsed && (
+        {!isCollapsed && user && (
           <div className="text-xs text-muted mb-2">
             {user?.first_name} {user?.last_name}
             <br />
             <span className="text-accent">{user?.role?.toUpperCase()}</span>
           </div>
         )}
-        <Link to="/logout" className="flex items-center gap-3 text-muted hover:text-red-400 transition">
-          <span>🚪</span>
-          {!isCollapsed && <span>Cerrar Sesión</span>}
-        </Link>
+        {user ? (
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 text-muted hover:text-red-400 transition w-full"
+          >
+            <span>🚪</span>
+            {!isCollapsed && <span>Cerrar Sesión</span>}
+          </button>
+        ) : (
+          <Link to="/login" className="btn text-lg px-8 py-3 inline-block text-center w-full">
+            Iniciar Sesión
+          </Link>
+        )}
       </div>
     </aside>
   )
