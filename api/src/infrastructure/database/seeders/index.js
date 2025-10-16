@@ -7,11 +7,7 @@ const { Branch, Product, Customer, User, Inventory } = db
 const cleanDatabase = async () => {
     try {
         console.log('Limpiando base de datos...')
-        
-        // Deshabilitar foreign keys temporalmente
         await db.sequelize.query('PRAGMA foreign_keys = OFF')
-        
-        // Limpiar tablas usando SQL directo
         await db.sequelize.query('DELETE FROM inventory')
         await db.sequelize.query('DELETE FROM user_sessions')
         await db.sequelize.query('DELETE FROM sale_items')
@@ -20,14 +16,10 @@ const cleanDatabase = async () => {
         await db.sequelize.query('DELETE FROM customers')
         await db.sequelize.query('DELETE FROM products')
         await db.sequelize.query('DELETE FROM branches')
-        
-        // Reactivar foreign keys
         await db.sequelize.query('PRAGMA foreign_keys = ON')
-        
         console.log('Base de datos limpiada exitosamente')
     } catch (error) {
         console.error('Error al limpiar base de datos:', error)
-        // Reactivar foreign keys en caso de error
         await db.sequelize.query('PRAGMA foreign_keys = ON')
         throw error
     }
@@ -37,10 +29,7 @@ const cleanDatabase = async () => {
 const seedDatabase = async (force = false) => {
     try {
         console.log('Iniciando seeders...')
-        
-        // Verificar si ya existen datos
         const branchCount = await Branch.count({ where: { is_active: true } })
-        
         if (branchCount > 0 && !force) {
             console.log('Ya existen datos en la base de datos')
             console.log('Usa: npm run seed:force para recrear todos los datos')
@@ -204,8 +193,8 @@ const seedDatabase = async (force = false) => {
                 barcode: '711719541028',
                 category: 'Consola',
                 subcategory: 'PlayStation',
-                cost: 450.00,
-                price: 599.99,
+                cost_price: 450.00,
+                unit_price: 599.99,
                 unit_measure: 'unit',
                 weight: 4.5,
                 dimensions: JSON.stringify({ length: 39, width: 26, height: 10.4 }),
@@ -221,8 +210,8 @@ const seedDatabase = async (force = false) => {
                 barcode: '889842640649',
                 category: 'Consola',
                 subcategory: 'Xbox',
-                cost: 450.00,
-                price: 599.99,
+                cost_price: 450.00,
+                unit_price: 599.99,
                 unit_measure: 'unit',
                 weight: 4.45,
                 dimensions: JSON.stringify({ length: 30.1, width: 15.1, height: 15.1 }),
@@ -238,8 +227,8 @@ const seedDatabase = async (force = false) => {
                 barcode: '045496882068',
                 category: 'Consola',
                 subcategory: 'Nintendo',
-                cost: 280.00,
-                price: 349.99,
+                cost_price: 280.00,
+                unit_price: 349.99,
                 unit_measure: 'unit',
                 weight: 0.42,
                 dimensions: JSON.stringify({ length: 24.2, width: 10.4, height: 1.4 }),
@@ -255,8 +244,8 @@ const seedDatabase = async (force = false) => {
                 barcode: '045496596899',
                 category: 'Videojuego',
                 subcategory: 'Aventura',
-                cost: 42.00,
-                price: 69.99,
+                cost_price: 42.00,
+                unit_price: 69.99,
                 unit_measure: 'unit',
                 weight: 0.1,
                 tax_rate: 0.16,
@@ -271,8 +260,8 @@ const seedDatabase = async (force = false) => {
                 barcode: '711719543294',
                 category: 'Videojuego',
                 subcategory: 'Acción',
-                cost: 42.00,
-                price: 69.99,
+                cost_price: 42.00,
+                unit_price: 69.99,
                 unit_measure: 'unit',
                 weight: 0.1,
                 tax_rate: 0.16,
@@ -287,8 +276,8 @@ const seedDatabase = async (force = false) => {
                 barcode: '889842640632',
                 category: 'Videojuego',
                 subcategory: 'Shooter',
-                cost: 35.00,
-                price: 59.99,
+                cost_price: 35.00,
+                unit_price: 59.99,
                 unit_measure: 'unit',
                 weight: 0.1,
                 tax_rate: 0.16,
@@ -303,8 +292,8 @@ const seedDatabase = async (force = false) => {
                 barcode: '711719541172',
                 category: 'Accesorio',
                 subcategory: 'Control',
-                cost: 45.00,
-                price: 69.99,
+                cost_price: 45.00,
+                unit_price: 69.99,
                 unit_measure: 'unit',
                 weight: 0.28,
                 tax_rate: 0.16,
@@ -319,8 +308,8 @@ const seedDatabase = async (force = false) => {
                 barcode: '889842640656',
                 category: 'Accesorio',
                 subcategory: 'Control',
-                cost: 40.00,
-                price: 59.99,
+                cost_price: 40.00,
+                unit_price: 59.99,
                 unit_measure: 'unit',
                 weight: 0.29,
                 tax_rate: 0.16,
@@ -335,8 +324,8 @@ const seedDatabase = async (force = false) => {
                 barcode: '814585021547',
                 category: 'PC Gaming',
                 subcategory: 'Portátil',
-                cost: 320.00,
-                price: 399.99,
+                cost_price: 320.00,
+                unit_price: 399.99,
                 unit_measure: 'unit',
                 weight: 0.67,
                 dimensions: JSON.stringify({ length: 29.8, width: 11.7, height: 4.9 }),
@@ -352,8 +341,8 @@ const seedDatabase = async (force = false) => {
                 barcode: '711719513637',
                 category: 'Tarjeta de regalo',
                 subcategory: 'PlayStation',
-                cost: 45.00,
-                price: 50.00,
+                cost_price: 45.00,
+                unit_price: 50.00,
                 unit_measure: 'unit',
                 weight: 0.01,
                 tax_rate: 0.00,
@@ -501,80 +490,22 @@ const seedDatabase = async (force = false) => {
         ])
         console.log('Clientes creados: ', customers.length)
 
-        // Crear usuarios con contraseñas hasheadas
-        const hashedPasswords = {
-            owner: await bcrypt.hash('owner123', 10),
-            supervisor: await bcrypt.hash('super123', 10),
-            cashier: await bcrypt.hash('cashier123', 10),
-            admin: await bcrypt.hash('admin123', 10)
-        }
-
-        const users = await User.bulkCreate([
-            {
-                email: 'owner@gamingstore.com',
-                password: hashedPasswords.owner,
-                first_name: 'Edgar',
-                last_name: 'Propietario',
-                role: 'owner',
-                employee_id: 'EMP001',
-                phone: '+52 81 1234 5678',
-                hire_date: '2023-01-01',
-                branch_id: branches[0].id,
-                permissions: JSON.stringify({ all: true }),
-                is_active: true
-            },
-            {
-                email: 'supervisor@gamingstore.com',
-                password: hashedPasswords.supervisor,
-                first_name: 'María',
-                last_name: 'Supervisora',
-                role: 'supervisor',
-                employee_id: 'EMP002',
-                phone: '+52 81 2468 1357',
-                hire_date: '2023-02-01',
-                branch_id: branches[0].id,
-                permissions: JSON.stringify({ 
-                    manage_inventory: true, 
-                    view_reports: true, 
-                    manage_sales: true 
-                }),
-                is_active: true
-            },
-            {
-                email: 'cashier1@gamingstore.com',
-                password: hashedPasswords.cashier,
-                first_name: 'Carlos',
-                last_name: 'Cajero',
-                role: 'cashier',
-                employee_id: 'EMP003',
-                phone: '+52 81 9876 5432',
-                hire_date: '2023-03-01',
-                branch_id: branches[1].id,
-                permissions: JSON.stringify({ 
-                    process_sales: true, 
-                    view_inventory: true 
-                }),
-                is_active: true
-            },
-            {
-                email: 'admin@gamingstore.com',
-                password: hashedPasswords.admin,
-                first_name: 'Ana',
-                last_name: 'Administradora',
-                role: 'admin',
-                employee_id: 'EMP004',
-                phone: '+52 81 5555 6666',
-                hire_date: '2023-04-01',
-                branch_id: branches[2].id,
-                permissions: JSON.stringify({ 
-                    manage_users: true, 
-                    view_reports: true, 
-                    system_config: true 
-                }),
-                is_active: true
-            }
-        ])
-        console.log('Usuarios creados: ', users.length)
+        // Crear usuario owner por default
+        const ownerPassword = await bcrypt.hash('owner123', 10)
+        const ownerUser = await User.create({
+            email: 'owner@gamingstore.com',
+            password: ownerPassword,
+            first_name: 'Edgar',
+            last_name: 'Propietario',
+            role: 'owner',
+            employee_id: 'EMP001',
+            phone: '+52 81 1234 5678',
+            hire_date: '2023-01-01',
+            branch_id: branches[0].id,
+            permissions: JSON.stringify({ all: true }),
+            is_active: true
+        })
+        console.log('Usuario owner creado')
 
         // Crear inventario
         const inventoryData = []
@@ -589,7 +520,6 @@ const seedDatabase = async (force = false) => {
                 })
             })
         })
-
         const inventory = await Inventory.bulkCreate(inventoryData)
         console.log('Inventario creado: ', inventory.length)
 
@@ -599,7 +529,7 @@ const seedDatabase = async (force = false) => {
         console.log(`   - ${branches.length} sucursales`)
         console.log(`   - ${products.length} productos`)
         console.log(`   - ${customers.length} clientes`)
-        console.log(`   - ${users.length} usuarios`)
+        console.log(`   - 1 usuario owner`)
         console.log(`   - ${inventory.length} items de inventario`)
         console.log('')
         console.log('Endpoints para probar:')

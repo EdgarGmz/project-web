@@ -10,7 +10,7 @@ const swaggerUi = require('swagger-ui-express')
 const swaggerSpec = require('./config/swagger')
 
 // Importar rutas
-const routes = require('./routes')
+const routes = require('./infrastructure/routes')
 
 // Crear aplicacion Express
 const app = express()
