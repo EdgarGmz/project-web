@@ -922,8 +922,8 @@ UserSession: {
 const options = {
     definition: swaggerDefinition,
     apis: [
-        './src/routes/*.js',
-        './src/controllers/*.js',
+        './src/infrastructure/routes/*.js',
+        './src/infrastructure/controllers/*.js',
         './src/app.js'
     ]
 }

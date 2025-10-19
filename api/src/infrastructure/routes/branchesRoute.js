@@ -9,122 +9,6 @@ router.use(authenticate)
 
 /**
  * @swagger
- * tags:
- *   - name: Branches
- *     description: Gestión de sucursales
- * components:
- *   schemas:
- *     Branch:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *           example: 1
- *         name:
- *           type: string
- *           example: "Sucursal Centro"
- *         code:
- *           type: string
- *           example: "CTR-001"
- *           description: "Código único de la sucursal"
- *         address:
- *           type: string
- *           example: "Av. Juárez #123, Centro, Ciudad de Monterrey"
- *         city:
- *           type: string
- *           example: "Monterrey"
- *         state:
- *           type: string
- *           example: "Nuevo León"
- *         postal_code:
- *           type: string
- *           example: "64000"
- *         phone:
- *           type: string
- *           example: "81-1234-5678"
- *         email:
- *           type: string
- *           example: "sucursal_centro@empresa.com"
- *         is_active:
- *           type: boolean
- *           example: true
- *         createdAt:
- *           type: string
- *           format: date-time
- *           example: "2024-01-01T08:00:00Z"
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           example: "2024-01-10T10:00:00Z"
- *     BranchInput:
- *       type: object
- *       required:
- *         - name
- *         - code
- *       properties:
- *         name:
- *           type: string
- *           example: "Sucursal Norte"
- *         code:
- *           type: string
- *           example: "NTE-002"
- *           description: "Código único de la sucursal"
- *         address:
- *           type: string
- *           example: "Av. Constitución #456, Centro, Ciudad de Guadalupe"
- *         city:
- *           type: string
- *           example: "Guadalupe"
- *         state:
- *           type: string
- *           example: "Nuevo León"
- *         postal_code:
- *           type: string
- *           example: "67000"
- *         phone:
- *           type: string
- *           example: "81-2468-1357"
- *         email:
- *           type: string
- *           example: "sucursal_norte@empresa.com"
- *         is_active:
- *           type: boolean
- *           default: true
- *     BranchUpdate:
- *       type: object
- *       properties:
- *         name:
- *           type: string
- *           example: "Sucursal Norte"
- *         address:
- *           type: string
- *           example: "Calle Secundaria 456, Monterrey"
- *         phone:
- *           type: string
- *           example: "81-9876-5432"
- *         is_active:
- *           type: boolean
- *           example: false
- *     Error:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *         message:
- *           type: string
- *           example: "Error interno del servidor"
- *   responses:
- *     UnauthorizedError:
- *       description: Token inválido o no proporcionado
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Error'
- */
-
-/**
- * @swagger
  * /api/branches:
  *   get:
  *     summary: Obtener todas las sucursales
@@ -139,36 +23,22 @@ router.use(authenticate)
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 data:
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Branch'
- *             example:
- *               success: true
- *               data:
- *                 - id: 1
- *                   name: "Sucursal Centro"
- *                   code: "CTR-001"
- *                   address: "Av. Juárez #123, Centro, Ciudad de Monterrey"
- *                   city: "Monterrey"
- *                   state: "Nuevo León"
- *                   postal_code: "64000"
- *                   phone: "81-1234-5678"
- *                   email: "sucursal_centro@empresa.com"
- *                   is_active: true
- *                 - id: 2
- *                   name: "Sucursal Norte"
- *                   code: "NTE-002"
- *                   address: "Av. Constitución #123, Centro, Ciudad de Guadalupe"
- *                   city: "Guadalupe"
- *                   state: "Nuevo León"
- *                   postal_code: "64000"
- *                   phone: "81-2468-1357"
- *                   email: "sucursal_norte@empresa.com"
- *                   is_active: true
+ *       401:
+ *         description: Token inválido o no proporcionado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
- *         $ref: '#/components/responses/UnauthorizedError'
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/', branchController.getAllBranches)
 
@@ -195,9 +65,14 @@ router.get('/', branchController.getAllBranches)
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 data:
  *                   $ref: '#/components/schemas/Branch'
+ *       401:
+ *         description: Token inválido o no proporcionado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       404:
  *         description: Sucursal no encontrada
  *         content:
@@ -205,7 +80,11 @@ router.get('/', branchController.getAllBranches)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *       500:
- *         $ref: '#/components/responses/UnauthorizedError'
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/:id', branchController.getBranchById)
 
@@ -233,7 +112,6 @@ router.get('/:id', branchController.getBranchById)
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 data:
  *                   $ref: '#/components/schemas/Branch'
  *       400:
@@ -242,8 +120,18 @@ router.get('/:id', branchController.getBranchById)
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Token inválido o no proporcionado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
- *         $ref: '#/components/responses/UnauthorizedError'
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post('/', authorize('admin'), branchController.createBranch)
 
@@ -278,11 +166,16 @@ router.post('/', authorize('admin'), branchController.createBranch)
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 data:
  *                   $ref: '#/components/schemas/Branch'
  *       400:
  *         description: Error de validación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Token inválido o no proporcionado
  *         content:
  *           application/json:
  *             schema:
@@ -294,7 +187,11 @@ router.post('/', authorize('admin'), branchController.createBranch)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *       500:
- *         $ref: '#/components/responses/UnauthorizedError'
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.put('/:id', authorize('admin'), branchController.updateBranch)
 
@@ -323,10 +220,14 @@ router.put('/:id', authorize('admin'), branchController.updateBranch)
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Sucursal eliminada exitosamente"
+ *       401:
+ *         description: Token inválido o no proporcionado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       404:
  *         description: Sucursal no encontrada
  *         content:
@@ -334,7 +235,11 @@ router.put('/:id', authorize('admin'), branchController.updateBranch)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *       500:
- *         $ref: '#/components/responses/UnauthorizedError'
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.delete('/:id', authorize('admin'), branchController.deleteBranch)
 

@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true,
             allowNull: false
         },
-        productId: {
+        product_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
                 key: 'id'
             }
         },
-        branchId: {
+        branch_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
