@@ -99,10 +99,10 @@ const createUser = async (req, res) => {
     try {
         const { first_name, last_name, email, password, role, employee_id, phone, hire_date, branch_id, is_active } = req.body
 
-        if (!first_name || !last_name || !email || !password) {
+        if (!first_name || !last_name || !email || !password || !branch_id) {
             return res.status(400).json({
                 success: false,
-                message: 'Nombre, apellido, email y password son obligatorios'
+                message: 'Nombre, apellido, email, password y sucursal son obligatorios'
             })
         }
 
@@ -239,13 +239,18 @@ const updateUser = async (req, res) => {
 // Eliminar un usuario (soft delete)
 const deleteUser = async (req, res) => {
     try {
-        const { id } = req.params
-
-        const user = await User.findByPk(id)
         if (!user) {
             return res.status(404).json({
                 success: false,
                 message: 'Usuario no encontrado'
+            })
+        }
+
+        // Regla de negocio: No se puede eliminar al usuario owner
+        if (user.role === 'owner') {
+            return res.status(403).json({
+                success: false,
+                message: 'No se puede eliminar al usuario propietario del sistema (owner)'
             })
         }
 

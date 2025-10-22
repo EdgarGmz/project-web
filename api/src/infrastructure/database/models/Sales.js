@@ -4,13 +4,13 @@ const { Op } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
     const Sale = sequelize.define('Sale', {
         id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
-            autoIncrement: true,
             allowNull: false
         },
         customer_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: true,
             references: {
                 model: 'customers',
@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         branch_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: false,
             references: {
                 model: 'branches',
@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         user_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: false,
             references: {
                 model: 'users',
@@ -115,6 +115,8 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'sales',
         timestamps: true,
         paranoid: true,
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
         defaultScope: {
             where: {
                 status: { [Op.ne]: 'cancelled' }

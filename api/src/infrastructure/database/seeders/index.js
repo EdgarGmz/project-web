@@ -1,5 +1,5 @@
 const db = require('../models')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 
 const { Branch, Product, Customer, User, Inventory } = db
 
@@ -490,22 +490,115 @@ const seedDatabase = async (force = false) => {
         ])
         console.log('Clientes creados: ', customers.length)
 
-        // Crear usuario owner por default
-        const ownerPassword = await bcrypt.hash('owner123', 10)
-        const ownerUser = await User.create({
-            email: 'owner@gamingstore.com',
-            password: ownerPassword,
-            first_name: 'Edgar',
-            last_name: 'Propietario',
-            role: 'owner',
-            employee_id: 'EMP001',
-            phone: '+52 81 1234 5678',
-            hire_date: '2023-01-01',
-            branch_id: branches[0].id,
-            permissions: JSON.stringify({ all: true }),
-            is_active: true
-        })
-        console.log('Usuario owner creado')
+        const user = await User.bulkCreate([
+            {
+                email: 'owner@gamingstore.com',
+                password: await bcrypt.hash('owner123', 10),
+                first_name: 'Edgar',
+                last_name: 'Propietario',
+                role: 'owner',
+                employee_id: 'EMP001',
+                phone: '+52 81 1234 5678',
+                hire_date: '2023-01-01',
+                branch_id: branches[0].id,
+                permissions: JSON.stringify({ all: true }),
+                is_active: true
+            },
+            {
+                email: 'admin@gamingstore.com',
+                password: await bcrypt.hash('admin123', 10),
+                first_name: 'Ana',
+                last_name: 'Administrador',
+                role: 'admin',
+                employee_id: 'EMP002',
+                phone: '+52 81 2345 6789',
+                hire_date: '2023-02-01',
+                branch_id: branches[1].id,
+                permissions: JSON.stringify({ admin: true }),
+                is_active: true
+            },
+            {
+                email: 'manager@gamingstore.com',
+                password: await bcrypt.hash('manager123', 10),
+                first_name: 'Luis',
+                last_name: 'Gerente',
+                role: 'manager',
+                employee_id: 'EMP003',
+                phone: '+52 81 3456 7890',
+                hire_date: '2023-03-01',
+                branch_id: branches[2].id,
+                permissions: JSON.stringify({ manager: true }),
+                is_active: true
+            },
+            {
+                email: 'cashier@gamingstore.com',
+                password: await bcrypt.hash('cashier123', 10),
+                first_name: 'Sofia',
+                last_name: 'Cajera',
+                role: 'cashier',
+                employee_id: 'EMP004',
+                phone: '+52 81 4567 8901',
+                hire_date: '2023-04-01',
+                branch_id: branches[3].id,
+                permissions: JSON.stringify({ cashier: true }),
+                is_active: true
+            }
+        ])
+
+        console.log('Usuarios creados: ', user.length)
+
+        // Crear ventas
+        const sales = await db.Sale.bulkCreate([
+            {
+                customer_id: customers[0].id, // Primer cliente
+                user_id: user[3].id, // Cajera
+                branch_id: branches[0].id, // Primera sucursal
+                payment_method: 'cash',
+                status: 'completed',
+                subtotal: 120.67, // Example value
+                tax_amount: 19.31, // Example value (120.67 * 0.16)
+                total_amount: 139.98, // subtotal + tax_amount
+                notes: 'Venta de prueba 1'
+            },
+            {
+                customer_id: customers[1].id, // Segundo cliente
+                user_id: user[3].id, // Cajera
+                branch_id: branches[1].id, // Segunda sucursal
+                payment_method: 'card',
+                status: 'completed',
+                subtotal: 60.34, // Example value
+                tax_amount: 9.65, // Example value (60.34 * 0.16)
+                total_amount: 69.99, // subtotal + tax_amount
+                notes: 'Venta de prueba 2'
+            }
+        ])
+        console.log('Ventas creadas: ', sales.length)
+
+        // Crear items de venta
+        await db.SaleItem.bulkCreate([
+            {
+                sale_id: sales[0].id,
+                product_id: products[3].id,
+                product_name: products[3].name, // Add product_name
+                quantity: 1,
+                unit_price: 69.99 // Changed from price to unit_price
+            },
+            {
+                sale_id: sales[0].id,
+                product_id: products[6].id,
+                product_name: products[6].name, // Add product_name
+                quantity: 1,
+                unit_price: 69.99 // Changed from price to unit_price
+            },
+            {
+                sale_id: sales[1].id,
+                product_id: products[4].id,
+                product_name: products[4].name, // Add product_name
+                quantity: 1,
+                unit_price: 69.99 // Changed from price to unit_price
+            }
+        ])
+        console.log('Items de venta creados.')
 
         // Crear inventario
         const inventoryData = []
@@ -514,8 +607,8 @@ const seedDatabase = async (force = false) => {
                 inventoryData.push({
                     product_id: product.id,
                     branch_id: branch.id,
-                    current_stock: Math.floor(Math.random() * 50) + 10,
-                    minimum_stock: 0,
+                    stock_current: Math.floor(Math.random() * 50) + 10,
+                    stock_minimum: 0,
                     reserved_stock: Math.floor(Math.random() * 5)
                 })
             })
@@ -529,7 +622,8 @@ const seedDatabase = async (force = false) => {
         console.log(`   - ${branches.length} sucursales`)
         console.log(`   - ${products.length} productos`)
         console.log(`   - ${customers.length} clientes`)
-        console.log(`   - 1 usuario owner`)
+        console.log(`   - ${user.length} usuarios (owner, admin, manager, cashier)`)
+        console.log(`   - ${sales.length} ventas`)
         console.log(`   - ${inventory.length} items de inventario`)
         console.log('')
         console.log('Endpoints para probar:')

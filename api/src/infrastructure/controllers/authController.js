@@ -202,7 +202,7 @@ const changePassword = async (req, res) => {
             });
         }
 
-        const user = await User.findByPk(userId);
+        const user = await User.scope('withPassword').findByPk(userId);
         const isCurrentPasswordValid = await bcrypt.compare(current_password, user.password);
         if (!isCurrentPasswordValid) {
             return res

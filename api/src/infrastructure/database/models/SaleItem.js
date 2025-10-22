@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             comment: 'Identificador unico del item de venta'
         },
-        saleId: {
+        sale_id: {
             type: DataTypes.UUID,
             allowNull: false,
             references: {
@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
             onDelete: 'RESTRICT',
             comment: 'ID de la venta a la que pertenece este item'
         },
-        productId: {
+        product_id: {
             type: DataTypes.UUID,
             allowNull: false,
             references: {
@@ -31,12 +31,12 @@ module.exports = (sequelize, DataTypes) => {
             onDelete: 'RESTRICT',
             comment: 'ID del producto vendido'
         },
-        productName: {
+        product_name: {
             type: DataTypes.STRING(200),
             allowNull: false,
             comment: 'Nombre del producto al momento de la venta'
         },
-        productSku: {
+        product_sku: {
             type: DataTypes.STRING(50),
             allowNull: true,
             comment: 'SKU del producto al momento de la venta'
@@ -51,7 +51,7 @@ module.exports = (sequelize, DataTypes) => {
             },
             comment: 'Cantidad de producto vendido'
         },
-        unitPrice: {
+        unit_price: {
             type: DataTypes.DECIMAL(15, 2),
             allowNull: false,
             validate: {
@@ -60,7 +60,7 @@ module.exports = (sequelize, DataTypes) => {
             },
             comment: 'Precio unitario del producto al momento de la venta'
         },
-        discountPercentage: {
+        discount_percentage: {
             type: DataTypes.DECIMAL(5, 2),
             allowNull: false,
             defaultValue: 0,
@@ -81,13 +81,13 @@ module.exports = (sequelize, DataTypes) => {
             defaultValue: 0,
             comment: 'Subtotal antes de descuento'
         },
-        discountAmount: {
+        discount_amount: {
             type: DataTypes.DECIMAL(15, 2),
             allowNull: false,
             defaultValue: 0,
             comment: 'Monto de descuento aplicado'
         },
-        total: {
+        total_amount: {
             type: DataTypes.DECIMAL(15, 2),
             allowNull: false,
             defaultValue: 0,
@@ -97,27 +97,29 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'sale_items',
         timestamps: true,
         paranoid: true,
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
         indexes: [
-            { fields: ['saleId', 'productId'], name: 'idx_sale_items_sale_product' },
-            { fields: ['productId'], name: 'idx_sale_items_product' },
-            { fields: ['createdAt'], name: 'idx_sale_items_created_at' }
+            { fields: ['sale_id', 'product_id'], name: 'idx_sale_items_sale_product' },
+            { fields: ['product_id'], name: 'idx_sale_items_product' },
+            { fields: ['created_at'], name: 'idx_sale_items_created_at' }
         ],
         validate: {
             discountAmountConsistency() {
-                const expectedDiscount = (parseFloat(this.quantity) * parseFloat(this.unitPrice)) * (parseFloat(this.discountPercentage) / 100);
-                const actualDiscount = parseFloat(this.discountAmount);
+                const expectedDiscount = (parseFloat(this.quantity) * parseFloat(this.unit_price)) * (parseFloat(this.discount_percentage) / 100);
+                const actualDiscount = parseFloat(this.discount_amount);
                 if (Math.abs(expectedDiscount - actualDiscount) > 0.01) {
                     throw new Error('El monto de descuento no coincide con el porcentaje aplicado');
                 }
             },
             totalConsistency() {
-                const expectedSubtotal = parseFloat(this.quantity) * parseFloat(this.unitPrice);
+                const expectedSubtotal = parseFloat(this.quantity) * parseFloat(this.unit_price);
                 const actualSubtotal = parseFloat(this.subtotal);
                 if (Math.abs(expectedSubtotal - actualSubtotal) > 0.01) {
                     throw new Error('El subtotal no coincide con cantidad * precio unitario');
                 }
-                const expectedTotal = actualSubtotal - parseFloat(this.discountAmount);
-                const actualTotal = parseFloat(this.total);
+                const expectedTotal = actualSubtotal - parseFloat(this.discount_amount);
+                const actualTotal = parseFloat(this.total_amount);
                 if (Math.abs(expectedTotal - actualTotal) > 0.01) {
                     throw new Error('El total no coincide con subtotal - descuento');
                 }
@@ -125,12 +127,12 @@ module.exports = (sequelize, DataTypes) => {
         },
         hooks: {
             beforeValidate: (saleItem) => {
-                saleItem.subtotal = parseFloat(saleItem.quantity) * parseFloat(saleItem.unitPrice);
-                saleItem.discountAmount = saleItem.subtotal * (parseFloat(saleItem.discountPercentage) / 100);
-                saleItem.total = saleItem.subtotal - saleItem.discountAmount;
+                saleItem.subtotal = parseFloat(saleItem.quantity) * parseFloat(saleItem.unit_price);
+                saleItem.discount_amount = saleItem.subtotal * (parseFloat(saleItem.discount_percentage) / 100);
+                saleItem.total_amount = saleItem.subtotal - saleItem.discount_amount;
                 saleItem.subtotal = Math.round(saleItem.subtotal * 100) / 100;
-                saleItem.discountAmount = Math.round(saleItem.discountAmount * 100) / 100;
-                saleItem.total = Math.round(saleItem.total * 100) / 100;
+                saleItem.discount_amount = Math.round(saleItem.discount_amount * 100) / 100;
+                saleItem.total_amount = Math.round(saleItem.total_amount * 100) / 100;
             }
         },
         scopes: {
@@ -150,7 +152,7 @@ module.exports = (sequelize, DataTypes) => {
             },
             withDiscount: {
                 where: {
-                    discountPercentage: { [Op.gt]: 0 }
+                    discount_percentage: { [Op.gt]: 0 }
                 }
             }
         }
@@ -158,27 +160,27 @@ module.exports = (sequelize, DataTypes) => {
 
     // Métodos de instancia
     SaleItem.prototype.calculateTotals = function () {
-        this.subtotal = parseFloat(this.quantity) * parseFloat(this.unitPrice);
-        this.discountAmount = this.subtotal * parseFloat(this.discountPercentage) / 100;
-        this.total = this.subtotal - this.discountAmount;
+        this.subtotal = parseFloat(this.quantity) * parseFloat(this.unit_price);
+        this.discount_amount = this.subtotal * parseFloat(this.discount_percentage) / 100;
+        this.total_amount = this.subtotal - this.discount_amount;
         this.subtotal = Math.round(this.subtotal * 100) / 100;
-        this.discountAmount = Math.round(this.discountAmount * 100) / 100;
-        this.total = Math.round(this.total * 100) / 100;
+        this.discount_amount = Math.round(this.discount_amount * 100) / 100;
+        this.total_amount = Math.round(this.total_amount * 100) / 100;
     };
 
     SaleItem.prototype.checkStock = async function (branchId) {
         const Inventory = sequelize.models.Inventory;
         const inventory = await Inventory.findOne({
             where: {
-                productId: this.productId,
-                branchId: branchId
+                product_id: this.product_id,
+                branch_id: branchId
             }
         });
         if (!inventory) {
-            throw new Error(`No hay inventario del producto ${this.productName} en esta sucursal`);
+            throw new Error(`No hay inventario del producto ${this.product_name} en esta sucursal`);
         }
-        if (inventory.stockCurrent < this.quantity) {
-            throw new Error(`Stock insuficiente. Disponible: ${inventory.stockCurrent}, Solicitado: ${this.quantity}`);
+        if (inventory.stock_current < this.quantity) {
+            throw new Error(`Stock insuficiente. Disponible: ${inventory.stock_current}, Solicitado: ${this.quantity}`);
         }
         return true;
     };
@@ -186,12 +188,12 @@ module.exports = (sequelize, DataTypes) => {
     // Métodos estáticos
     SaleItem.getTotalsBySale = async function (saleId) {
         const result = await this.findAll({
-            where: { saleId },
+            where: { sale_id: saleId },
             attributes: [
                 [sequelize.fn('SUM', sequelize.col('quantity')), 'totalQuantity'],
                 [sequelize.fn('SUM', sequelize.col('subtotal')), 'totalSubtotal'],
-                [sequelize.fn('SUM', sequelize.col('discountAmount')), 'totalDiscount'],
-                [sequelize.fn('SUM', sequelize.col('total')), 'totalAmount'],
+                [sequelize.fn('SUM', sequelize.col('discount_amount')), 'totalDiscount'],
+                [sequelize.fn('SUM', sequelize.col('total_amount')), 'totalAmount'],
                 [sequelize.fn('COUNT', sequelize.col('id')), 'totalItems']
             ],
             raw: true
@@ -208,13 +210,13 @@ module.exports = (sequelize, DataTypes) => {
     // Relaciones
     SaleItem.associate = function (models) {
         SaleItem.belongsTo(models.Sale, {
-            foreignKey: 'saleId',
+            foreignKey: 'sale_id',
             as: 'Sale',
             onUpdate: 'CASCADE',
             onDelete: 'CASCADE'
         });
         SaleItem.belongsTo(models.Product, {
-            foreignKey: 'productId',
+            foreignKey: 'product_id',
             as: 'Product',
             onUpdate: 'CASCADE',
             onDelete: 'RESTRICT'

@@ -2,9 +2,9 @@ module.exports = (sequelize, DataTypes) => {
     const Branch = sequelize.define('Branch', {
         // ID - Clave primaria
         id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
-            autoIncrement: true,
             allowNull: false
         },
 
@@ -95,7 +95,7 @@ module.exports = (sequelize, DataTypes) => {
 
         // Gerente
         manager_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: true,
             references: {
                 model: 'users',
