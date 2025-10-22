@@ -133,7 +133,7 @@ router.get('/:id', branchController.getBranchById)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', authorize('admin'), branchController.createBranch)
+router.post('/', authorize('admin', 'owner'), branchController.createBranch)
 
 /**
  * @swagger

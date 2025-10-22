@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         user_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: false,
             references: {
                 model: 'users',
@@ -17,8 +17,8 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         branch_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
+            type: DataTypes.UUID,
+            allowNull: true,
             references: {
                 model: 'branches',
                 key: 'id'

@@ -5,9 +5,9 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('branches', {
       id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
         allowNull: false
       },
       name: {
@@ -46,7 +46,7 @@ module.exports = {
         unique: true
       },
       manager_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: true,
         references: {
           model: 'users',

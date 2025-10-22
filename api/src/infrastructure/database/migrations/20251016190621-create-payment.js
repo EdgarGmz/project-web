@@ -11,7 +11,7 @@ module.exports = {
         allowNull: false
       },
       customer_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: {
           model: 'customers',

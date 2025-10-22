@@ -39,7 +39,7 @@ router.use(authenticate)
  *         last_name: { type: string }
  *         email: { type: string, format: email }
  *         password: { type: string }
- *         role: { type: string, enum: [admin, manager, cashier, owner], default: "cashier" }
+ *         role: { type: string, enum: [admin, manager, cashier], default: "cashier" }
  *         employee_id: { type: string }
  *         phone: { type: string }
  *         hire_date: { type: string, format: date }
@@ -51,7 +51,7 @@ router.use(authenticate)
  *         first_name: { type: string }
  *         last_name: { type: string }
  *         email: { type: string, format: email }
- *         role: { type: string, enum: [admin, manager, cashier, owner] }
+ *         role: { type: string, enum: [admin, manager, cashier] }
  *         employee_id: { type: string }
  *         phone: { type: string }
  *         hire_date: { type: string, format: date }

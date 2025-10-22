@@ -113,14 +113,7 @@ router.get('/:id', checkBranchAccess, inventoryController.getInventoryById)
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [product_id, branch_id, quantity]
- *             properties:
- *               product_id: { type: integer }
- *               branch_id: { type: integer }
- *               quantity: { type: number }
- *               min_stock: { type: number }
- *               notes: { type: string }
+ *             $ref: '#/components/schemas/InventoryInput'
  *     responses:
  *       201:
  *         description: Item de inventario creado
@@ -162,6 +155,10 @@ router.post('/', authorize('admin', 'manager', 'owner'), checkBranchAccess, inve
  *               quantity: { type: number }
  *               min_stock: { type: number }
  *               notes: { type: string }
+ *             example:
+ *               quantity: 10
+ *               min_stock: 100
+ *               notes: "Actualizacion de inventario"
  *     responses:
  *       200:
  *         description: Item de inventario actualizado

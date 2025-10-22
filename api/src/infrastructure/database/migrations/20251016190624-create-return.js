@@ -10,16 +10,22 @@ module.exports = {
         autoIncrement: true,
         allowNull: false
       },
-      customer_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'customers', key: 'id' }
-      },
-      product_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'products', key: 'id' }
-      },
+            customer_id: {
+              type: Sequelize.UUID,
+              allowNull: false,
+              references: {
+                model: 'customers',
+                key: 'id'
+              }
+            },
+            product_id: {
+              type: Sequelize.UUID,
+              allowNull: false,
+              references: {
+                model: 'products',
+                key: 'id'
+              }
+            },
       quantity: {
         type: Sequelize.INTEGER,
         allowNull: false,

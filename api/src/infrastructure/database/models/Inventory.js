@@ -3,13 +3,13 @@ const { Op } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
     const Inventory = sequelize.define('Inventory', {
         id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
-            autoIncrement: true,
             allowNull: false
         },
         product_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: false,
             references: {
                 model: 'products',
@@ -17,29 +17,29 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         branch_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: false,
             references: {
                 model: 'branches', 
                 key: 'id'
             }
         },
-        stockCurrent: {
+        stock_current: {
             type: DataTypes.FLOAT,
             allowNull: false,
             defaultValue: 0
         },
-        stockMinimum: {
+        stock_minimum: {
             type: DataTypes.FLOAT,
             allowNull: false,
             defaultValue: 0
         },
-        reservedStock: {
+        reserved_stock: {
             type: DataTypes.FLOAT,
             allowNull: false,
             defaultValue: 0
         },
-        averageCost: {
+        average_cost: {
             type: DataTypes.FLOAT,
             allowNull: true,
             defaultValue: 0
@@ -57,51 +57,54 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'inventory',
         timestamps: true,
         paranoid: true,
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
+        deletedAt: 'deleted_at',
         defaultScope: {
             where: { is_active: true }
         },
         scopes: {
             all: { where: {} },
-            byBranch: (branchId) => ({
-                where: { branchId }
+            byBranch: (branch_id) => ({
+                where: { branch_id }
             }),
-            byProduct: (productId) => ({
-                where: { productId }
+            byProduct: (product_id) => ({
+                where: { product_id }
             }),
             lowStock: {
                 where: {
-                    stockCurrent: { [Op.lte]: sequelize.col('stockMinimum') }
+                    stock_current: { [Op.lte]: sequelize.col('stock_minimum') }
                 }
             }
         },
         indexes: [
-            { fields: ['productId', 'branchId'], unique: true },
+            { fields: ['product_id', 'branch_id'], unique: true },
             { fields: ['is_active'] },
-            { fields: ['stockCurrent'] },
+            { fields: ['stock_current'] },
             { fields: ['created_at'] }
         ]
     })
 
     // Métodos de instancia
     Inventory.prototype.checkLowStock = async function () {
-        if (parseFloat(this.stockCurrent) <= parseFloat(this.stockMinimum)) {
+        if (parseFloat(this.stock_current) <= parseFloat(this.stock_minimum)) {
             console.warn(`⚠️ STOCK BAJO: ${this.Product?.name || 'Producto'} en ${this.Branch?.name || 'Sucursal'}`)
-            console.warn(`  Actual: ${this.stockCurrent}, Minimo: ${this.stockMinimum}`)
+            console.warn(`  Actual: ${this.stock_current}, Minimo: ${this.stock_minimum}`)
             return true
         }
         return false
     }
 
     Inventory.prototype.addStock = async function (quantity, cost = null, notes = null) {
-        const oldStock = parseFloat(this.stockCurrent)
+        const oldStock = parseFloat(this.stock_current)
         const addQuantity = parseFloat(quantity)
-        this.stockCurrent = oldStock + addQuantity
+        this.stock_current = oldStock + addQuantity
         if (cost !== null) {
-            const oldValue = oldStock * parseFloat(this.averageCost)
+            const oldValue = oldStock * parseFloat(this.average_cost)
             const newValue = addQuantity * parseFloat(cost)
             const totalValue = oldValue + newValue
-            const totalQuantity = this.stockCurrent
-            this.averageCost = totalQuantity > 0 ? totalValue / totalQuantity : 0
+            const totalQuantity = this.stock_current
+            this.average_cost = totalQuantity > 0 ? totalValue / totalQuantity : 0
         }
         if (notes) {
             this.notes = this.notes ? `${this.notes}\n${notes}` : notes
@@ -111,12 +114,12 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     Inventory.prototype.removeStock = async function (quantity, notes = null) {
-        const currentStock = parseFloat(this.stockCurrent)
+        const currentStock = parseFloat(this.stock_current)
         const removeQuantity = parseFloat(quantity)
         if (removeQuantity > currentStock) {
             throw new Error(`No hay suficiente stock. Disponible: ${currentStock}, Solicitado: ${removeQuantity}`)
         }
-        this.stockCurrent = currentStock - removeQuantity
+        this.stock_current = currentStock - removeQuantity
         if (notes) {
             this.notes = this.notes ? `${this.notes}\n${notes}` : notes
         }
@@ -127,13 +130,13 @@ module.exports = (sequelize, DataTypes) => {
     // Asociaciones
     Inventory.associate = function (models) {
         Inventory.belongsTo(models.Product, {
-            foreignKey: 'productId',
+            foreignKey: 'product_id',
             as: 'Product',
             onUpdate: 'CASCADE',
             onDelete: 'CASCADE'
         })
         Inventory.belongsTo(models.Branch, {
-            foreignKey: 'branchId',
+            foreignKey: 'branch_id',
             as: 'Branch',
             onUpdate: 'CASCADE',
             onDelete: 'CASCADE'

@@ -7,10 +7,14 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 autoIncrement: true,
             },
-            customer_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-            },
+        customer_id: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            references: {
+                model: 'customers',
+                key: 'id'
+            }
+        },
             amount: {
                 type: DataTypes.DECIMAL(10, 2),
                 allowNull: false,

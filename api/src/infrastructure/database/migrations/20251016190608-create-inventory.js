@@ -5,13 +5,13 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('inventory', {
       id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
         allowNull: false
       },
       product_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: {
           model: 'products',
@@ -19,29 +19,29 @@ module.exports = {
         }
       },
       branch_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false,
         references: {
           model: 'branches',
           key: 'id'
         }
       },
-      stockCurrent: {
+      stock_current: {
         type: Sequelize.FLOAT,
         allowNull: false,
         defaultValue: 0
       },
-      stockMinimum: {
+      stock_minimum: {
         type: Sequelize.FLOAT,
         allowNull: false,
         defaultValue: 0
       },
-      reservedStock: {
+      reserved_stock: {
         type: Sequelize.FLOAT,
         allowNull: false,
         defaultValue: 0
       },
-      averageCost: {
+      average_cost: {
         type: Sequelize.FLOAT,
         allowNull: true,
         defaultValue: 0
@@ -55,15 +55,15 @@ module.exports = {
         allowNull: false,
         defaultValue: true
       },
-      createdAt: {
+      created_at: {
         type: Sequelize.DATE,
         allowNull: false
       },
-      updatedAt: {
+      updated_at: {
         type: Sequelize.DATE,
         allowNull: false
       },
-      deletedAt: {
+      deleted_at: {
         type: Sequelize.DATE,
         allowNull: true
       }

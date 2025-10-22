@@ -40,7 +40,7 @@ const getAllInventory = async (req, res) => {
         let filteredRows = rows
         if (low_stock) {
             filteredRows = rows.filter(item =>
-                item.quantity <= (item.Product?.min_stock || 0)
+                item.stock_current <= (item.Product?.min_stock || 0)
             )
         }
 
@@ -155,8 +155,8 @@ const createInventory = async (req, res) => {
         const newInventory = await Inventory.create({
             product_id,
             branch_id,
-            quantity: parseInt(quantity),
-            min_stock: parseInt(min_stock) || product.min_stock,
+            stock_current: parseInt(quantity),
+            stock_minimum: parseInt(min_stock) || product.min_stock,
             notes
         })
 
@@ -213,6 +213,18 @@ const updateInventory = async (req, res) => {
                 message: 'La cantidad no puede ser negativa'
             })
         }
+
+        // Mapear quantity a stock_current si está presente
+        if (updateData.quantity !== undefined) {
+            updateData.stock_current = updateData.quantity;
+            delete updateData.quantity;
+        }
+        // Mapear min_stock a stock_minimum si está presente
+        if (updateData.min_stock !== undefined) {
+            updateData.stock_minimum = updateData.min_stock;
+            delete updateData.min_stock;
+        }
+
 
         await inventory.update(updateData)
 
@@ -299,7 +311,7 @@ const adjustStock = async (req, res) => {
             })
         }
 
-        const newQuantity = inventory.quantity + parseInt(adjustment)
+        const newQuantity = inventory.stock_current + parseInt(adjustment)
         if (newQuantity < 0) {
             return res.status(400).json({
                 success: false,
@@ -308,14 +320,14 @@ const adjustStock = async (req, res) => {
         }
 
         await inventory.update({
-            quantity: newQuantity
+            stock_current: newQuantity
         })
 
         res.json({
             success: true,
             message: 'Stock ajustado exitosamente',
             data: {
-                previous_quantity: inventory.quantity,
+                previous_quantity: inventory.stock_current,
                 current_quantity: newQuantity,
                 adjustment: parseInt(adjustment),
                 reason

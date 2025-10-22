@@ -3,9 +3,9 @@ const { Op } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
     const Customer = sequelize.define('Customer', {
         id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
-            autoIncrement: true,
             allowNull: false
         },
         first_name: {
@@ -76,7 +76,11 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         tableName: 'customers',
         timestamps: true,
-        paranoid: true,
+        paranoid: true, 
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
+        deletedAt: 'deleted_at',
+        
         defaultScope: {
             where: { is_active: true }
         },

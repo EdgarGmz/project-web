@@ -78,20 +78,28 @@ const getBranchById = async (req, res) => {
  // Crear una nueva sucursal
 const createBranch = async (req, res) => {
     try {
-        const { name, address, phone, is_active } = req.body
+        const {
+            name, code, address, city, state, postal_code, phone, email, manager_id, is_active
+        } = req.body
 
-        // Validaciones básicas
-        if (!name || !address) {
+        // Validaciones completas
+        if (!name || !code || !address || !city || !state || !postal_code || !email) {
             return res.status(400).json({
                 success: false,
-                message: 'Nombre y dirección son obligatorios'
+                message: 'Los campos name, code, address, city, state, postal_code y email son obligatorios'
             })
         }
 
         const newBranch = await Branch.create({
             name,
+            code,
             address,
+            city,
+            state,
+            postal_code,
             phone,
+            email,
+            manager_id,
             is_active: is_active !== false
         })
 

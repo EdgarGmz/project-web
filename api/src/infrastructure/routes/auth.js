@@ -20,10 +20,10 @@ const { authenticate } = require('../../middleware/auth')
  *         email:
  *           type: string
  *           format: email
- *           example: "admin@empresa.com"
+ *           example: "owner@gamingstore.com"
  *         password:
  *           type: string
- *           example: "password123"
+ *           example: "owner123"
  *     AuthLoginResponse:
  *       type: object
  *       properties:
@@ -49,14 +49,14 @@ const { authenticate } = require('../../middleware/auth')
  *       properties:
  *         first_name:
  *           type: string
- *           example: "Juan"
+ *           example: "Edgar"
  *         last_name:
  *           type: string
- *           example: "Pérez"
+ *           example: "Gómez"
  *         email:
  *           type: string
  *           format: email
- *           example: "juan.perez@empresa.com"
+ *           example: "owner@gamingstore.com"
  *         phone:
  *           type: string
  *           example: "81-1234-5678"
@@ -66,11 +66,11 @@ const { authenticate } = require('../../middleware/auth')
  *       properties:
  *         current_password:
  *           type: string
- *           example: "password123"
+ *           example: "owner123"
  *         new_password:
  *           type: string
  *           minLength: 6
- *           example: "newpassword456"
+ *           example: "nuevo_password"
  */
 
 /**
