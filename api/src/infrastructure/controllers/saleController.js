@@ -1,4 +1,5 @@
 const db = require('../database/models')
+const crypto = require('crypto')
 const { Sale, SaleItem, Product, Customer, User, Branch, Inventory } = db
 
 // Obtener todas las ventas
@@ -34,22 +35,22 @@ const getAllSales = async (req, res) => {
             include: [
                 {
                     model: Customer,
-                    as: 'customer',
+                    as: 'Customer',
                     attributes: ['id', 'first_name', 'last_name', 'email'] 
                 },
                 {
                     model: User,
-                    as: 'cashier',
+                    as: 'User',
                     attributes: ['id', 'first_name', 'last_name', 'email'] 
                 },
                 {
                     model: Branch,
-                    as: 'branch',
+                    as: 'Branch',
                     attributes: ['id', 'name']
                 },
                 {
                     model: SaleItem,
-                    as: 'items',
+                    as: 'SaleItems',
                     include: [
                         {
                             model: Product,
@@ -92,22 +93,22 @@ const getSaleById = async (req, res) => {
             include: [
                 {
                     model: Customer,
-                    as: 'customer',
+                    as: 'Customer',
                     attributes: ['id', 'first_name', 'last_name', 'email', 'phone']
                 },
                 {
                     model: User,
-                    as: 'cashier',
+                    as: 'User',
                     attributes: ['id', 'first_name', 'last_name', 'email']
                 },
                 {
                     model: Branch,
-                    as: 'branch',
+                    as: 'Branch',
                     attributes: ['id', 'name', 'address']
                 },
                 {
                     model: SaleItem,
-                    as: 'items',
+                    as: 'SaleItems',
                     include: [
                         {
                             model: Product,
@@ -191,7 +192,7 @@ const createSale = async (req, res) => {
         }
 
         // Validar y calcular items
-        let totalAmount = 0
+        let subtotal = 0
         const validatedItems = []
 
         for (const item of items) {
@@ -229,25 +230,38 @@ const createSale = async (req, res) => {
             }
 
             const finalPrice = unit_price || product.unit_price
-            const subtotal = finalPrice * quantity
-            const discountAmount = subtotal * (discount_percentage / 100)
-            const total = subtotal - discountAmount
+            const lineSubtotal = finalPrice * quantity
+            subtotal += lineSubtotal
 
             validatedItems.push({
                 product_id,
+                product_name: product.name,
                 quantity,
-                price: finalPrice
+                unit_price: finalPrice
             })
-
-            totalAmount += total
         }
+
+        // Calcular totales de la venta
+        const discountAmount = 0;
+        const taxRate = 0.16;
+        const taxAmount = (subtotal - discountAmount) * taxRate;
+        const totalAmount = subtotal - discountAmount + taxAmount;
+
+        // Generar referencia de transacción
+        const date = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+        const random = crypto.randomBytes(4).toString('hex').toUpperCase()
+        const transaction_reference = `TXN-${date}-${random}`
 
         // Crear la venta
         const newSale = await Sale.create({
             customer_id,
             user_id,
             branch_id,
-            total: totalAmount,
+            subtotal: subtotal,
+            discount_amount: discountAmount,
+            tax_amount: taxAmount,
+            total_amount: totalAmount,
+            transaction_reference: transaction_reference,
             payment_method: payment_method || 'cash',
             status: 'completed'
         }, { transaction })
@@ -257,12 +271,13 @@ const createSale = async (req, res) => {
             await SaleItem.create({
                 sale_id: newSale.id,
                 product_id: item.product_id,
+                product_name: item.product_name,
                 quantity: item.quantity,
-                price: item.price
+                unit_price: item.unit_price
             }, { transaction })
 
             // Actualizar inventario
-            await Inventory.decrement('quantity', {
+            await Inventory.decrement('stock_current', {
                 by: item.quantity,
                 where: {
                     product_id: item.product_id,
@@ -272,29 +287,27 @@ const createSale = async (req, res) => {
             })
         }
 
-        await transaction.commit()
-
         // Obtener la venta completa con relaciones
         const saleWithRelations = await Sale.findByPk(newSale.id, {
             include: [
                 {
                     model: Customer,
-                    as: 'customer',
+                    as: 'Customer',
                     attributes: ['id', 'first_name', 'last_name', 'email']
                 },
                 {
                     model: User,
-                    as: 'cashier',
+                    as: 'User',
                     attributes: ['id', 'first_name', 'last_name']
                 },
                 {
                     model: Branch,
-                    as: 'branch',
+                    as: 'Branch',
                     attributes: ['id', 'name']
                 },
                 {
                     model: SaleItem,
-                    as: 'items',
+                    as: 'SaleItems',
                     include: [
                         {
                             model: Product,
@@ -305,6 +318,8 @@ const createSale = async (req, res) => {
                 }
             ]
         })
+
+        await transaction.commit()
 
         res.status(201).json({
             success: true,

@@ -188,14 +188,14 @@ const swaggerDefinition = {
             User: {
                 type: 'object',
                 properties: {
-                    id: { type: 'integer', example: 1 },
+                    id: { type: 'string', format: 'uuid', example: 'a1b2c3d4-e5f6-7890-1234-567890abcdef' },
                     first_name: { type: 'string', example: 'Edgar', maxLength: 100 },
                     last_name: { type: 'string', example: 'Gómez', maxLength: 100 },
                     email: { type: 'string', format: 'email', example: 'owner@gamigstore.com' },
                     role: { type: 'string', enum: ['admin', 'manager', 'cashier'], example: 'cashier' },
                     employee_id: { type: 'string', example: 'EMP001', maxLength: 20 },
                     phone: { type: 'string', example: '81-1234-5678', maxLength: 20 },
-                    branch_id: { type: 'integer', example: 1 },
+                    branch_id: { type: 'string', format: 'uuid', example: 'b2c3d4e5-f6a7-8901-2345-67890abcdef1' },
                     is_active: { type: 'boolean', example: true },
                     hire_date: { type: 'string', format: 'date', example: '2024-01-15' },
                     last_login: { type: 'string', format: 'date-time', example: '2024-10-06T10:30:00Z' },
@@ -289,15 +289,15 @@ const swaggerDefinition = {
                 type: 'object',
                 required: ['product_id', 'branch_id', 'quantity'],
                 properties: {
-                    product_id: { type: 'integer', example: 1, description: 'ID del producto' },
-                    branch_id: { type: 'integer', example: 1, description: 'ID de la sucursal' },
+                    product_id: { type: 'string', format: 'uuid', description: 'ID del producto (UUID)' },
+                    branch_id: { type: 'string', format: 'uuid', description: 'ID de la sucursal (UUID)' },
                     quantity: { type: 'integer', example: 10, minimum: 0, description: 'Cantidad actual en stock' },
                     min_stock: { type: 'integer', example: 5, minimum: 0, description: 'Stock mínimo requerido' },
                     notes: { type: 'string', example: 'Inventario inicial', maxLength: 500, description: 'Notas adicionales' }
                 },
                 example: {
-                    product_id: 11,
-                    branch_id: 1,
+                    product_id: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+                    branch_id: "b2c3d4e5-f6a7-8901-2345-67890abcdef1",
                     quantity: 20,
                     min_stock: 10,
                     notes: "Inventario inicial para nuevo producto"
