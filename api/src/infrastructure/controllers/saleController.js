@@ -1,6 +1,6 @@
 const db = require('../database/models')
 const crypto = require('crypto')
-const { Sale, SaleItem, Product, Customer, User, Branch, Inventory } = db
+const { Sale, SaleItem, Product, Customer, User, Branch, Inventory, Payment } = db
 
 // Obtener todas las ventas
 const getAllSales = async (req, res) => {
@@ -264,6 +264,15 @@ const createSale = async (req, res) => {
             transaction_reference: transaction_reference,
             payment_method: payment_method || 'cash',
             status: 'completed'
+        }, { transaction })
+
+        await Payment.create({
+            customer_id: customer_id,
+            amount: totalAmount,
+            method: payment_method,
+            reference: transaction_reference,
+            status: 'completed',
+            notes: `Pago generado automáticamente por la venta ${newSale.id}`
         }, { transaction })
 
         // Crear los items de venta y actualizar inventario
