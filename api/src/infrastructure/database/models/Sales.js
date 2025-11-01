@@ -117,6 +117,7 @@ module.exports = (sequelize, DataTypes) => {
         paranoid: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at',
+        deletedAt: 'deleted_at',
         defaultScope: {
             where: {
                 status: { [Op.ne]: 'cancelled' }
@@ -178,13 +179,7 @@ module.exports = (sequelize, DataTypes) => {
             { fields: ['created_at'] }
         ],
         hooks: {
-            beforeCreate: (sale) => {
-                if (!sale.transaction_reference) {
-                    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '')
-                    const random = crypto.randomBytes(4).toString('hex').toUpperCase()
-                    sale.transaction_reference = `TXN-${date}-${random}`
-                }
-            },
+            
             beforeUpdate: (sale) => {
                 if (sale.changed('subtotal') || sale.changed('discount_rate') || sale.changed('tax_rate')) {
                     sale.recalculateAmounts()

@@ -3,41 +3,43 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('payments', {
+    await queryInterface.createTable('reports', {
       id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-        allowNull: false
-      },
-      customer_id: {
         type: Sequelize.UUID,
-        allowNull: false,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true,
+        allowNull: false
+      },
+      branch_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
         references: {
-          model: 'customers',
+          model: 'branches',
           key: 'id'
-        }
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
       },
-      amount: {
-        type: Sequelize.DECIMAL(10, 2),
+      type: {
+        type: Sequelize.ENUM('sales', 'inventory', 'performance'),
         allowNull: false
       },
-      method: {
-        type: Sequelize.STRING(20),
-        allowNull: false
-      },
-      reference: {
+      title: {
         type: Sequelize.STRING(100),
-        allowNull: true
+        allowNull: false
       },
-      status: {
-        type: Sequelize.STRING(20),
-        allowNull: false,
-        defaultValue: 'pending'
-      },
-      notes: {
+      description: {
         type: Sequelize.TEXT,
         allowNull: true
+      },
+      data: {
+        type: Sequelize.JSON,
+        allowNull: false
+      },
+      generated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.NOW
       },
       created_at: {
         type: Sequelize.DATE,
@@ -55,6 +57,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('payments');
+    await queryInterface.dropTable('reports');
   }
 };

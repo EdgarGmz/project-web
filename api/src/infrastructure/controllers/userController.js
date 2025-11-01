@@ -106,6 +106,17 @@ const createUser = async (req, res) => {
             })
         }
 
+        // El sistema solo debe contener un 'owner' por regla de negocio
+        if (role === 'owner') {
+            const existingOwner = await User.findOne({ where: { role: 'owner' } })
+            if (existingOwner) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Ya existe un usuario con el rol de owner'
+                })
+            }
+        }
+
         // Verificar si el email ya existe
         const existingEmail = await User.findOne({ where: { email } })
         if (existingEmail) {

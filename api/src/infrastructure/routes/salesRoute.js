@@ -16,10 +16,10 @@ router.use(authenticate)
  *     Sale:
  *       type: object
  *       properties:
- *         id: { type: integer }
- *         customer_id: { type: integer }
- *         user_id: { type: integer }
- *         branch_id: { type: integer }
+ *         id: { type: string, format: 'uuid' }
+ *         customer_id: { type: string, format: 'uuid' }
+ *         user_id: { type: string, format: 'uuid' }
+ *         branch_id: { type: string, format: 'uuid' }
  *         payment_method: { type: string }
  *         status: { type: string }
  *         total: { type: number }
@@ -31,18 +31,18 @@ router.use(authenticate)
  *     SaleItem:
  *       type: object
  *       properties:
- *         id: { type: integer }
- *         sale_id: { type: integer }
- *         product_id: { type: integer }
+ *         id: { type: string, format: 'uuid' }
+ *         sale_id: { type: string, format: 'uuid' }
+ *         product_id: { type: string, format: 'uuid' }
  *         quantity: { type: number }
  *         price: { type: number }
  *     SaleInput:
  *       type: object
  *       required: [user_id, branch_id, payment_method, items]
  *       properties:
- *         customer_id: { type: integer }
- *         user_id: { type: integer }
- *         branch_id: { type: integer }
+ *         customer_id: { type: string, format: 'uuid' }
+ *         user_id: { type: string, format: 'uuid' }
+ *         branch_id: { type: string, format: 'uuid' }
  *         payment_method: { type: string }
  *         items:
  *           type: array
@@ -50,9 +50,9 @@ router.use(authenticate)
  *             type: object
  *             required: [product_id, quantity]
  *             properties:
- *               product_id: { type: integer }
+ *               product_id: { type: string, format: 'uuid' }
  *               quantity: { type: number }
- *               price: { type: number }
+ *               unit_price: { type: number, description: "Precio unitario opcional. Si no se envía, se usa el precio del producto." }
  *     Error:
  *       type: object
  *       properties:
@@ -84,13 +84,13 @@ router.use(authenticate)
  *         schema: { type: integer, default: 10 }
  *       - in: query
  *         name: branch_id
- *         schema: { type: integer }
+ *         schema: { type: string, format: 'uuid' }
  *       - in: query
  *         name: user_id
  *         schema: { type: integer }
  *       - in: query
  *         name: customer_id
- *         schema: { type: integer }
+ *         schema: { type: string, format: 'uuid' }
  *       - in: query
  *         name: date_from
  *         schema: { type: string, format: date }
@@ -130,7 +130,7 @@ router.get('/', saleController.getAllSales)
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: integer }
+ *         schema: { type: string, format: 'uuid' }
  *     responses:
  *       200:
  *         description: Venta encontrada
@@ -193,7 +193,7 @@ router.post('/', authorize('admin', 'manager', 'owner'), saleController.createSa
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: integer }
+ *         schema: { type: string, format: 'uuid' }
  *     requestBody:
  *       required: true
  *       content:
@@ -235,7 +235,7 @@ router.put('/:id', authorize('admin', 'manager', 'owner'), saleController.update
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: integer }
+ *         schema: { type: string, format: 'uuid' }
  *     responses:
  *       200:
  *         description: Venta cancelada

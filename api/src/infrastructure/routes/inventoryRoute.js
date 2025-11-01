@@ -18,9 +18,9 @@ router.use(authenticate)
  *     Inventory:
  *       type: object
  *       properties:
- *         id: { type: integer }
- *         product_id: { type: integer }
- *         branch_id: { type: integer }
+ *         id: { type: string, format: 'uuid' }
+ *         product_id: { type: string, format: 'uuid' }
+ *         branch_id: { type: string, format: 'uuid' }
  *         quantity: { type: number }
  *         min_stock: { type: number }
  *         notes: { type: string }
@@ -43,10 +43,10 @@ router.use(authenticate)
  *         schema: { type: integer, default: 10 }
  *       - in: query
  *         name: branch_id
- *         schema: { type: integer }
+ *         schema: { type: string, format: 'uuid' }
  *       - in: query
  *         name: product_id
- *         schema: { type: integer }
+ *         schema: { type: string, format: 'uuid' }
  *       - in: query
  *         name: low_stock
  *         schema: { type: boolean }
@@ -83,7 +83,7 @@ router.get('/', checkBranchAccess, inventoryController.getAllInventory)
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: integer }
+ *         schema: { type: string, format: 'uuid' }
  *     responses:
  *       200:
  *         description: Item de inventario obtenido
@@ -144,7 +144,7 @@ router.post('/', authorize('admin', 'manager', 'owner'), checkBranchAccess, inve
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: integer }
+ *         schema: { type: string, format: 'uuid' }
  *     requestBody:
  *       required: true
  *       content:
@@ -191,7 +191,7 @@ router.put('/:id', authorize('admin', 'manager', 'owner'), checkBranchAccess, in
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: integer }
+ *         schema: { type: string, format: 'uuid' }
  *     responses:
  *       200:
  *         description: Item de inventario eliminado
@@ -221,7 +221,7 @@ router.delete('/:id', authorize('admin', 'manager', 'owner'), checkBranchAccess,
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: integer }
+ *         schema: { type: string, format: 'uuid' }
  *     requestBody:
  *       required: true
  *       content:

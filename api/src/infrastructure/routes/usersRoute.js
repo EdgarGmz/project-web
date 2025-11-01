@@ -17,7 +17,7 @@ router.use(authenticate)
  *     User:
  *       type: object
  *       properties:
- *         id: { type: integer }
+ *         id: { type: string, format: 'uuid' }
  *         email: { type: string, format: email }
  *         first_name: { type: string }
  *         last_name: { type: string }
@@ -25,7 +25,7 @@ router.use(authenticate)
  *         employee_id: { type: string }
  *         phone: { type: string }
  *         hire_date: { type: string, format: date }
- *         branch_id: { type: integer }
+ *         branch_id: { type: string, format: 'uuid' }
  *         is_active: { type: boolean }
  *         last_login: { type: string, format: date-time }
  *         created_at: { type: string, format: date-time }
@@ -43,7 +43,7 @@ router.use(authenticate)
  *         employee_id: { type: string }
  *         phone: { type: string }
  *         hire_date: { type: string, format: date }
- *         branch_id: { type: integer }
+ *         branch_id: { type: string, format: 'uuid' }
  *         is_active: { type: boolean, default: true }
  *     UserUpdate:
  *       type: object
@@ -55,7 +55,7 @@ router.use(authenticate)
  *         employee_id: { type: string }
  *         phone: { type: string }
  *         hire_date: { type: string, format: date }
- *         branch_id: { type: integer }
+ *         branch_id: { type: string, format: 'uuid' }
  *         is_active: { type: boolean }
  *     Error:
  *       type: object
@@ -87,7 +87,7 @@ router.use(authenticate)
  *         schema: { type: string, enum: [admin, manager, cashier, owner] }
  *       - in: query
  *         name: branch_id
- *         schema: { type: integer }
+ *         schema: { type: string, format: 'uuid' }
  *       - in: query
  *         name: is_active
  *         schema: { type: boolean }

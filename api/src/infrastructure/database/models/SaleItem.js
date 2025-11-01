@@ -99,6 +99,7 @@ module.exports = (sequelize, DataTypes) => {
         paranoid: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at',
+        deletedAt: 'deleted_at',
         indexes: [
             { fields: ['sale_id', 'product_id'], name: 'idx_sale_items_sale_product' },
             { fields: ['product_id'], name: 'idx_sale_items_product' },
