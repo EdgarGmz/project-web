@@ -4,17 +4,17 @@
   --color-surface: #121720;
   --color-text: #e5e7eb;
   --color-muted: #94a3b8;
-  --color-accent: #22d3ee;
+  --color-accent: #ffcc00;
   --color-accent-soft: rgba(34,211,238,.15);
 }
 
 :root.light {
-  --color-bg: #f7f8fa;
+  --color-bg: #f8fafc;
   --color-surface: #ffffff;
-  --color-text: #0f172a;
+  --color-text: #1e293b;
   --color-muted: #64748b;
-  --color-accent: #06b6d4;
-  --color-accent-soft: rgba(6,182,212,.15);
+  --color-accent: #f59e0b;
+  --color-accent-soft: rgba(14,165,233,.15);
 }
 
 /* Reset básico */

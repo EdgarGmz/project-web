@@ -16,7 +16,7 @@ import Profile from './components/pages/Profile'
 import Settings from './components/pages/Settings'
 
 // Gestión de entidades
-import Suppliers from './components/organisms/Suppliers'
+//import Suppliers from './components/organisms/Suppliers'
 import Branches from './components/pages/Branches'
 import Customers from './components/pages/Customers'
 import Products from './components/pages/Products'
@@ -173,14 +173,14 @@ export default function App() {
             </ProtectedRoute>
           } />
 
-          {/* Gestión de proveedores */}
+          {/* Gestión de proveedores
           <Route path="/suppliers" element={
             <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
               <DashboardLayout>
                 <Suppliers />
               </DashboardLayout>
             </ProtectedRoute>
-          } />
+          } /> */}
 
           {/* Gestión de compras */}
           <Route path="/purchases" element={

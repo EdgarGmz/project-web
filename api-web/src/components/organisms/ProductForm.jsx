@@ -26,7 +26,7 @@ export default function ProductForm() {
   const fetchProduct = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`http://localhost:3000/api/products/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/products/${id}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       })
       const data = await res.json()
@@ -61,8 +61,8 @@ export default function ProductForm() {
     try {
       const method = id ? 'PUT' : 'POST'
       const url = id
-        ? `http://localhost:3000/api/products/${id}`
-        : 'http://localhost:3000/api/products'
+        ? `${import.meta.env.VITE_API_URL}/products/${id}`
+        : `${import.meta.env.VITE_API_URL}/products`
       const res = await fetch(url, {
         method,
         headers: {

@@ -15,7 +15,7 @@ export default function Notifications() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('http://localhost:3000/api/notifications', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/notifications`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       })
       const data = await res.json()

@@ -23,7 +23,7 @@ export default function UserForm() {
   const fetchUser = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`http://localhost:3000/api/users/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/${id}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       })
       const data = await res.json()

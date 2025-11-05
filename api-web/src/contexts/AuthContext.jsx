@@ -1,3 +1,4 @@
+import { api } from '../services/api'
 import { createContext, useContext, useEffect, useState } from 'react'
 
 const AuthContext = createContext()
@@ -18,25 +19,18 @@ export function AuthProvider({ children }) {
 
     const login = async (email, password) => {
         try {
-            // TODO: Cambiar URL por variable de entorno
-        const response = await fetch('http://localhost:3000/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        })
-        
-        const data = await response.json()
-        
-        if (data.success) {
-            localStorage.setItem('token', data.data.token)
-            localStorage.setItem('user', JSON.stringify(data.data.user))
-            setUser(data.data.user)
-            return { success: true }
-        } else {
-            return { success: false, message: data.message }
-        }
+            const response = await api.post('/auth/login', {email, password})
+
+            if(response.success){
+                localStorage.setItem('token', response.data.token)
+                localStorage.setItem('user', JSON.stringify(response.data.user))
+                setUser(response.data.user)
+                return { success: true }
+            } else {
+                return { success: false, message: response.message }
+            }            
         } catch (error) {
-        return { success: false, message: 'Error de conexión' }
+            return { success: false, message: error.message || 'Error de conexion' }
         }
     }
 

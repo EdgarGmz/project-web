@@ -15,7 +15,7 @@ export default function InventoryReports() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('http://localhost:3000/api/reports?type=inventory', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/reports?type=inventory`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       })
       const data = await res.json()

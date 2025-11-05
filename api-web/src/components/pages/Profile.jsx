@@ -21,7 +21,7 @@ export default function Profile() {
   const handleSave = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/api/profile', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -47,7 +47,7 @@ export default function Profile() {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/profile/password', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/profile/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
