@@ -1,9 +1,9 @@
-import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSidebar } from '../../contexts/SidebarContext'
 
 export default function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const { isCollapsed, setIsCollapsed } = useSidebar()
   const { user, hasPermission, logout } = useAuth()
   const location = useLocation()
 
@@ -29,7 +29,7 @@ export default function Sidebar() {
   const visibleItems = menuItems.filter(item => hasPermission(item.roles))
 
   return (
-    <aside className={`bg-surface border-r border-slate-600/20 transition-all duration-300 flex flex-col h-screen ${isCollapsed ? 'w-16' : 'w-64'}`}>
+    <aside className={`bg-surface border-r border-slate-600/20 transition-all duration-300 flex flex-col h-screen fixed left-0 top-0 z-10 ${isCollapsed ? 'w-16' : 'w-64'}`}>
       {/* Header */}
       <div className="p-4 border-b border-slate-600/20 flex-shrink-0">
         <button 

@@ -1,5 +1,6 @@
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { SidebarProvider } from './contexts/SidebarContext'
 import SessionExpiredModal from './components/molecules/SessionExpiredModal'
 
 // Páginas públicas
@@ -49,9 +50,10 @@ import Reports from './components/pages/Reports'
 export default function App() {
   return (
     <AuthProvider>
-      <Router>
-        <SessionExpiredModal />
-        <Routes>
+      <SidebarProvider>
+        <Router>
+          <SessionExpiredModal />
+          <Routes>
           {/* Rutas públicas */}
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
@@ -312,6 +314,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
+      </SidebarProvider>
     </AuthProvider>
   )
 }
