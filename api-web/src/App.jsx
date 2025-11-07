@@ -1,5 +1,6 @@
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import SessionExpiredModal from './components/molecules/SessionExpiredModal'
 
 // Páginas públicas
 import Landing from './components/pages/Landing'
@@ -49,6 +50,7 @@ export default function App() {
   return (
     <AuthProvider>
       <Router>
+        <SessionExpiredModal />
         <Routes>
           {/* Rutas públicas */}
           <Route path="/" element={<Landing />} />

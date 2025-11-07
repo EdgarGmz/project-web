@@ -1,5 +1,9 @@
 // Obtener la URL del backend desde las variables de entorno
-const API_URL = import.meta.env.VITE_URL_API || 'http://localhost:3000/api'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+console.log('API URL desde api.js:', API_URL)
+
+// Variable para evitar multiples alertas
+let sessionExpiredShown = false
 
 /**
  * Fuincion para hacer las peticiones al backend
@@ -34,9 +38,26 @@ const apiRequest = async (endpoint, options = {}) =>{
 
         // 6. Verificar si hubo error
         if(!response.ok){
+            // Si el token es invalido, mostrar el modal y cerrar sesion
+            if (response.status === 401 && !sessionExpiredShown) {
+                sessionExpiredShown = true
+
+                // Emitir evento personalizado para que el componente lo maneje
+                window.dispatchEvent(new CustomEvent('sessionExpired',  {
+                    detail: { message: data.message || 'Tu sesión ha expirado. Por favor, inicia sesión de nuevo.' }
+                }))
+
+                // Esperar un momento antes de redirigir 
+                setTimeout(() =>{
+                    localStorage.removeItem('token')
+                    localStorage.removeItem('user')
+                    window.location.href = '/login'
+                }, 3000)
+
+                return
+            }
             throw new Error(data.message || 'Error en la peticion')
         }
-
         return data
     }catch(error){
         console.error('Error en la peticion: ', error)

@@ -1,6 +1,6 @@
-import { api } from '../services/api'
+import { api } from './api'
 
-export const salesService = {
+export const saleService = {
     // Obtener todos las ventas
     getAll: async () => {
         return await api.get('/sales')

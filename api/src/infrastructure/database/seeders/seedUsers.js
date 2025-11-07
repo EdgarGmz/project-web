@@ -7,7 +7,7 @@ async function seedUsers(branches) {
         {
             first_name: 'Edgar',
             last_name: 'Tiburcio',
-            email: 'edgar_gomez@apexstore.com',
+            email: 'edgar_gmz@apexstore.com',
             password: 'edgar1234',
             role: 'owner',
             employee_id: "EMP001",

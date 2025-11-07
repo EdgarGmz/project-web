@@ -29,8 +29,9 @@ export default function Sidebar() {
   const visibleItems = menuItems.filter(item => hasPermission(item.roles))
 
   return (
-    <aside className={`bg-surface border-r border-slate-600/20 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}>
-      <div className="p-4 border-b border-slate-600/20">
+    <aside className={`bg-surface border-r border-slate-600/20 transition-all duration-300 flex flex-col h-screen ${isCollapsed ? 'w-16' : 'w-64'}`}>
+      {/* Header */}
+      <div className="p-4 border-b border-slate-600/20 flex-shrink-0">
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="w-full flex items-center gap-3 text-text hover:text-accent transition"
@@ -42,7 +43,8 @@ export default function Sidebar() {
         </button>
       </div>
       
-      <nav className="p-2">
+      {/* Menu Items - Con scroll */}
+      <nav className="p-2 flex-1 overflow-y-auto">
         {visibleItems.map((item, index) => {
           const isActive = location.pathname === item.path
           return (
@@ -60,7 +62,8 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="absolute bottom-0 w-full p-4 border-t border-slate-600/20">
+      {/* Footer - Usuario y Cerrar Sesión */}
+      <div className="p-4 border-t border-slate-600/20 flex-shrink-0">
         {!isCollapsed && user && (
           <div className="text-xs text-muted mb-2">
             {user?.first_name} {user?.last_name}

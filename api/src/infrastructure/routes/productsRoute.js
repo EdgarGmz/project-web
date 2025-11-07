@@ -223,6 +223,8 @@ router.post('/', authorize('admin', 'manager', 'owner'), productController.creat
  */
 router.put('/:id', authorize('admin', 'manager', 'owner'), productController.updateProduct)
 
+router.patch('/:id/toggle-status', authorize('admin', 'manager', 'owner'), productController.toggleProductStatus)
+
 /**
  * @swagger
  * /api/products/{id}:
