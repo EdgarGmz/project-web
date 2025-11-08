@@ -1,6 +1,5 @@
 // Obtener la URL del backend desde las variables de entorno
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
-console.log('API URL desde api.js:', API_URL)
 
 // Variable para evitar multiples alertas
 let sessionExpiredShown = false

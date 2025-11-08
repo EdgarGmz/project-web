@@ -30,13 +30,14 @@ const getAllProducts = async (req, res) => {
         } else if (status === 'inactive') {
             whereClause.is_active = false
         }
+        // Si no hay filtro de status, mostrar todos los productos (activos e inactivos)
 
         const { count, rows } = await Product.scope('all').findAndCountAll({
             where: whereClause,
             limit,
             offset,
             order: [['created_at', 'DESC']],
-            paranoid: false,
+            paranoid: true,
             distinct: true,
             include: [
                 {
@@ -89,7 +90,7 @@ const toggleProductStatus = async (req, res) => {
     try {
         const { id } = req.params
 
-        const product = await Product.findByPk(id)
+        const product = await Product.scope('all').findByPk(id)
         if (!product) {
             return res.status(404).json({
                 success: false,
@@ -220,7 +221,7 @@ const updateProduct = async (req, res) => {
         const { id } = req.params
         const updateData = req.body
 
-        const product = await Product.findByPk(id)
+        const product = await Product.scope('all').findByPk(id)
         if (!product) {
             return res.status(404).json({
                 success: false,
@@ -288,11 +289,20 @@ const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params
 
-        const product = await Product.findByPk(id)
+        // Buscar el producto incluyendo activos, inactivos y soft-deleted
+        const product = await Product.scope('all').findByPk(id, { paranoid: false })
         if (!product) {
             return res.status(404).json({
                 success: false,
                 message: 'Producto no encontrado'
+            })
+        }
+
+        // Verificar si ya está eliminado
+        if (product.deleted_at) {
+            return res.status(400).json({
+                success: false,
+                message: 'El producto ya está eliminado'
             })
         }
 
