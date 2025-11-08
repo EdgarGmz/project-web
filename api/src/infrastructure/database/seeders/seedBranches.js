@@ -3,7 +3,19 @@ const { Branch } = db;
 
 async function seedBranches() {
   return await Branch.bulkCreate([
-     // Crear sucursales        
+     // Crear sucursales
+        {
+        name: 'CEDIS - Centro de Distribución',
+        code: 'CEDIS-000',
+        address: 'Blvd. Industrial #1000, Zona Industrial, Monterrey',
+        city: 'Monterrey',
+        state: 'Nuevo Leon',
+        postal_code: '64000',
+        phone: '81-0000-0000',
+        email: 'cedis@apexstore.com',
+        is_active: true
+        },
+        
         {
         name: 'Sucursal Centro',
         code: 'CTR-001',

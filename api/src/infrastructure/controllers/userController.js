@@ -97,13 +97,64 @@ const getUserById = async (req, res) => {
 // Crear un nuevo usuario
 const createUser = async (req, res) => {
     try {
-        const { first_name, last_name, email, password, role, employee_id, phone, hire_date, branch_id, is_active } = req.body
+        let { first_name, last_name, email, password, role, employee_id, phone, hire_date, branch_id, is_active } = req.body
 
-        if (!first_name || !last_name || !email || !password || !branch_id) {
+        // Validaciones básicas
+        if (!first_name || !last_name || !email || !password) {
             return res.status(400).json({
                 success: false,
-                message: 'Nombre, apellido, email, password y sucursal son obligatorios'
+                message: 'Nombre, apellido, email y password son obligatorios'
             })
+        }
+
+        // Generar employee_id automáticamente si no se proporciona
+        if (!employee_id) {
+            // Generar un ID basado en las iniciales y un número aleatorio
+            const initials = (first_name.charAt(0) + last_name.charAt(0)).toUpperCase()
+            const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+            employee_id = `EMP${initials}${randomNum}`
+            
+            // Verificar que no exista ya
+            let attempts = 0
+            while (attempts < 10) {
+                const existingId = await User.findOne({ where: { employee_id } })
+                if (!existingId) break
+                
+                const newRandomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+                employee_id = `EMP${initials}${newRandomNum}`
+                attempts++
+            }
+        }
+
+        // Regla de negocio: Solo supervisores y cajeros requieren sucursal específica
+        if ((role === 'supervisor' || role === 'cashier') && !branch_id) {
+            return res.status(400).json({
+                success: false,
+                message: 'Los supervisores y cajeros deben pertenecer a una sucursal'
+            })
+        }
+
+        // Regla de negocio: Admins, owners y auditores van a CEDIS por defecto
+        if ((role === 'admin' || role === 'owner' || role === 'auditor')) {
+            // Buscar CEDIS (debería ser ID 1)
+            let cedis = await Branch.findOne({ where: { code: 'CEDIS-000' } })
+            if (!cedis) {
+                // Si CEDIS no existe, crearlo automáticamente
+                console.log('CEDIS no encontrado, creando automáticamente...')
+                cedis = await Branch.create({
+                    name: 'CEDIS - Centro de Distribución',
+                    code: 'CEDIS-000',
+                    address: 'Blvd. Industrial #1000, Zona Industrial, Monterrey',
+                    city: 'Monterrey',
+                    state: 'Nuevo Leon',
+                    postal_code: '64000',
+                    phone: '81-0000-0000',
+                    email: 'cedis@apexstore.com',
+                    is_active: true
+                })
+                console.log('CEDIS creado con ID:', cedis.id)
+            }
+            branch_id = cedis.id
         }
 
         // El sistema solo debe contener un 'owner' por regla de negocio
@@ -226,6 +277,42 @@ const updateUser = async (req, res) => {
             }
         }
 
+        // Aplicar reglas de negocio para sucursales si se está actualizando el rol o branch_id
+        if (updateData.role || updateData.hasOwnProperty('branch_id')) {
+            const newRole = updateData.role || user.role
+
+            // Regla de negocio: Solo supervisores y cajeros requieren sucursal específica
+            if ((newRole === 'supervisor' || newRole === 'cashier') && !updateData.branch_id) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Los supervisores y cajeros deben pertenecer a una sucursal'
+                })
+            }
+
+            // Regla de negocio: Admins, owners y auditores van a CEDIS por defecto
+            if ((newRole === 'admin' || newRole === 'owner' || newRole === 'auditor')) {
+                // Buscar CEDIS
+                let cedis = await Branch.findOne({ where: { code: 'CEDIS-000' } })
+                if (!cedis) {
+                    // Si CEDIS no existe, crearlo automáticamente
+                    console.log('CEDIS no encontrado en updateUser, creando automáticamente...')
+                    cedis = await Branch.create({
+                        name: 'CEDIS - Centro de Distribución',
+                        code: 'CEDIS-000',
+                        address: 'Blvd. Industrial #1000, Zona Industrial, Monterrey',
+                        city: 'Monterrey',
+                        state: 'Nuevo Leon',
+                        postal_code: '64000',
+                        phone: '81-0000-0000',
+                        email: 'cedis@apexstore.com',
+                        is_active: true
+                    })
+                    console.log('CEDIS creado en updateUser con ID:', cedis.id)
+                }
+                updateData.branch_id = cedis.id
+            }
+        }
+
         await user.update(updateData)
 
         const userResponse = { ...user.toJSON() }
@@ -250,6 +337,9 @@ const updateUser = async (req, res) => {
 // Eliminar un usuario (soft delete)
 const deleteUser = async (req, res) => {
     try {
+        const { id } = req.params
+
+        const user = await User.findByPk(id)
         if (!user) {
             return res.status(404).json({
                 success: false,

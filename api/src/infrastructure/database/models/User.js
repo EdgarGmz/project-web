@@ -65,10 +65,9 @@ module.exports = (sequelize, DataTypes) => {
             },
             employee_id: {
                 type: DataTypes.STRING(20),
-                allowNull: false,
+                allowNull: true, // Mantener opcional
                 unique: true,
                 validate: {
-                    notEmpty: true,
                     isAlphanumeric: true,
                     len: [3, 20],
                 },
@@ -85,7 +84,7 @@ module.exports = (sequelize, DataTypes) => {
             },
             branch_id: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false, // Volver a requerido
                 references: {
                     model: 'branches',
                     key: 'id',

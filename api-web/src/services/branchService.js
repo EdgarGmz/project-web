@@ -2,27 +2,27 @@ import { api } from '../services/api'
 
 export const branchService = {
     // Obtener todos las sucursales
-    getAlll: async () => {
-        return await api.get('/branch')
+    getAll: async () => {
+        return await api.get('/branches')
     },
 
     // Obtener sucursal por ID
     getById: async (id) => {
-        return await api.get(`/branch/${id}`)
+        return await api.get(`/branches/${id}`)
     },
 
     // Crear nueva sucursal
     create: async (branchData) => {
-        return await api.post('/branch', branchData)
+        return await api.post('/branches', branchData)
     },
 
     // Actualizar sucursal
     update: async (id, branchData) => {
-        return await api.put(`/branch/${id}`, branchData)
+        return await api.put(`/branches/${id}`, branchData)
     },
 
     // Eliminar sucursal
     delete: async (id) => {
-        return await api.delete(`/branch/${id}`)
+        return await api.delete(`/branches/${id}`)
     }
 }
