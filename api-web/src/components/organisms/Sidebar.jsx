@@ -8,21 +8,21 @@ export default function Sidebar() {
   const location = useLocation()
 
   const menuItems = [
-    { icon: '🏠', label: 'Dashboard', path: '/dashboard', roles: ['owner', 'admin', 'supervisor', 'cashier', 'auditor'] },
+    { icon: '🏠', label: 'Dashboard', path: '/dashboard', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
     { icon: '📦', label: 'Productos', path: '/products', roles: ['owner'] },
     { icon: '👥', label: 'Usuarios', path: '/users', roles: ['owner'] },
     { icon: '👤', label: 'Clientes', path: '/customers', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
-    { icon: '📋', label: 'Compras', path: '/purchases', roles: ['owner', 'admin', 'supervisor'] },
     { icon: '🏢', label: 'Sucursales', path: '/branches', roles: ['owner', 'admin'] },
     { icon: '📊', label: 'Inventario', path: '/inventory', roles: ['owner', 'admin', 'supervisor'] },
-    { icon: '🛒', label: 'POS', path: '/pos', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
+    { icon: '📋', label: 'Compras', path: '/purchases', roles: ['owner', 'admin', 'supervisor'] },
     { icon: '💰', label: 'Ventas', path: '/sales', roles: ['owner', 'admin', 'supervisor', 'cashier'] },    
-    { icon: '📈', label: 'Reportes', path: '/reports', roles: ['owner', 'admin', 'supervisor', 'auditor'] },
-    { icon: '🔍', label: 'Auditoría', path: '/audit', roles: ['owner', 'auditor'] },
-    { icon: '🔔', label: 'Notificaciones', path: '/notifications', roles: ['owner', 'admin', 'supervisor'] },
+    { icon: '🛒', label: 'POS', path: '/pos', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
+    { icon: '📈', label: 'Reportes', path: '/reports', roles: ['owner', 'admin', 'supervisor'] },
+    { icon: '🔍', label: 'Auditoría', path: '/audit', roles: ['owner'] },
     { icon: '💳', label: 'Pagos', path: '/payments', roles: ['owner', 'admin'] },
     { icon: '↩️', label: 'Devoluciones', path: '/returns', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
-    { icon: '👤', label: 'Perfil', path: '/profile', roles: ['owner', 'admin', 'supervisor', 'cashier', 'auditor'] },
+    { icon: '👤', label: 'Perfil', path: '/profile', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
+    { icon: '🔔', label: 'Notificaciones', path: '/notifications', roles: ['owner', 'admin', 'supervisor'] },
     { icon: '⚙️', label: 'Configuración', path: '/settings', roles: ['owner', 'admin'] },
   ]
 

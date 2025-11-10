@@ -11,6 +11,7 @@ const inventoryRoutes = require('./inventoryRoute')
 const authRoutes = require('./auth')
 const returnRoutes = require('./returnsRoute')
 const paymentRoutes = require('./paymentRoute')
+const purchaseRoutes = require('./purchasesRoute')
 
 // Rutas de la API
 router.get('/', (req, res) => {
@@ -26,7 +27,8 @@ router.get('/', (req, res) => {
             inventory: '/api/inventory',
             auth: '/api/auth',
             returns: '/api/returns',
-            payments: '/api/payment'
+            payments: '/api/payment',
+            purchases: '/api/purchases'
         }
     })
 })
@@ -41,5 +43,6 @@ router.use('/inventory', inventoryRoutes)
 router.use('/auth', authRoutes)
 router.use('/returns', returnRoutes)
 router.use('/payment', paymentRoutes)
+router.use('/purchases', purchaseRoutes)
 
 module.exports = router

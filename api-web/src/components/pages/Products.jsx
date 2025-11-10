@@ -9,10 +9,8 @@ export default function Products() {
   const [editingProduct, setEditingProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [filters, setFilters] = useState({
-    search: '',
-    status: ''
-  })
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -39,24 +37,13 @@ export default function Products() {
     loadProducts()
   }, [])
 
-  // Cargar productos con paginación y filtros
-  const loadProducts = async (page = 1) => {
+  // Cargar todos los productos (sin filtros del servidor)
+  const loadProducts = async () => {
     try{
       setLoading(true)
-      const response = await productService.getAll(
-        page, 
-        pagination.limit, 
-        filters.search, 
-        filters.status
-      )
+      const response = await productService.getAll()
       if(response.success){
         setProducts(response.data)
-        setPagination({
-          page: response.pagination.page,
-          limit: response.pagination.limit,
-          total: response.pagination.total,
-          pages: response.pagination.pages
-        })
       }
     } catch (error) {
       setError(error.message)
@@ -65,17 +52,20 @@ export default function Products() {
     }
   }
 
-  // Aplicar filtros y reiniciar a página 1
-  const applyFilters = () => {
-    loadProducts(1)
-  }
-
-  // Limpiar filtros
-  const clearFilters = () => {
-    setFilters({ search: '', status: '' })
-    // Esperar a que se actualice el estado y luego cargar
-    setTimeout(() => loadProducts(1), 0)
-  }
+  // Filtrar productos localmente (igual que en Users.jsx)
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = searchTerm === '' || 
+        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.barcode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    const matchesStatus = statusFilter === 'all' || 
+        (statusFilter === 'active' && product.is_active) ||
+        (statusFilter === 'inactive' && !product.is_active)
+    
+    return matchesSearch && matchesStatus
+  })
 
   // Handlers
   const handleSubmit = async (e) => {
@@ -118,7 +108,7 @@ export default function Products() {
       
       if (response.success) {
         alert('Producto guardado exitosamente')
-        loadProducts(pagination.page)
+        loadProducts()
         setShowForm(false)
         setEditingProduct(null)
         resetForm()
@@ -139,7 +129,7 @@ export default function Products() {
       const response = await productService.delete(id)
       
       if(response.success){
-        loadProducts(pagination.page)
+        loadProducts()
         alert('Producto eliminado correctamente')
       }
     } catch (error) {
@@ -191,45 +181,37 @@ export default function Products() {
       
       {/* Filtros */}
       <section className="card">
-        <form className="grid grid-cols-1 md:grid-cols-4 gap-4" onSubmit={(e) => { e.preventDefault(); applyFilters() }}>
-          <fieldset>
-            <label htmlFor="search" className="block text-sm font-medium mb-2">Buscar</label>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Búsqueda por nombre/SKU/descripción */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-2">
+              🔍 Buscar producto
+            </label>
             <input
-              id="search"
               type="text"
-              placeholder="Nombre, SKU, descripción..."
-              value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-              className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+              placeholder="Buscar por nombre, SKU, código de barras o descripción..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
             />
-          </fieldset>
-          <fieldset>
-            <label htmlFor="status" className="block text-sm font-medium mb-2">Estado</label>
+          </div>
+
+          {/* Filtro por estado */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              🚦 Filtrar por estado
+            </label>
             <select
-              id="status"
-              value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
             >
-              <option value="">Todos los estados</option>
-              <option value="active">Activo</option>
-              <option value="inactive">Inactivo</option>
+              <option value="all">Todos</option>
+              <option value="active">🟢 Solo activos</option>
+              <option value="inactive">🔴 Solo inactivos</option>
             </select>
-          </fieldset>
-          <fieldset className="flex items-end gap-2">
-            <button type="submit" className="btn flex-1">
-              🔍 Buscar
-            </button>
-            <button 
-              type="button" 
-              onClick={clearFilters}
-              className="px-4 py-2 border border-slate-600/30 rounded-md hover:bg-surface/50 transition"
-              title="Limpiar filtros"
-            >
-              ✕
-            </button>
-          </fieldset>
-        </form>
+          </div>
+        </div>
       </section>
 
       {/* Lista de productos */}
@@ -252,7 +234,7 @@ export default function Products() {
                 </tr>
               </thead>
               <tbody>
-                {products.map((product) => {
+                {filteredProducts.map((product) => {
                   const stockStatus = getStockStatus(product)
                   
                   return (
@@ -331,57 +313,12 @@ export default function Products() {
         )}
       </div>
 
-      {/* Paginación */}
-      {pagination.pages > 1 && (
-        <div className="card">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => loadProducts(pagination.page - 1)}
-              disabled={pagination.page === 1 || loading}
-              className="btn disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              ← Anterior
-            </button>
-            
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-muted text-sm">
-                Página {pagination.page} de {pagination.pages}
-              </span>
-              <span className="text-muted text-xs">
-                ({pagination.total} productos en total)
-              </span>
-            </div>
-            
-            <button
-              onClick={() => loadProducts(pagination.page + 1)}
-              disabled={pagination.page === pagination.pages || loading}
-              className="btn disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Siguiente →
-            </button>
-          </div>
-          
-          {/* Navegación rápida de páginas - Solo si hay menos de 10 páginas */}
-          {pagination.pages <= 10 && (
-            <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
-              {Array.from({ length: pagination.pages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  onClick={() => loadProducts(page)}
-                  disabled={loading}
-                  className={`px-3 py-1 rounded transition ${
-                    page === pagination.page 
-                      ? 'bg-accent text-white' 
-                      : 'bg-surface text-muted hover:bg-surface/50'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Resumen de resultados */}
+      <div className="text-center mt-4">
+        <span className="text-muted text-sm">
+          Mostrando {filteredProducts.length} de {products.length} productos
+        </span>
+      </div>
 
       {/* Modal formulario */}
       {showForm && (
@@ -543,8 +480,8 @@ export default function Products() {
                     onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.value === 'true' }))}
                     className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
                   >
-                    <option value="true">Activo</option>
-                    <option value="false">Inactivo</option>
+                    <option value="true">🟢 Activo</option>
+                    <option value="false">🔴 Inactivo</option>
                   </select>
                 </div>
               </div>

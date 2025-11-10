@@ -306,7 +306,8 @@ const deleteProduct = async (req, res) => {
             })
         }
 
-        await product.destroy()
+        // Usar soft delete en lugar de destroy para mantener consistencia con usuarios
+        await product.destroy() // Sequelize soft delete (paranoid: true)
 
         res.json({
             success: true,

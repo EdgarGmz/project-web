@@ -252,21 +252,21 @@ export default function App() {
 
           {/* Reportes */}
           <Route path="/reports" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor', 'auditor']}>
+            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
               <DashboardLayout>
                 <Reports />
               </DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/reports/sales" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor', 'auditor']}>
+            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
               <DashboardLayout>
                 <SalesReports />
               </DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/reports/inventory" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor', 'auditor']}>
+            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
               <DashboardLayout>
                 <InventoryReports />
               </DashboardLayout>
@@ -275,7 +275,7 @@ export default function App() {
 
           {/* Auditoría */}
           <Route path="/audit" element={
-            <ProtectedRoute roles={['owner', 'auditor']}>
+            <ProtectedRoute roles={['owner']}>
               <DashboardLayout>
                 <Audit />
               </DashboardLayout>

@@ -10,7 +10,8 @@ export default function UserForm({ user, onSuccess, onCancel }) {
     role: 'cashier',
     branch_id: '',
     password: '',
-    confirm_password: ''
+    confirm_password: '',
+    is_active: true
   })
   const [branches, setBranches] = useState([])
   const [loading, setLoading] = useState(false)
@@ -44,10 +45,11 @@ export default function UserForm({ user, onSuccess, onCancel }) {
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: emailUsername,
-        role: user.role || 'cashier',
+        role: user.pendingRole || user.role || 'cashier', // Usar pendingRole si existe
         branch_id: user.branch_id || '',
         password: '',
-        confirm_password: ''
+        confirm_password: '',
+        is_active: user.is_active !== undefined ? user.is_active : true
       })
     }
   }, [user])
@@ -60,7 +62,7 @@ export default function UserForm({ user, onSuccess, onCancel }) {
       const newForm = { ...form, [name]: value }
       
       // Si el nuevo rol no requiere sucursal, limpiar branch_id
-      if (value === 'admin' || value === 'owner' || value === 'auditor') {
+      if (value === 'admin' || value === 'owner') {
         newForm.branch_id = ''
       }
       
@@ -105,8 +107,13 @@ export default function UserForm({ user, onSuccess, onCancel }) {
     try {
       const body = { ...form, email: finalEmail }
       
-      // Para admins, owners y auditores, no enviar branch_id (se asigna automáticamente en backend)
-      if (body.role === 'admin' || body.role === 'owner' || body.role === 'auditor') {
+      // Para admins y owners, no enviar branch_id (se asigna automáticamente en backend)
+      if (body.role === 'admin' || body.role === 'owner') {
+        delete body.branch_id
+      }
+      
+      // Limpiar branch_id si está vacío
+      if (body.branch_id === '' || body.branch_id === null || body.branch_id === undefined) {
         delete body.branch_id
       }
       
@@ -157,6 +164,24 @@ export default function UserForm({ user, onSuccess, onCancel }) {
             ×
           </button>
         </div>
+        
+        {/* Mostrar mensaje informativo si hay un rol pendiente */}
+        {user && user.pendingRole && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-blue-700">
+                  Para cambiar el rol a <strong>{user.pendingRole}</strong>, primero selecciona una sucursal específica (no CEDIS).
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -215,11 +240,21 @@ export default function UserForm({ user, onSuccess, onCancel }) {
               required
               className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface"
             >
-              <option value="owner">Dueño</option>
               <option value="admin">Administrador</option>
               <option value="supervisor">Supervisor</option>
               <option value="cashier">Cajero</option>
-              <option value="auditor">Auditor</option>
+            </select>
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Estado *</label>
+            <select
+              name="is_active"
+              value={form.is_active}
+              onChange={(e) => setForm(prev => ({ ...prev, is_active: e.target.value === 'true' }))}
+              className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface"
+            >
+              <option value="true">🟢 Activo</option>
+              <option value="false">🔴 Inactivo</option>
             </select>
           </div>
           {/* Sucursal - Solo para supervisores y cajeros */}
@@ -244,10 +279,10 @@ export default function UserForm({ user, onSuccess, onCancel }) {
           )}
           
           {/* Mensaje informativo para otros roles */}
-          {(form.role === 'admin' || form.role === 'owner' || form.role === 'auditor') && (
+          {(form.role === 'admin' || form.role === 'owner') && (
             <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                ℹ️ Los {form.role === 'owner' ? 'propietarios' : form.role === 'admin' ? 'administradores' : 'auditores'} se asignarán automáticamente al CEDIS (Centro de Distribución) ya que manejan varias zonas.
+                ℹ️ Los {form.role === 'owner' ? 'propietarios' : 'administradores'} se asignarán automáticamente al CEDIS (Centro de Distribución) ya que manejan varias zonas.
               </p>
             </div>
           )}

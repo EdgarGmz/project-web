@@ -26,6 +26,12 @@ if (db.Branch && db.Inventory) {
   db.Inventory.belongsTo(db.Branch, { foreignKey: 'branch_id' })
 }
 
+// Asociación Customer - Branch (agregada para soporte de clientes por sucursal)
+if (db.Branch && db.Customer) {
+  db.Branch.hasMany(db.Customer, { foreignKey: 'branch_id' })
+  db.Customer.belongsTo(db.Branch, { foreignKey: 'branch_id', as: 'Branch' })
+}
+
 if (db.Product && db.Inventory) {
   db.Product.hasMany(db.Inventory, { foreignKey: 'product_id' })
   db.Inventory.belongsTo(db.Product, { foreignKey: 'product_id' })
@@ -74,6 +80,17 @@ if (db.Customer && db.Return) {
 if (db.Product && db.Return) {
   db.Product.hasMany(db.Return, { foreignKey: 'product_id' })
   db.Return.belongsTo(db.Product, { foreignKey: 'product_id' })
+}
+
+// Asociaciones Purchase - Branch y Purchase - User
+if (db.Branch && db.Purchase) {
+  db.Branch.hasMany(db.Purchase, { foreignKey: 'branch_id' })
+  db.Purchase.belongsTo(db.Branch, { foreignKey: 'branch_id', as: 'Branch' })
+}
+
+if (db.User && db.Purchase) {
+  db.User.hasMany(db.Purchase, { foreignKey: 'user_id' })
+  db.Purchase.belongsTo(db.User, { foreignKey: 'user_id', as: 'User' })
 }
 
 // Exportar instancia y modelos

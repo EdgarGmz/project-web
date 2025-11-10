@@ -82,6 +82,27 @@ export default function Customers() {
     setShowForm(true)
   }
 
+  const handleDelete = async (customerId) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este cliente?')) {
+      try {
+        const response = await fetch(`http://localhost:3000/api/customers/${customerId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        })
+        const data = await response.json()
+        if (data.success) {
+          alert('Cliente eliminado exitosamente')
+          fetchCustomers()
+        } else {
+          alert(data.message)
+        }
+      } catch (error) {
+        console.error('Error deleting customer:', error)
+        alert('Error al eliminar cliente')
+      }
+    }
+  }
+
   const viewCustomerDetails = async (customerId) => {
     try {
       const response = await fetch(`http://localhost:3000/api/customers/${customerId}/details`, {
@@ -116,7 +137,7 @@ export default function Customers() {
           <h1 className="text-2xl font-semibold">Clientes</h1>
           <p className="text-muted">Gestiona la base de datos de clientes</p>
         </div>
-        {hasPermission(['owner', 'admin', 'supervisor', 'cashier']) && (
+        {hasPermission(['cashier', 'supervisor']) && (
           <button onClick={() => setShowForm(true)} className="btn">
             + Nuevo Cliente
           </button>
@@ -163,6 +184,7 @@ export default function Customers() {
                 <th className="text-left py-3 px-4">Cliente</th>
                 <th className="text-left py-3 px-4">Contacto</th>
                 <th className="text-left py-3 px-4">Documento</th>
+                <th className="text-left py-3 px-4">Sucursal</th>
                 <th className="text-left py-3 px-4">Registrado</th>
                 <th className="text-left py-3 px-4">Compras</th>
                 <th className="text-left py-3 px-4">Acciones</th>
@@ -208,6 +230,19 @@ export default function Customers() {
                       </div>
                     )}
                   </td>
+                  <td className="py-3 px-4">
+                    {customer.Branch ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-blue-500">🏢</span>
+                        <div>
+                          <div className="text-sm font-medium">{customer.Branch.name}</div>
+                          <div className="text-muted text-xs">{customer.Branch.code}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-sm">Sin asignar</span>
+                    )}
+                  </td>
                   <td className="py-3 px-4 text-muted text-sm">
                     {customer.created_at ? new Date(customer.created_at).toLocaleDateString() : 'N/A'}
                   </td>
@@ -225,7 +260,7 @@ export default function Customers() {
                       >
                         👁️
                       </button>
-                      {hasPermission(['owner', 'admin', 'supervisor']) && (
+                      {hasPermission(['cashier', 'supervisor']) && (
                         <>
                           <button
                             onClick={() => handleEdit(customer)}
@@ -233,6 +268,13 @@ export default function Customers() {
                             title="Editar cliente"
                           >
                             ✏️
+                          </button>
+                          <button
+                            onClick={() => handleDelete(customer.id)}
+                            className="text-red-400 hover:opacity-80 transition"
+                            title="Eliminar cliente"
+                          >
+                            🗑️
                           </button>
                         </>
                       )}
@@ -504,12 +546,14 @@ export default function Customers() {
             </div>
 
             <div className="flex gap-3 pt-6">
-              <button
-                onClick={() => handleEdit(selectedCustomer)}
-                className="btn"
-              >
-                ✏️ Editar Cliente
-              </button>
+              {hasPermission(['cashier', 'supervisor']) && (
+                <button
+                  onClick={() => handleEdit(selectedCustomer)}
+                  className="btn"
+                >
+                  ✏️ Editar Cliente
+                </button>
+              )}
               <button
                 onClick={() => setShowDetails(false)}
                 className="px-4 py-2 border border-slate-600/30 rounded-md"

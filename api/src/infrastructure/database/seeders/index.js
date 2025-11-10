@@ -10,20 +10,25 @@ const seedSaleItems = require('./seedSaleItems');
 const seedPayments = require('./seedPayments');
 const seedInventory = require('./seedInventory');
 const seedReports = require('./seedReports');
+const seedPurchases = require('./seedPurchases');
 
 // Función para limpiar base de datos usando SQL directo
 const cleanDatabase = async () => {
     try {
         console.log('Limpiando base de datos...')
         await db.sequelize.query('PRAGMA foreign_keys = OFF')
-        await db.sequelize.query('DELETE FROM inventory')
-        await db.sequelize.query('DELETE FROM user_sessions')
-        await db.sequelize.query('DELETE FROM sale_items')
-        await db.sequelize.query('DELETE FROM sales')
-        await db.sequelize.query('DELETE FROM users')
-        await db.sequelize.query('DELETE FROM customers')
-        await db.sequelize.query('DELETE FROM products')
-        await db.sequelize.query('DELETE FROM branches')
+        
+        // Limpiar tablas que existen, ignorar errores si no existen
+        const tables = ['purchases', 'inventory', 'sale_items', 'sales', 'users', 'customers', 'products', 'branches']
+        for (const table of tables) {
+            try {
+                await db.sequelize.query(`DELETE FROM ${table}`)
+                console.log(`✓ Tabla ${table} limpiada`)
+            } catch (err) {
+                console.log(`⚠ Tabla ${table} no existe o no se pudo limpiar`)
+            }
+        }
+        
         await db.sequelize.query('PRAGMA foreign_keys = ON')
         console.log('Base de datos limpiada exitosamente')
     } catch (error) {
@@ -47,8 +52,9 @@ const seedDatabase = async (force = false) => {
     // Ejecutar seeds en orden correcto
     const branches = await seedBranches()
     const products = await seedProducts()
-    const customers = await seedCustomers()
+    const customers = await seedCustomers(branches)
     const users = await seedUsers(branches)
+    const purchases = await seedPurchases(users, branches)
     const sales = await seedSales(customers, users, branches)
     const payments = await seedPayments(sales)
     const saleItems = await seedSaleItems(sales, products)
@@ -59,6 +65,7 @@ const seedDatabase = async (force = false) => {
     console.log('Productos creados: ', products.length)
     console.log('Clientes creados: ', customers.length)
     console.log('Usuarios creados: ', users.length)
+    console.log('Compras creadas: ', purchases.length)
     console.log('Ventas creadas: ', sales.length)
     console.log('Items de venta creados: ', saleItems.length)
     console.log('Pagos creados: ', payments.length)
@@ -72,6 +79,7 @@ const seedDatabase = async (force = false) => {
         console.log(`   - ${products.length} productos`)
         console.log(`   - ${customers.length} clientes`)
         console.log(`   - ${users.length} usuarios (owner, admin, manager, cashier)`)
+        console.log(`   - ${purchases.length} compras`)
         console.log(`   - ${sales.length} ventas`)
         console.log(`   - ${inventory.length} items de inventario`)
         console.log('')

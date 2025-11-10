@@ -1,25 +1,37 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function SessionExpiredModal() {
     const [show, setShow] = useState(false)
     const [message, setMessage] = useState('')
     const [countdown, setCountdown] = useState(3)
+    const navigate = useNavigate()
+    const { logout } = useAuth()
+
+    const handleLogout = () => {
+        logout() // Limpiar el contexto de autenticación
+        navigate('/login', { replace: true }) // Redirigir al login
+    }
 
     useEffect(() => {
         const handleSessionExpired = (event) => {
             setMessage(event.detail.message)
             setShow(true)
             
-            // Countdown
+            // Countdown automático
             const interval = setInterval(() => {
                 setCountdown(prev => {
                     if (prev <= 1) {
                         clearInterval(interval)
+                        handleLogout() // Redirigir automáticamente cuando llegue a 0
                         return 0
                     }
                     return prev - 1
                 })
             }, 1000)
+
+            return () => clearInterval(interval)
         }
 
         window.addEventListener('sessionExpired', handleSessionExpired)
@@ -27,7 +39,7 @@ export default function SessionExpiredModal() {
         return () => {
             window.removeEventListener('sessionExpired', handleSessionExpired)
         }
-    }, [])
+    }, [navigate, logout])
 
     if (!show) return null
 
@@ -51,7 +63,7 @@ export default function SessionExpiredModal() {
                 </p>
                 
                 <button 
-                    onClick={() => window.location.href = '/login'}
+                    onClick={handleLogout}
                     className="btn w-full"
                 >
                     Iniciar Sesión Ahora

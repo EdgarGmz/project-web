@@ -15,17 +15,34 @@ export default function Purchases() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('http://localhost:3000/api/purchases', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      })
-      const data = await res.json()
-      if (data.success) {
-        setPurchases(data.data)
-      } else {
-        setError('No se pudieron cargar las compras.')
+      const token = localStorage.getItem('token')
+      if (!token) {
+        setError('No hay sesión activa. Por favor, inicie sesión.')
+        return
       }
-    } catch {
-      setError('Error al cargar las compras.')
+
+      const res = await fetch('http://localhost:3000/api/purchases', {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      const data = await res.json()
+      
+      if (res.ok && data.success) {
+        setPurchases(data.data || [])
+      } else if (res.status === 401) {
+        setError('Sesión expirada. Por favor, inicie sesión nuevamente.')
+        localStorage.removeItem('token')
+      } else if (res.status === 403) {
+        setError('No tiene permisos para ver las compras. Solo propietarios y administradores pueden acceder.')
+      } else {
+        setError(data.message || 'No se pudieron cargar las compras.')
+      }
+    } catch (error) {
+      console.error('Error fetching purchases:', error)
+      setError('Error de conexión al cargar las compras.')
     } finally {
       setLoading(false)
     }
@@ -33,7 +50,7 @@ export default function Purchases() {
 
   const filteredPurchases = purchases.filter(p =>
     p.supplier_name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.reference?.toLowerCase().includes(search.toLowerCase())
+    p.invoice_number?.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
@@ -42,16 +59,29 @@ export default function Purchases() {
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Buscar por proveedor o referencia..."
+          placeholder="Buscar por proveedor o factura..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface"
         />
       </div>
       {loading ? (
-        <div className="text-center py-8 text-muted">Cargando compras...</div>
+        <div className="flex justify-center items-center py-16">
+          <div className="text-lg text-muted">Cargando compras...</div>
+        </div>
       ) : error ? (
-        <div className="text-center py-8 text-red-500">{error}</div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 m-4">
+          <div className="flex items-center mb-2">
+            <div className="text-red-600 font-medium">Error:</div>
+          </div>
+          <div className="text-red-700 mb-4">{error}</div>
+          <button 
+            onClick={fetchPurchases}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
       ) : filteredPurchases.length === 0 ? (
         <div className="text-center py-8 text-muted">No hay compras registradas.</div>
       ) : (
@@ -61,31 +91,35 @@ export default function Purchases() {
               <tr className="border-b border-slate-600/20">
                 <th className="py-2 px-3 text-left">Fecha</th>
                 <th className="py-2 px-3 text-left">Proveedor</th>
-                <th className="py-2 px-3 text-left">Referencia</th>
+                <th className="py-2 px-3 text-left">Factura</th>
                 <th className="py-2 px-3 text-left">Total</th>
                 <th className="py-2 px-3 text-left">Estado</th>
               </tr>
             </thead>
             <tbody>
-              {filteredPurchases.map((p, idx) => (
-                <tr key={idx} className="border-b border-slate-600/10 last:border-0">
-                  <td className="py-2 px-3">{new Date(p.date).toLocaleString()}</td>
+              {filteredPurchases.map((p) => (
+                <tr key={p.id} className="border-b border-slate-600/10 last:border-0">
+                  <td className="py-2 px-3">{new Date(p.purchase_date || p.created_at).toLocaleDateString()}</td>
                   <td className="py-2 px-3">{p.supplier_name}</td>
-                  <td className="py-2 px-3">{p.reference}</td>
-                  <td className="py-2 px-3">${p.total.toFixed(2)}</td>
+                  <td className="py-2 px-3">{p.invoice_number || 'Sin factura'}</td>
+                  <td className="py-2 px-3">${p.total_amount ? parseFloat(p.total_amount).toFixed(2) : '0.00'}</td>
                   <td className="py-2 px-3">
                     <span className={`px-2 py-1 rounded text-xs ${
                       p.status === 'completed'
                         ? 'bg-green-500/20 text-green-400'
                         : p.status === 'pending'
                         ? 'bg-yellow-500/20 text-yellow-400'
-                        : 'bg-red-500/20 text-red-400'
+                        : p.status === 'cancelled'
+                        ? 'bg-red-500/20 text-red-400'
+                        : 'bg-gray-500/20 text-gray-400'
                     }`}>
                       {p.status === 'completed'
                         ? 'Completada'
                         : p.status === 'pending'
                         ? 'Pendiente'
-                        : 'Cancelada'}
+                        : p.status === 'cancelled'
+                        ? 'Cancelada'
+                        : p.status || 'Desconocido'}
                     </span>
                   </td>
                 </tr>

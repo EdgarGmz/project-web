@@ -21,24 +21,34 @@ const apiRequest = async (endpoint, options = {}) =>{
             ...options.headers,// <-- Agregar headers si los hay
         }
 
-        // 3. Si hay token, agregarlo para autenticarnos
-        if(token){
+        // 3. Si hay token, agregarlo para autenticarnos (excepto para login)
+        if(token && endpoint !== '/auth/login'){
             headers['Authorization'] = `Bearer ${token}`
+            console.log('🔑 Agregando token a headers para:', endpoint)
+        } else if (endpoint === '/auth/login') {
+            console.log('🔐 Login request - NO enviando token')
         }
 
         // 4. Hacer la peticion al backend
+        const method = options.method || 'GET'
+        console.log(`📤 ${method} ${endpoint}`)
         const response = await fetch(`${API_URL}${endpoint}`,{
             ...options, 
             headers,
         })
+        console.log(`📥 Response: ${response.status} for ${endpoint}`)
 
         // 5. Convertir la respuesta a JSON
         const data = await response.json()
 
         // 6. Verificar si hubo error
         if(!response.ok){
-            // Si el token es invalido, mostrar el modal y cerrar sesion
-            if (response.status === 401 && !sessionExpiredShown) {
+            console.log(`❌ Error en petición: ${method} ${endpoint} - Status: ${response.status}`)
+            console.log('Response data:', data)
+            
+            // Si el token es invalido, mostrar el modal y cerrar sesion (excepto durante login)
+            if (response.status === 401 && !sessionExpiredShown && endpoint !== '/auth/login') {
+                console.log('🔐 Token expirado detectado, mostrando modal de sesión expirada')
                 sessionExpiredShown = true
 
                 // Emitir evento personalizado para que el componente lo maneje

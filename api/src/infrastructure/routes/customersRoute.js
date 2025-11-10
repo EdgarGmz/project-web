@@ -165,6 +165,48 @@ router.get('/:id', customerController.getCustomerById)
 
 /**
  * @swagger
+ * /api/customers/{id}/details:
+ *   get:
+ *     summary: Obtener detalles completos de un cliente
+ *     tags: [Customers]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID del cliente
+ *     responses:
+ *       200:
+ *         description: Detalles del cliente obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 message: { type: string }
+ *                 data:
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/Customer'
+ *                     - type: object
+ *                       properties:
+ *                         Branch:
+ *                           type: object
+ *                           properties:
+ *                             id: { type: string }
+ *                             name: { type: string }
+ *                             code: { type: string }
+ *                             city: { type: string }
+ *       404:
+ *         description: Cliente no encontrado
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ */
+router.get('/:id/details', customerController.getCustomerDetails)
+
+/**
+ * @swagger
  * /api/customers:
  *   post:
  *     summary: Crear cliente

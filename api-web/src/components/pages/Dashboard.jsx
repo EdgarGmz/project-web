@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { api } from '../../services/api'
 
 export default function Dashboard() {
   const { user, hasPermission } = useAuth()
@@ -94,32 +95,17 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const [statsRes, salesRes, productsRes, stockRes] = await Promise.all([
-        fetch('http://localhost:3000/api/dashboard/stats', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }),
-        fetch('http://localhost:3000/api/dashboard/recent-sales', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }),
-        fetch('http://localhost:3000/api/dashboard/top-products', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }),
-        fetch('http://localhost:3000/api/dashboard/low-stock', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        })
-      ])
-
       const [statsData, salesData, productsData, stockData] = await Promise.all([
-        statsRes.json(),
-        salesRes.json(),
-        productsRes.json(),
-        stockRes.json()
+        api.get('/dashboard/stats'),
+        api.get('/dashboard/recent-sales'),
+        api.get('/dashboard/top-products'),
+        api.get('/dashboard/low-stock')
       ])
 
-      if (statsData.success) setStats(statsData.data)
-      if (salesData.success) setRecentSales(salesData.data)
-      if (productsData.success) setTopProducts(productsData.data)
-      if (stockData.success) setLowStockProducts(stockData.data)
+      if (statsData && statsData.success) setStats(statsData.data)
+      if (salesData && salesData.success) setRecentSales(salesData.data)
+      if (productsData && productsData.success) setTopProducts(productsData.data)
+      if (stockData && stockData.success) setLowStockProducts(stockData.data)
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
     } finally {

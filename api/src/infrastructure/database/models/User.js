@@ -53,13 +53,13 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: true,
             },
             role: {
-                type: DataTypes.ENUM('owner', 'admin', 'supervisor', 'cashier', 'auditor'),
+                type: DataTypes.ENUM('owner', 'admin', 'supervisor', 'cashier'),
                 allowNull: false,
                 defaultValue: 'cashier',
                 validate: {
                     isIn: {
-                        args: [['owner', 'admin', 'supervisor', 'cashier', 'auditor']],
-                        msg: "El rol debe ser uno de: 'owner', 'admin', 'supervisor', 'cashier', 'auditor'",
+                        args: [['owner', 'admin', 'supervisor', 'cashier']],
+                        msg: "El rol debe ser uno de: 'owner', 'admin', 'supervisor', 'cashier'",
                     },
                 },
             },

@@ -9,7 +9,7 @@ const [password, setPassword] = useState('')
 const [loading, setLoading] = useState(false)
 const [error, setError] = useState('')
 
-const { login, user } = useAuth()
+const { login, user, clearSession } = useAuth()
 
 if (user) {
     return <Navigate to="/dashboard" replace />
@@ -87,6 +87,15 @@ return (
                         {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                     </button>
                 </form>
+
+                {/* Botón temporal para limpiar sesión en caso de problemas */}
+                <button 
+                    onClick={clearSession}
+                    className="w-full text-xs text-muted hover:text-text transition border border-muted/30 rounded-md py-2"
+                    title="Limpiar datos de sesión si tienes problemas para iniciar sesión"
+                >
+                    🧹 Limpiar Sesión (Troubleshooting)
+                </button>
 
                 <footer className="text-center">
                     <Link to="/" className="text-muted hover:text-text transition text-sm">

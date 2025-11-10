@@ -20,8 +20,7 @@ const roles = [
     { value: 'owner', label: 'Propietario', color: 'text-purple-400' },
     { value: 'admin', label: 'Administrador', color: 'text-red-400' },
     { value: 'supervisor', label: 'Supervisor', color: 'text-yellow-400' },
-    { value: 'cashier', label: 'Cajero', color: 'text-green-400' },
-    { value: 'auditor', label: 'Auditor', color: 'text-blue-400' }
+    { value: 'cashier', label: 'Cajero', color: 'text-green-400' }
 ]
 
     useEffect(() => {
@@ -113,35 +112,7 @@ const extractBranchesFromUsers = () => {
     setBranches(uniqueBranches)
 }
 
-const updateUserRole = async (userId, newRole) => {
-    try {
-        const response = await userService.update(userId, { role: newRole })
-        if (response.success) {
-            fetchUsers() // Refresh list
-            alert('Rol actualizado correctamente')
-        } else {
-            alert(response.message)
-        }
-    } catch (error) {
-        console.error('Error updating user role:', error)
-        alert('Error al actualizar el rol del usuario')
-    }
-}
 
-const updateUserStatus = async (userId, isActive) => {
-    try {
-        const response = await userService.update(userId, { is_active: isActive })
-        if (response.success) {
-            fetchUsers() // Refresh list
-            alert(`Usuario ${isActive ? 'activado' : 'desactivado'} correctamente`)
-        } else {
-            alert(response.message)
-        }
-    } catch (error) {
-        console.error('Error updating user status:', error)
-        alert('Error al actualizar el estado del usuario')
-    }
-}
 
 // Función para filtrar usuarios
 const filteredUsers = users.filter(userItem => {
@@ -160,6 +131,11 @@ const filteredUsers = users.filter(userItem => {
         userItem.branch_id?.toString() === branchFilter.toString()
     
     return matchesSearch && matchesRole && matchesStatus && matchesBranch
+}).sort((a, b) => {
+    // Primero el owner, luego por fecha de creación (más recientes primero)
+    if (a.role === 'owner' && b.role !== 'owner') return -1
+    if (a.role !== 'owner' && b.role === 'owner') return 1
+    return new Date(b.created_at) - new Date(a.created_at)
 })
 
 const handleEditUser = (userToEdit) => {
@@ -187,12 +163,12 @@ const handleDeleteUser = async (userToDelete) => {
 }
 
 const canEditRole = (targetUser) => {
-    // Solo OWNER puede editar cualquier rol
-    if (user.role === 'owner') return true
+    // Solo OWNER puede editar cualquier rol (excepto otros owners)
+    if (user.role === 'owner') return targetUser.role !== 'owner'
     
-    // ADMIN puede editar solo supervisor, cashier, auditor
+    // ADMIN puede editar solo supervisor, cashier (no otros admin ni owner)
     if (user.role === 'admin') {
-        return !['owner', 'admin'].includes(targetUser.role)
+        return ['supervisor', 'cashier'].includes(targetUser.role)
     }
     
     // TEMPORAL: Permitir más roles mientras se configura
@@ -210,7 +186,7 @@ const canEditStatus = (targetUser) => {
     // OWNER puede editar cualquier estado excepto otros owners
     if (user.role === 'owner') return targetUser.role !== 'owner'
     
-    // ADMIN puede editar estado de supervisor, cashier, auditor
+    // ADMIN puede editar estado de supervisor, cashier
     if (user.role === 'admin') {
         return !['owner', 'admin'].includes(targetUser.role)
     }
@@ -454,32 +430,9 @@ return (
                     </td>
                     <td className="py-3 px-4 text-muted">{userItem.email}</td>
                     <td className="py-3 px-4">
-                    {canEditRole(userItem) && userItem.id !== user.id ? (
-                        <select
-                        value={userItem.role}
-                        onChange={(e) => updateUserRole(userItem.id, e.target.value)}
-                        className="bg-surface border border-slate-600/30 rounded px-2 py-1 text-sm min-w-[120px]"
-                        >
-                        {roles
-                            .filter(role => {
-                            // OWNER puede asignar cualquier rol excepto owner
-                            if (user.role === 'owner') return role.value !== 'owner'
-                            // ADMIN solo puede asignar supervisor, cashier, auditor
-                            if (user.role === 'admin') return ['supervisor', 'cashier', 'auditor'].includes(role.value)
-                            return false
-                            })
-                            .map(role => (
-                            <option key={role.value} value={role.value}>
-                                {role.label}
-                            </option>
-                            ))
-                        }
-                        </select>
-                    ) : (
                         <span className={`${roles.find(r => r.value === userItem.role)?.color || 'text-text'} font-medium`}>
                         {roles.find(r => r.value === userItem.role)?.label || userItem.role}
                         </span>
-                    )}
                     </td>
                     <td className="py-3 px-4 text-muted text-sm">
                         {userItem.Branch ? (
@@ -492,20 +445,6 @@ return (
                         )}
                     </td>
                     <td className="py-3 px-4">
-                    {canEditStatus(userItem) ? (
-                        <select
-                        value={userItem.is_active ? 'active' : 'inactive'}
-                        onChange={(e) => updateUserStatus(userItem.id, e.target.value === 'active')}
-                        className={`px-3 py-1 rounded-full text-xs font-medium border-0 min-w-[90px] ${
-                            userItem.is_active
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                        }`}
-                        >
-                        <option value="active">🟢 Activo</option>
-                        <option value="inactive">🔴 Inactivo</option>
-                        </select>
-                    ) : (
                         <div className="flex items-center gap-2">
                             <div className={`w-2 h-2 rounded-full ${
                                 userItem.is_active ? 'bg-green-500' : 'bg-red-500'
@@ -518,7 +457,6 @@ return (
                             {userItem.is_active ? 'Activo' : 'Inactivo'}
                             </span>
                         </div>
-                    )}
                     </td>
                     <td className="py-3 px-4 text-muted text-sm">
                     {userItem.created_at ? new Date(userItem.created_at).toLocaleDateString() : 'N/A'}
