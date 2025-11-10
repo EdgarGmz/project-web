@@ -48,7 +48,7 @@ const authenticate = async (req, res, next) => {
         const user = await User.findByPk(decoded.id, {
             include: [{
                 model: Branch,
-                as: 'Branch',
+                as: 'branch',
                 attributes: ['id', 'name', 'code', 'city']
             }],
             attributes: ['id', 'first_name', 'last_name', 'email', 'role', 'employee_id', 'branch_id', 'is_active']

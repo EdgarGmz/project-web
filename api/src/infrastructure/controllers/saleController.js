@@ -45,7 +45,7 @@ const getAllSales = async (req, res) => {
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name']
                 },
                 {
@@ -103,7 +103,7 @@ const getSaleById = async (req, res) => {
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name', 'address']
                 },
                 {
@@ -311,7 +311,7 @@ const createSale = async (req, res) => {
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name']
                 },
                 {

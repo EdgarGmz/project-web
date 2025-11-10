@@ -83,8 +83,8 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: true,
             },
             branch_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false, // Volver a requerido
+                type: DataTypes.UUID,
+                allowNull: true, // Permitir null para admins/owners sin sucursal
                 references: {
                     model: 'branches',
                     key: 'id',

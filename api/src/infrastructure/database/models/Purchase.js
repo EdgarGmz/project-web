@@ -165,7 +165,7 @@ module.exports = (sequelize, DataTypes) => {
     Purchase.associate = function (models) {
         Purchase.belongsTo(models.Branch, {
             foreignKey: 'branch_id',
-            as: 'Branch'
+            as: 'branch'
         })
         
         Purchase.belongsTo(models.User, {

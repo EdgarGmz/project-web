@@ -30,7 +30,7 @@ const getAllInventory = async (req, res) => {
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name', 'address']
                 }
             ]
@@ -80,7 +80,7 @@ const getInventoryById = async (req, res) => {
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name', 'address']
                 }
             ]
@@ -170,7 +170,7 @@ const createInventory = async (req, res) => {
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name']
                 }
             ]
@@ -238,7 +238,7 @@ const updateInventory = async (req, res) => {
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name']
                 }
             ]

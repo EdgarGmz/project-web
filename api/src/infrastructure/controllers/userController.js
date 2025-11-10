@@ -30,7 +30,7 @@ const getAllUsers = async (req, res) => {
             include: [
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name']
                 }
             ],
@@ -68,7 +68,7 @@ const getUserById = async (req, res) => {
             include: [
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name', 'address']
                 }
             ],

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { purchaseService } from '../../services/purchaseService'
 
 export default function Purchases() {
   const [purchases, setPurchases] = useState([])
@@ -15,34 +16,25 @@ export default function Purchases() {
     setLoading(true)
     setError('')
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        setError('No hay sesión activa. Por favor, inicie sesión.')
-        return
-      }
-
-      const res = await fetch('http://localhost:3000/api/purchases', {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
+      const response = await purchaseService.getAll()
       
-      const data = await res.json()
-      
-      if (res.ok && data.success) {
-        setPurchases(data.data || [])
-      } else if (res.status === 401) {
-        setError('Sesión expirada. Por favor, inicie sesión nuevamente.')
-        localStorage.removeItem('token')
-      } else if (res.status === 403) {
-        setError('No tiene permisos para ver las compras. Solo propietarios y administradores pueden acceder.')
+      if (response && response.success) {
+        setPurchases(response.data || [])
       } else {
-        setError(data.message || 'No se pudieron cargar las compras.')
+        setError(response?.message || 'No se pudieron cargar las compras.')
       }
     } catch (error) {
       console.error('Error fetching purchases:', error)
-      setError('Error de conexión al cargar las compras.')
+      
+      // El servicio api.js ya maneja la sesión expirada automáticamente
+      // Solo necesitamos manejar otros tipos de errores aquí
+      if (error.message && error.message.includes('403')) {
+        setError('No tiene permisos para ver las compras. Solo propietarios y administradores pueden acceder.')
+      } else if (error.message) {
+        setError(error.message)
+      } else {
+        setError('Error de conexión al cargar las compras.')
+      }
     } finally {
       setLoading(false)
     }

@@ -243,4 +243,41 @@ router.put('/:id', authorize('admin'), branchController.updateBranch)
  */
 router.delete('/:id', authorize('admin'), branchController.deleteBranch)
 
+/**
+ * @swagger
+ * /api/branches/{id}/assign-users:
+ *   put:
+ *     summary: Asignar usuarios a una sucursal
+ *     tags: [Branches]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la sucursal
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array de IDs de usuarios a asignar
+ *     responses:
+ *       200:
+ *         description: Usuarios asignados exitosamente
+ *       400:
+ *         description: Error en los datos proporcionados
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Sucursal no encontrada
+ */
+router.put('/:id/assign-users', authorize('admin', 'owner'), branchController.assignUsersToBranch)
+
 module.exports = router

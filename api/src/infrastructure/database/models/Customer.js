@@ -139,7 +139,7 @@ module.exports = (sequelize, DataTypes) => {
         
         Customer.belongsTo(models.Branch, {
             foreignKey: 'branch_id',
-            as: 'Branch'
+            as: 'branch'
         })
     }
 

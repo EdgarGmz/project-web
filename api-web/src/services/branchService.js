@@ -24,5 +24,10 @@ export const branchService = {
     // Eliminar sucursal
     delete: async (id) => {
         return await api.delete(`/branches/${id}`)
+    },
+
+    // Asignar usuarios a sucursal
+    assignUsers: async (id, userIds) => {
+        return await api.put(`/branches/${id}/assign-users`, { userIds })
     }
 }

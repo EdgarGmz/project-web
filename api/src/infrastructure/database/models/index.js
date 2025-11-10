@@ -17,8 +17,14 @@ fs.readdirSync(__dirname)
 
 // Definir asociaciones entre modelos
 if (db.Branch && db.User) {
-  db.Branch.hasMany(db.User, { foreignKey: 'branch_id' })
-  db.User.belongsTo(db.Branch, { foreignKey: 'branch_id' })
+  db.Branch.hasMany(db.User, { 
+    foreignKey: 'branch_id', 
+    as: 'users' 
+  })
+  db.User.belongsTo(db.Branch, { 
+    foreignKey: 'branch_id', 
+    as: 'branch' 
+  })
 }
 
 if (db.Branch && db.Inventory) {
@@ -29,7 +35,7 @@ if (db.Branch && db.Inventory) {
 // Asociación Customer - Branch (agregada para soporte de clientes por sucursal)
 if (db.Branch && db.Customer) {
   db.Branch.hasMany(db.Customer, { foreignKey: 'branch_id' })
-  db.Customer.belongsTo(db.Branch, { foreignKey: 'branch_id', as: 'Branch' })
+  db.Customer.belongsTo(db.Branch, { foreignKey: 'branch_id', as: 'branch' })
 }
 
 if (db.Product && db.Inventory) {
@@ -85,12 +91,12 @@ if (db.Product && db.Return) {
 // Asociaciones Purchase - Branch y Purchase - User
 if (db.Branch && db.Purchase) {
   db.Branch.hasMany(db.Purchase, { foreignKey: 'branch_id' })
-  db.Purchase.belongsTo(db.Branch, { foreignKey: 'branch_id', as: 'Branch' })
+  db.Purchase.belongsTo(db.Branch, { foreignKey: 'branch_id', as: 'branch' })
 }
 
 if (db.User && db.Purchase) {
   db.User.hasMany(db.Purchase, { foreignKey: 'user_id' })
-  db.Purchase.belongsTo(db.User, { foreignKey: 'user_id', as: 'User' })
+  db.Purchase.belongsTo(db.User, { foreignKey: 'user_id', as: 'user' })
 }
 
 // Exportar instancia y modelos

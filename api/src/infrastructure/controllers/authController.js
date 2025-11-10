@@ -20,7 +20,7 @@ const cleanUser = (user) => ({
     role: user.role,
     employee_id: user.employee_id,
     branch_id: user.branch_id,
-    branch: user.Branch,
+    branch: user.branch,
 });
 
 // Login
@@ -38,7 +38,7 @@ const login = async (req, res) => {
             include: [
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name', 'code', 'city'],
                 },
             ],
@@ -93,7 +93,7 @@ const getProfile = async (req, res) => {
             include: [
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name', 'code', 'city', 'address'],
                 },
             ],
@@ -153,7 +153,7 @@ const updateProfile = async (req, res) => {
             include: [
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name', 'code', 'city'],
                 },
             ],

@@ -42,7 +42,7 @@ const getAllCustomers = async (req, res) => {
             include: [
                 {
                     model: db.Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name', 'code']
                 }
             ]
@@ -118,7 +118,7 @@ const getCustomerDetails = async (req, res) => {
             include: [
                 {
                     model: db.Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name', 'code', 'city']
                 }
             ]
