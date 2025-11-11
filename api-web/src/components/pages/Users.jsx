@@ -93,11 +93,11 @@ const extractBranchesFromUsers = () => {
     
     const uniqueBranches = users
         .filter(user => {
-            console.log('User:', user.first_name, 'Branch:', user.Branch)
-            return user.Branch
+            console.log('User:', user.first_name, 'Branch:', user.branch)
+            return user.branch
         }) // Solo usuarios con sucursal
         .reduce((acc, user) => {
-            const branch = user.Branch
+            const branch = user.branch
             if (!acc.find(b => b.id === branch.id)) {
                 acc.push({
                     id: branch.id,
@@ -435,10 +435,10 @@ return (
                         </span>
                     </td>
                     <td className="py-3 px-4 text-muted text-sm">
-                        {userItem.Branch ? (
+                        {userItem.branch ? (
                             <div className="flex items-center gap-2">
                                 <span className="text-blue-500">🏢</span>
-                                <span>{userItem.Branch.name}</span>
+                                <span>{userItem.branch.name}</span>
                             </div>
                         ) : (
                             <span className="text-gray-400">Sin asignar</span>
