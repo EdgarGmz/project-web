@@ -88,7 +88,7 @@ module.exports = (sequelize, DataTypes) => {
     // Métodos de instancia
     Inventory.prototype.checkLowStock = async function () {
         if (parseFloat(this.stock_current) <= parseFloat(this.stock_minimum)) {
-            console.warn(`⚠️ STOCK BAJO: ${this.Product?.name || 'Producto'} en ${this.branch?.name || 'Sucursal'}`)
+            console.warn(`⚠️ STOCK BAJO: ${this.Product?.name || 'Producto'} en ${this.Branch?.name || 'Sucursal'}`)
             console.warn(`  Actual: ${this.stock_current}, Minimo: ${this.stock_minimum}`)
             return true
         }
@@ -137,7 +137,7 @@ module.exports = (sequelize, DataTypes) => {
         })
         Inventory.belongsTo(models.Branch, {
             foreignKey: 'branch_id',
-            as: 'branch',
+            as: 'Branch',
             onUpdate: 'CASCADE',
             onDelete: 'CASCADE'
         })

@@ -1,9 +1,16 @@
 import { api } from '../services/api'
 
 export const branchService = {
-    // Obtener todos las sucursales
-    getAll: async () => {
-        return await api.get('/branches')
+    // Obtener todos las sucursales con paginación y búsqueda
+    getAll: async (params = {}) => {
+        const queryParams = new URLSearchParams()
+        if (params.page) queryParams.append('page', params.page)
+        if (params.limit) queryParams.append('limit', params.limit)
+        if (params.search) queryParams.append('search', params.search)
+        
+        const queryString = queryParams.toString()
+        const url = queryString ? `/branches?${queryString}` : '/branches'
+        return await api.get(url)
     },
 
     // Obtener sucursal por ID

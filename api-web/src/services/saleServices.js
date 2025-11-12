@@ -1,9 +1,10 @@
 import { api } from './api'
 
 export const saleService = {
-    // Obtener todos las ventas
-    getAll: async () => {
-        return await api.get('/sales')
+    // Obtener todos las ventas con parámetros opcionales
+    getAll: async (queryParams = '') => {
+        const url = queryParams ? `/sales?${queryParams}` : '/sales'
+        return await api.get(url)
     },
 
     // Obtener venta por ID
@@ -21,7 +22,7 @@ export const saleService = {
         return await api.put(`/sales/${id}`, salesData)
     },
 
-    // Eliminar venta
+    // Eliminar/cancelar venta
     delete: async (id) => {
         return await api.delete(`/sales/${id}`)
     }

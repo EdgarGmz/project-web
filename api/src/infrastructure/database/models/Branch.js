@@ -108,21 +108,6 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: true
-        },
-
-        created_at: {
-            type: DataTypes.DATE,
-            allowNull: false
-        },
-
-        updated_at: {
-            type: DataTypes.DATE,
-            allowNull: false
-        },
-
-        deleted_at: {
-            type: DataTypes.DATE,
-            allowNull: true
         }
     }, {
         tableName: 'branches',
@@ -170,6 +155,12 @@ module.exports = (sequelize, DataTypes) => {
         Branch.hasMany(models.UserSession, {
             foreignKey: 'branch_id',
             as: 'sessions'
+        })
+
+        // Un Branch tiene muchos registros de Inventario
+        Branch.hasMany(models.Inventory, {
+            foreignKey: 'branch_id',
+            as: 'inventory'
         })
     }
 

@@ -19,16 +19,26 @@ export default function Branches() {
 
   const [formData, setFormData] = useState({
     name: '',
+    code: '',
     address: '',
+    city: '',
+    state: '',
+    postal_code: '',
     phone: '',
-    manager: '',
-    status: 'active'
+    email: '',
+    manager_id: '',
+    is_active: true
   })
+  
+  // Estados para paginación y búsqueda
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchBranches()
     fetchUsers()
-  }, [])
+  }, [currentPage, searchTerm])
 
   const fetchUsers = async () => {
     try {
@@ -48,9 +58,16 @@ export default function Branches() {
   const fetchBranches = async () => {
     try {
       setError('')
-      const response = await branchService.getAll()
+      const response = await branchService.getAll({
+        page: currentPage,
+        limit: 10,
+        search: searchTerm
+      })
       if (response && response.success) {
         setBranches(response.data || [])
+        if (response.pagination) {
+          setTotalPages(response.pagination.pages)
+        }
       }
     } catch (error) {
       console.error('Error fetching branches:', error)
@@ -66,18 +83,53 @@ export default function Branches() {
     
     try {
       setError('')
+      
+      // Validar código postal
+      if (!/^\d{5}(-\d{4})?$/.test(formData.postal_code)) {
+        setError('El código postal debe tener el formato: 12345 o 12345-6789')
+        setSaving(false)
+        return
+      }
+      
+      // Validar email
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        setError('El email no tiene un formato válido')
+        setSaving(false)
+        return
+      }
+      
+      // Preparar datos para enviar (eliminar campos vacíos opcionales)
+      const dataToSend = { ...formData }
+      if (!dataToSend.manager_id) {
+        delete dataToSend.manager_id
+      }
+      if (!dataToSend.phone) {
+        delete dataToSend.phone
+      }
+      
       let response
       if (editingBranch) {
-        response = await branchService.update(editingBranch.id, formData)
+        response = await branchService.update(editingBranch.id, dataToSend)
       } else {
-        response = await branchService.create(formData)
+        response = await branchService.create(dataToSend)
       }
       
       if (response && response.success) {
         fetchBranches()
         setShowForm(false)
         setEditingBranch(null)
-        setFormData({ name: '', address: '', phone: '', manager: '', status: 'active' })
+        setFormData({
+          name: '',
+          code: '',
+          address: '',
+          city: '',
+          state: '',
+          postal_code: '',
+          phone: '',
+          email: '',
+          manager_id: '',
+          is_active: true
+        })
         setSuccess(editingBranch ? 'Sucursal actualizada exitosamente' : 'Sucursal creada exitosamente')
         setTimeout(() => setSuccess(''), 3000)
       }
@@ -92,11 +144,16 @@ export default function Branches() {
   const handleEdit = (branch) => {
     setEditingBranch(branch)
     setFormData({
-      name: branch.name,
-      address: branch.address,
-      phone: branch.phone,
-      manager: branch.manager,
-      status: branch.status
+      name: branch.name || '',
+      code: branch.code || '',
+      address: branch.address || '',
+      city: branch.city || '',
+      state: branch.state || '',
+      postal_code: branch.postal_code || '',
+      phone: branch.phone || '',
+      email: branch.email || '',
+      manager_id: branch.manager_id || '',
+      is_active: branch.is_active !== undefined ? branch.is_active : true
     })
     setShowForm(true)
   }
@@ -175,11 +232,39 @@ export default function Branches() {
           <h1 className="text-2xl font-semibold">Sucursales</h1>
           <p className="text-muted">Gestiona las sucursales de la franquicia</p>
         </div>
-        {hasPermission(['owner', 'admin']) && (
-          <button onClick={() => setShowForm(true)} className="btn">
-            + Nueva Sucursal
-          </button>
-        )}
+        <div className="flex gap-3 items-center">
+          {/* Buscador */}
+          <input
+            type="text"
+            placeholder="Buscar sucursal..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              setCurrentPage(1)
+            }}
+            className="px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+          />
+          {hasPermission(['owner', 'admin']) && (
+            <button onClick={() => {
+              setEditingBranch(null)
+              setFormData({
+                name: '',
+                code: '',
+                address: '',
+                city: '',
+                state: '',
+                postal_code: '',
+                phone: '',
+                email: '',
+                manager_id: '',
+                is_active: true
+              })
+              setShowForm(true)
+            }} className="btn">
+              + Nueva Sucursal
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Stats */}
@@ -190,13 +275,13 @@ export default function Branches() {
         </div>
         <div className="card text-center">
           <div className="text-2xl font-semibold text-green-400">
-            {branches.filter(b => b.status === 'active').length}
+            {branches.filter(b => b.is_active).length}
           </div>
           <div className="text-muted">Activas</div>
         </div>
         <div className="card text-center">
           <div className="text-2xl font-semibold text-red-400">
-            {branches.filter(b => b.status === 'inactive').length}
+            {branches.filter(b => !b.is_active).length}
           </div>
           <div className="text-muted">Inactivas</div>
         </div>
@@ -214,11 +299,11 @@ export default function Branches() {
                 <div>
                   <h3 className="font-semibold">{branch.name}</h3>
                   <span className={`text-xs px-2 py-1 rounded ${
-                    branch.status === 'active' 
+                    branch.is_active 
                       ? 'bg-green-500/20 text-green-400' 
                       : 'bg-red-500/20 text-red-400'
                   }`}>
-                    {branch.status === 'active' ? 'Activa' : 'Inactiva'}
+                    {branch.is_active ? 'Activa' : 'Inactiva'}
                   </span>
                 </div>
               </div>
@@ -251,17 +336,29 @@ export default function Branches() {
             
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2 text-muted">
-                <span>📍</span>
-                <span>{branch.address}</span>
+                <span>🏷️</span>
+                <span className="font-medium">{branch.code}</span>
               </div>
               <div className="flex items-center gap-2 text-muted">
-                <span>📞</span>
-                <span>{branch.phone}</span>
+                <span>📍</span>
+                <span>{branch.address}, {branch.city}, {branch.state}</span>
               </div>
-              <div className="text-muted">
+              <div className="flex items-center gap-2 text-muted">
+                <span>�</span>
+                <span>{branch.postal_code}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted">
+                <span>�📞</span>
+                <span>{branch.phone || 'Sin teléfono'}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted">
+                <span>📧</span>
+                <span>{branch.email}</span>
+              </div>
+              <div className="text-muted mt-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <span>�</span>
-                  <span className="font-medium">Supervisores:</span>
+                  <span>👥</span>
+                  <span className="font-medium">Personal asignado:</span>
                 </div>
                 {branch.users && branch.users.length > 0 ? (
                   <div className="space-y-1 ml-6">
@@ -275,7 +372,7 @@ export default function Branches() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-sm ml-6 text-muted">Sin supervisores asignados</div>
+                  <div className="text-sm ml-6 text-muted">Sin personal asignado</div>
                 )}
               </div>
             </div>
@@ -283,66 +380,153 @@ export default function Branches() {
         ))}
       </div>
 
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-6">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-2 border border-slate-600/30 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface"
+          >
+            ← Anterior
+          </button>
+          <span className="text-sm text-muted">
+            Página {currentPage} de {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-2 border border-slate-600/30 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface"
+          >
+            Siguiente →
+          </button>
+        </div>
+      )}
+
       {/* Modal formulario */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="card max-w-md w-full">
+          <div className="card max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold">
                 {editingBranch ? 'Editar Sucursal' : 'Nueva Sucursal'}
               </h3>
-              <button onClick={() => setShowForm(false)}>✕</button>
+              <button onClick={() => setShowForm(false)} className="text-2xl hover:opacity-70">✕</button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Nombre</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  required
-                  className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Nombre *</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                    placeholder="Sucursal Centro"
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Código *</label>
+                  <input
+                    type="text"
+                    value={formData.code}
+                    onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
+                    required
+                    placeholder="SUC-001"
+                    maxLength="20"
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md uppercase"
+                  />
+                  <p className="text-xs text-muted mt-1">3-20 caracteres en mayúsculas</p>
+                </div>
               </div>
+
               <div>
-                <label className="block text-sm font-medium mb-2">Dirección</label>
+                <label className="block text-sm font-medium mb-2">Dirección *</label>
                 <textarea
                   value={formData.address}
                   onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                   required
+                  placeholder="Av. Principal #123, Col. Centro"
                   className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  rows="3"
+                  rows="2"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Teléfono</label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                />
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Ciudad *</label>
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    required
+                    placeholder="Ciudad de México"
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Estado *</label>
+                  <input
+                    type="text"
+                    value={formData.state}
+                    onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                    required
+                    placeholder="CDMX"
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Código Postal *</label>
+                  <input
+                    type="text"
+                    value={formData.postal_code}
+                    onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
+                    required
+                    placeholder="12345"
+                    pattern="\d{5}(-\d{4})?"
+                    maxLength="10"
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  />
+                  <p className="text-xs text-muted mt-1">Formato: 12345 o 12345-6789</p>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Encargado</label>
-                <input
-                  type="text"
-                  value={formData.manager}
-                  onChange={(e) => setFormData(prev => ({ ...prev, manager: e.target.value }))}
-                  className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Teléfono</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="+52 55 1234 5678"
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email *</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    required
+                    placeholder="sucursal@ejemplo.com"
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  />
+                </div>
               </div>
+
               <div>
-                <label className="block text-sm font-medium mb-2">Estado</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                  className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                >
-                  <option value="active">Activa</option>
-                  <option value="inactive">Inactiva</option>
-                </select>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_active}
+                    onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm font-medium">Sucursal activa</span>
+                </label>
               </div>
 
               <div className="flex gap-3 pt-4">
@@ -356,7 +540,7 @@ export default function Branches() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="px-4 py-2 border border-slate-600/30 rounded-md"
+                  className="px-4 py-2 border border-slate-600/30 rounded-md hover:bg-surface"
                   disabled={saving}
                 >
                   Cancelar

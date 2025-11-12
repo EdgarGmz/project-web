@@ -25,13 +25,11 @@ import Products from './components/pages/Products'
 import Users from './components/pages/Users'
 
 // Formularios
-import BranchForm from './components/organisms/BranchForm'
 import CustomerForm from './components/organisms/CustomerForm'
 import ProductForm from './components/organisms/ProductForm'
 import UserForm from './components/organisms/UserForm'
 
 // Inventario y Ventas
-import InventoryForm from './components/organisms/InventoryForm'
 import Payments from './components/organisms/Payments'
 import Purchases from './components/organisms/Purchases'
 import Returns from './components/organisms/Returns'
@@ -116,20 +114,6 @@ export default function App() {
               </DashboardLayout>
             </ProtectedRoute>
           } />
-          <Route path="/branches/new" element={
-            <ProtectedRoute roles={['owner', 'admin']}>
-              <DashboardLayout>
-                <BranchForm />
-              </DashboardLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/branches/:id/edit" element={
-            <ProtectedRoute roles={['owner', 'admin']}>
-              <DashboardLayout>
-                <BranchForm />
-              </DashboardLayout>
-            </ProtectedRoute>
-          } />
 
           {/* Gestión de productos */}
           <Route path="/products" element={
@@ -200,20 +184,6 @@ export default function App() {
             <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
               <DashboardLayout>
                 <Inventory />
-              </DashboardLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/inventory/new" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
-              <DashboardLayout>
-                <InventoryForm />
-              </DashboardLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/inventory/:id/edit" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
-              <DashboardLayout>
-                <InventoryForm />
               </DashboardLayout>
             </ProtectedRoute>
           } />
