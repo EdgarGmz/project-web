@@ -1,5 +1,5 @@
 const db = require('../database/models')
-const { Branch } = db
+const { Branch, User } = db
 
 // Obtener todas las sucursales con paginación y búsqueda
 const getAllBranches = async (req, res) => {
@@ -20,7 +20,14 @@ const getAllBranches = async (req, res) => {
             limit,
             offset,
             order: [['created_at', 'DESC']],
-            attributes: { exclude: ['deleted_at'] }
+            attributes: { exclude: ['deleted_at'] },
+            include: [{
+                model: User,
+                as: 'users',
+                attributes: ['id', 'first_name', 'last_name', 'email', 'role'],
+                where: { is_active: true },
+                required: false
+            }]
         })
 
         res.json({
@@ -50,7 +57,15 @@ const getBranchById = async (req, res) => {
     try {
         const { id } = req.params
 
-        const branch = await Branch.findByPk(id)
+        const branch = await Branch.findByPk(id, {
+            include: [{
+                model: User,
+                as: 'users',
+                attributes: ['id', 'first_name', 'last_name', 'email', 'role'],
+                where: { is_active: true },
+                required: false
+            }]
+        })
 
         if (!branch) {
             return res.status(404).json({
@@ -181,10 +196,89 @@ const deleteBranch = async (req, res) => {
     }
 }
 
+// Asignar usuarios a una sucursal
+const assignUsersToBranch = async (req, res) => {
+    try {
+        const { id } = req.params
+        const { userIds } = req.body
+
+        // Verificar que la sucursal existe
+        const branch = await Branch.findByPk(id)
+        if (!branch) {
+            return res.status(404).json({
+                success: false,
+                message: 'Sucursal no encontrada'
+            })
+        }
+
+        // Verificar que los usuarios existen y son supervisores o cajeros
+        if (userIds && userIds.length > 0) {
+            const users = await User.findAll({
+                where: {
+                    id: userIds,
+                    role: ['supervisor', 'cashier'],
+                    is_active: true
+                }
+            })
+
+            if (users.length !== userIds.length) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Uno o más usuarios no son válidos o no tienen el rol apropiado'
+                })
+            }
+
+            // Desasignar todos los usuarios actuales de esta sucursal
+            await User.update(
+                { branch_id: null },
+                { where: { branch_id: id } }
+            )
+
+            // Asignar los nuevos usuarios a la sucursal
+            await User.update(
+                { branch_id: id },
+                { where: { id: userIds } }
+            )
+        } else {
+            // Si no se proporcionan usuarios, desasignar todos
+            await User.update(
+                { branch_id: null },
+                { where: { branch_id: id } }
+            )
+        }
+
+        // Obtener la sucursal actualizada con sus usuarios
+        const updatedBranch = await Branch.findByPk(id, {
+            include: [{
+                model: User,
+                as: 'users',
+                attributes: ['id', 'first_name', 'last_name', 'email', 'role'],
+                where: { is_active: true },
+                required: false
+            }]
+        })
+
+        res.json({
+            success: true,
+            message: 'Usuarios asignados exitosamente',
+            data: updatedBranch
+        })
+
+    } catch (error) {
+        console.error('Error al asignar usuarios:', error)
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor',
+            error: error.message
+        })
+    }
+}
+
 module.exports = {
     getAllBranches,
     getBranchById,
     createBranch,
     updateBranch,
-    deleteBranch
+    deleteBranch,
+    assignUsersToBranch
 }

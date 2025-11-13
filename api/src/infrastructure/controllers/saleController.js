@@ -13,6 +13,7 @@ const getAllSales = async (req, res) => {
         const branch_id = req.query.branch_id
         const user_id = req.query.user_id
         const customer_id = req.query.customer_id
+        const payment_method = req.query.payment_method
         const date_from = req.query.date_from
         const date_to = req.query.date_to
 
@@ -20,6 +21,7 @@ const getAllSales = async (req, res) => {
         if (branch_id) whereClause.branch_id = branch_id
         if (user_id) whereClause.user_id = user_id
         if (customer_id) whereClause.customer_id = customer_id
+        if (payment_method) whereClause.payment_method = payment_method
         
         if (date_from || date_to) {
             whereClause.created_at = {}
@@ -35,26 +37,26 @@ const getAllSales = async (req, res) => {
             include: [
                 {
                     model: Customer,
-                    as: 'Customer',
+                    as: 'customer',
                     attributes: ['id', 'first_name', 'last_name', 'email'] 
                 },
                 {
                     model: User,
-                    as: 'User',
+                    as: 'user',
                     attributes: ['id', 'first_name', 'last_name', 'email'] 
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name']
                 },
                 {
                     model: SaleItem,
-                    as: 'SaleItems',
+                    as: 'items',
                     include: [
                         {
                             model: Product,
-                            as: 'Product',
+                            as: 'product',
                             attributes: ['id', 'name', 'sku']
                         }
                     ]
@@ -93,26 +95,26 @@ const getSaleById = async (req, res) => {
             include: [
                 {
                     model: Customer,
-                    as: 'Customer',
+                    as: 'customer',
                     attributes: ['id', 'first_name', 'last_name', 'email', 'phone']
                 },
                 {
                     model: User,
-                    as: 'User',
+                    as: 'user',
                     attributes: ['id', 'first_name', 'last_name', 'email']
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name', 'address']
                 },
                 {
                     model: SaleItem,
-                    as: 'SaleItems',
+                    as: 'items',
                     include: [
                         {
                             model: Product,
-                            as: 'Product',
+                            as: 'product',
                             attributes: ['id', 'name', 'sku', 'unit_price']
                         }
                     ]
@@ -266,14 +268,17 @@ const createSale = async (req, res) => {
             status: 'completed'
         }, { transaction })
 
-        await Payment.create({
-            customer_id: customer_id,
-            amount: totalAmount,
-            method: payment_method,
-            reference: transaction_reference,
-            status: 'completed',
-            notes: `Pago generado automáticamente por la venta ${newSale.id}`
-        }, { transaction })
+        // Crear registro de pago solo si hay customer_id
+        if (customer_id) {
+            await Payment.create({
+                customer_id: customer_id,
+                amount: totalAmount,
+                method: payment_method,
+                reference: transaction_reference,
+                status: 'completed',
+                notes: `Pago generado automáticamente por la venta ${newSale.id}`
+            }, { transaction })
+        }
 
         // Crear los items de venta y actualizar inventario
         for (const item of validatedItems) {
@@ -301,26 +306,26 @@ const createSale = async (req, res) => {
             include: [
                 {
                     model: Customer,
-                    as: 'Customer',
+                    as: 'customer',
                     attributes: ['id', 'first_name', 'last_name', 'email']
                 },
                 {
                     model: User,
-                    as: 'User',
+                    as: 'user',
                     attributes: ['id', 'first_name', 'last_name']
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name']
                 },
                 {
                     model: SaleItem,
-                    as: 'SaleItems',
+                    as: 'items',
                     include: [
                         {
                             model: Product,
-                            as: 'Product',
+                            as: 'product',
                             attributes: ['id', 'name', 'sku']
                         }
                     ]

@@ -120,11 +120,12 @@ module.exports = (sequelize, DataTypes) => {
         defaultScope: {
             where: { is_active: true }
         },
+        
         scopes: {
             all: { where: {} },
             lowStock: {
                 where: sequelize.where(
-                    sequelize.col('current_stock'),
+                    sequelize.col('stock_current'),
                     Op.lte,
                     sequelize.col('min_stock')
                 )

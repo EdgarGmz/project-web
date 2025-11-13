@@ -53,22 +53,21 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: true,
             },
             role: {
-                type: DataTypes.ENUM('owner', 'admin', 'supervisor', 'cashier', 'auditor'),
+                type: DataTypes.ENUM('owner', 'admin', 'supervisor', 'cashier'),
                 allowNull: false,
                 defaultValue: 'cashier',
                 validate: {
                     isIn: {
-                        args: [['owner', 'admin', 'supervisor', 'cashier', 'auditor']],
-                        msg: "El rol debe ser uno de: 'owner', 'admin', 'supervisor', 'cashier', 'auditor'",
+                        args: [['owner', 'admin', 'supervisor', 'cashier']],
+                        msg: "El rol debe ser uno de: 'owner', 'admin', 'supervisor', 'cashier'",
                     },
                 },
             },
             employee_id: {
                 type: DataTypes.STRING(20),
-                allowNull: false,
+                allowNull: true, // Mantener opcional
                 unique: true,
                 validate: {
-                    notEmpty: true,
                     isAlphanumeric: true,
                     len: [3, 20],
                 },
@@ -84,8 +83,8 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: true,
             },
             branch_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
+                type: DataTypes.UUID,
+                allowNull: true, // Permitir null para admins/owners sin sucursal
                 references: {
                     model: 'branches',
                     key: 'id',

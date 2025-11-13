@@ -72,6 +72,14 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: true
+        },
+        branch_id: {
+            type: DataTypes.UUID,
+            allowNull: true,
+            references: {
+                model: 'branches',
+                key: 'id'
+            }
         }
     }, {
         tableName: 'customers',
@@ -127,6 +135,11 @@ module.exports = (sequelize, DataTypes) => {
         Customer.hasMany(models.Sale, {
             foreignKey: 'customer_id',
             as: 'sales'
+        })
+        
+        Customer.belongsTo(models.Branch, {
+            foreignKey: 'branch_id',
+            as: 'branch'
         })
     }
 

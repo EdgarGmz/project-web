@@ -19,13 +19,36 @@ const authenticate = async (req, res, next) => {
         }
 
         // Verificar token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        let decoded
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET)
+        } catch (error) {
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Token expirado',
+                    code: 'TOKEN_EXPIRED'
+                })
+            } else if (error.name === 'JsonWebTokenError') {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Token invalido',
+                    code: 'INVALID_TOKEN'
+                })
+            } else {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Error de autenticacion',
+                    code: 'AUTH_ERROR'
+                })
+            }
+        }
 
         // Buscar usuario
         const user = await User.findByPk(decoded.id, {
             include: [{
                 model: Branch,
-                as: 'Branch',
+                as: 'branch',
                 attributes: ['id', 'name', 'code', 'city']
             }],
             attributes: ['id', 'first_name', 'last_name', 'email', 'role', 'employee_id', 'branch_id', 'is_active']

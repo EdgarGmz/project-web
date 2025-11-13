@@ -1,0 +1,114 @@
+/* Variables CSS para temas */
+:root {
+  --color-bg: #0b0f14;
+  --color-surface: #121720;
+  --color-text: #e5e7eb;
+  --color-muted: #94a3b8;
+  --color-accent: #ffcc00;
+  --color-accent-soft: rgba(34,211,238,.15);
+}
+
+:root.light {
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-text: #1e293b;
+  --color-muted: #64748b;
+  --color-accent: #f59e0b;
+  --color-accent-soft: rgba(14,165,233,.15);
+}
+
+/* Reset básico */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Scrollbar personalizado */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-accent);
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Componentes globales */
+.card {
+  background: var(--color-surface);
+  border: 1px solid rgba(148,163,184,.15);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.btn {
+  background: var(--color-accent);
+  color: #081018;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  transition: transform 0.1s, box-shadow 0.2s, opacity 0.2s;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px var(--color-accent-soft);
+}
+
+.btn:active {
+  transform: translateY(0);
+  opacity: 0.9;
+}
+
+/* Focus styles */
+button, input, select, textarea {
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s ease-out;
+}

@@ -100,6 +100,29 @@ router.get('/', returnController.getAllReturns)
 
 /**
  * @swagger
+ * /api/returns/sale:
+ *   get:
+ *     summary: Buscar venta por referencia de transacción
+ *     tags: [Returns]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: transaction_reference
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Venta encontrada
+ *       404:
+ *         description: Venta no encontrada
+ *       500:
+ *         description: Error interno
+ */
+router.get('/sale', returnController.getSaleByReference)
+
+/**
+ * @swagger
  * /api/returns/{id}:
  *   get:
  *     summary: Obtener devolución por ID

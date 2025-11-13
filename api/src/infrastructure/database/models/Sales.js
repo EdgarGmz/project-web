@@ -241,19 +241,19 @@ module.exports = (sequelize, DataTypes) => {
     Sale.associate = (models) => {
         Sale.belongsTo(models.Customer, {
             foreignKey: 'customer_id',
-            as: 'customer'
+            as: 'Customer'
         })
         Sale.belongsTo(models.Branch, {
             foreignKey: 'branch_id',
-            as: 'branch'
+            as: 'Branch'
         })
         Sale.belongsTo(models.User, {
             foreignKey: 'user_id',
-            as: 'cashier'
+            as: 'User'
         })
         Sale.hasMany(models.SaleItem, {
             foreignKey: 'sale_id',
-            as: 'items'
+            as: 'SaleItems'
         })
     }
 

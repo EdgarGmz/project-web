@@ -8,9 +8,18 @@ const getAllCustomers = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10
         const offset = (page - 1) * limit
 
+        // Obtener usuario autenticado
+        const currentUser = req.user
+        if (!currentUser) {
+            return res.status(401).json({
+                success: false,
+                message: 'Usuario no autenticado'
+            })
+        }
+
         // Búsqueda opcional por nombre o email
         const search = req.query.search || ''
-        const whereClause = search ? {
+        let whereClause = search ? {
             [db.Sequelize.Op.or]: [
                 { first_name: { [db.Sequelize.Op.iLike]: `%${search}%` } },
                 { last_name: { [db.Sequelize.Op.iLike]: `%${search}%` } },
@@ -18,11 +27,25 @@ const getAllCustomers = async (req, res) => {
             ]
         } : {}
 
+        // Aplicar filtros por sucursal según el rol
+        if (currentUser.role === 'cashier' || currentUser.role === 'supervisor') {
+            // Cajeros y supervisores solo ven clientes de su sucursal
+            whereClause.branch_id = currentUser.branch_id
+        }
+        // Admin y owner pueden ver todos los clientes (sin filtro adicional)
+
         const { count, rows } = await Customer.findAndCountAll({
             where: whereClause,
             limit,
             offset,
-            order: [['created_at', 'DESC']]
+            order: [['created_at', 'DESC']],
+            include: [
+                {
+                    model: db.Branch,
+                    as: 'branch',
+                    attributes: ['id', 'name', 'code']
+                }
+            ]
         })
 
         res.json({
@@ -77,10 +100,86 @@ const getCustomerById = async (req, res) => {
     }
 }
 
+// Obtener detalles completos de un cliente (incluye sucursal)
+const getCustomerDetails = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        // Verificar permisos de visualización
+        const currentUser = req.user
+        if (!currentUser) {
+            return res.status(401).json({
+                success: false,
+                message: 'Usuario no autenticado'
+            })
+        }
+
+        const customer = await Customer.findByPk(id, {
+            include: [
+                {
+                    model: db.Branch,
+                    as: 'branch',
+                    attributes: ['id', 'name', 'code', 'city']
+                }
+            ]
+        })
+
+        if (!customer) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cliente no encontrado'
+            })
+        }
+
+        // Verificar permisos por rol
+        if (['cashier', 'supervisor'].includes(currentUser.role)) {
+            // Cajeros y supervisores solo pueden ver clientes de su sucursal
+            if (customer.branch_id !== currentUser.branch_id) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'No tienes permisos para ver este cliente'
+                })
+            }
+        }
+        // Admin y owner pueden ver cualquier cliente
+
+        res.json({
+            success: true,
+            message: 'Detalles del cliente obtenidos exitosamente',
+            data: customer
+        })
+
+    } catch (error) {
+        console.error('Error al obtener detalles del cliente:', error)
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor',
+            error: error.message
+        })
+    }
+}
+
 // Crear un nuevo cliente
 const createCustomer = async (req, res) => {
     try {
         const { first_name, last_name, email, phone, address, birth_date, document_type, document_number, notes } = req.body
+
+        // Verificar permisos de creación
+        const currentUser = req.user
+        if (!currentUser) {
+            return res.status(401).json({
+                success: false,
+                message: 'Usuario no autenticado'
+            })
+        }
+
+        // Solo cajeros y supervisores pueden crear clientes
+        if (!['cashier', 'supervisor'].includes(currentUser.role)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Solo cajeros y supervisores pueden crear clientes'
+            })
+        }
 
         // Validaciones básicas
         if (!first_name || !last_name || !email) {
@@ -119,7 +218,8 @@ const createCustomer = async (req, res) => {
             birth_date,
             document_type,
             document_number,
-            notes
+            notes,
+            branch_id: currentUser.branch_id // Asignar la sucursal del usuario que crea
         })
 
         res.status(201).json({
@@ -144,11 +244,36 @@ const updateCustomer = async (req, res) => {
         const { id } = req.params
         const updateData = req.body
 
+        // Verificar permisos de actualización
+        const currentUser = req.user
+        if (!currentUser) {
+            return res.status(401).json({
+                success: false,
+                message: 'Usuario no autenticado'
+            })
+        }
+
+        // Solo cajeros y supervisores pueden actualizar clientes
+        if (!['cashier', 'supervisor'].includes(currentUser.role)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Solo cajeros y supervisores pueden actualizar clientes'
+            })
+        }
+
         const customer = await Customer.findByPk(id)
         if (!customer) {
             return res.status(404).json({
                 success: false,
                 message: 'Cliente no encontrado'
+            })
+        }
+
+        // Verificar que el cliente pertenezca a la sucursal del usuario
+        if (customer.branch_id !== currentUser.branch_id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Solo puedes actualizar clientes de tu sucursal'
             })
         }
 
@@ -207,11 +332,36 @@ const deleteCustomer = async (req, res) => {
     try {
         const { id } = req.params
 
+        // Verificar permisos de eliminación
+        const currentUser = req.user
+        if (!currentUser) {
+            return res.status(401).json({
+                success: false,
+                message: 'Usuario no autenticado'
+            })
+        }
+
+        // Solo cajeros y supervisores pueden eliminar clientes
+        if (!['cashier', 'supervisor'].includes(currentUser.role)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Solo cajeros y supervisores pueden eliminar clientes'
+            })
+        }
+
         const customer = await Customer.findByPk(id)
         if (!customer) {
             return res.status(404).json({
                 success: false,
                 message: 'Cliente no encontrado'
+            })
+        }
+
+        // Verificar que el cliente pertenezca a la sucursal del usuario
+        if (customer.branch_id !== currentUser.branch_id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Solo puedes eliminar clientes de tu sucursal'
             })
         }
 
@@ -235,6 +385,7 @@ const deleteCustomer = async (req, res) => {
 module.exports = {
     getAllCustomers,
     getCustomerById,
+    getCustomerDetails,
     createCustomer,
     updateCustomer,
     deleteCustomer
