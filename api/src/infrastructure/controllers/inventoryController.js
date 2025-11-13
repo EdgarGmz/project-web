@@ -25,12 +25,12 @@ const getAllInventory = async (req, res) => {
             include: [
                 {
                     model: Product,
-                    as: 'Product',
+                    as: 'product',
                     attributes: ['id', 'name', 'sku', 'min_stock', 'max_stock']
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name', 'address']
                 }
             ]
@@ -40,7 +40,7 @@ const getAllInventory = async (req, res) => {
         let filteredRows = rows
         if (low_stock) {
             filteredRows = rows.filter(item =>
-                item.stock_current <= (item.Product?.min_stock || 0)
+                item.stock_current <= (item.product?.min_stock || 0)
             )
         }
 
@@ -75,12 +75,12 @@ const getInventoryById = async (req, res) => {
             include: [
                 {
                     model: Product,
-                    as: 'Product',
+                    as: 'product',
                     attributes: ['id', 'name', 'sku', 'min_stock', 'max_stock']
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name', 'address']
                 }
             ]
@@ -165,12 +165,12 @@ const createInventory = async (req, res) => {
             include: [
                 {
                     model: Product,
-                    as: 'Product',
+                    as: 'product',
                     attributes: ['id', 'name', 'sku']
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name']
                 }
             ]
@@ -233,12 +233,12 @@ const updateInventory = async (req, res) => {
             include: [
                 {
                     model: Product,
-                    as: 'Product',
+                    as: 'product',
                     attributes: ['id', 'name', 'sku']
                 },
                 {
                     model: Branch,
-                    as: 'Branch',
+                    as: 'branch',
                     attributes: ['id', 'name']
                 }
             ]

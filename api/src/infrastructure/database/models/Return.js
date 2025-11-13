@@ -7,22 +7,38 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 autoIncrement: true,
             },
-        customer_id: {
-            type: DataTypes.UUID,
-            allowNull: false,
-            references: {
-                model: 'customers',
-                key: 'id'
-            }
-        },
-        product_id: {
-            type: DataTypes.UUID,
-            allowNull: false,
-            references: {
-                model: 'products',
-                key: 'id'
-            }
-        },
+            sale_id: {
+                type: DataTypes.UUID,
+                allowNull: true,
+                references: {
+                    model: 'sales',
+                    key: 'id'
+                }
+            },
+            sale_item_id: {
+                type: DataTypes.UUID,
+                allowNull: true,
+                references: {
+                    model: 'sale_items',
+                    key: 'id'
+                }
+            },
+            customer_id: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                references: {
+                    model: 'customers',
+                    key: 'id'
+                }
+            },
+            product_id: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                references: {
+                    model: 'products',
+                    key: 'id'
+                }
+            },
             quantity: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
@@ -36,6 +52,26 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING(20),
                 allowNull: false,
                 defaultValue: 'pending',
+            },
+            approved_by: {
+                type: DataTypes.UUID,
+                allowNull: true,
+                references: {
+                    model: 'users',
+                    key: 'id'
+                }
+            },
+            rejected_by: {
+                type: DataTypes.UUID,
+                allowNull: true,
+                references: {
+                    model: 'users',
+                    key: 'id'
+                }
+            },
+            rejection_reason: {
+                type: DataTypes.TEXT,
+                allowNull: true
             },
             created_at: {
                 type: DataTypes.DATE,
@@ -52,11 +88,6 @@ module.exports = (sequelize, DataTypes) => {
             deletedAt: 'deleted_at',
         }
     );
-
-    Return.associate = models => {
-        Return.belongsTo(models.Customer, { foreignKey: 'customer_id' });
-        Return.belongsTo(models.Product, { foreignKey: 'product_id' });
-    };
 
     return Return;
 };

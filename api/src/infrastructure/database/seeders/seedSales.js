@@ -1,8 +1,11 @@
 const db = require('../models')
+const crypto = require('crypto')
 
 const { Sale, Branch } = db
 
 async function seedSales(customer, user, branch) {
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+    
     return await Sale.bulkCreate([
         {
             customer_id: customer[0].id,
@@ -13,6 +16,7 @@ async function seedSales(customer, user, branch) {
             subtotal: 120.67,
             tax_amount: 19.31,
             total_amount: 139.98,
+            transaction_reference: `TXN-${date}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`,
             notes: 'Venta de prueba 1'
         },
         {
@@ -24,6 +28,7 @@ async function seedSales(customer, user, branch) {
             subtotal: 60.34,
             tax_amount: 9.65,
             total_amount: 69.99,
+            transaction_reference: `TXN-${date}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`,
             notes: 'Venta de prueba 2'
         },
         {
@@ -35,6 +40,7 @@ async function seedSales(customer, user, branch) {
             subtotal: 60.34,
             tax_amount: 9.65,
             total_amount: 69.99,
+            transaction_reference: `TXN-${date}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`,
             notes: 'Venta de prueba 3'
         },
         {
@@ -46,6 +52,7 @@ async function seedSales(customer, user, branch) {
             subtotal: 60.34,
             tax_amount: 9.65,
             total_amount: 69.99,
+            transaction_reference: `TXN-${date}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`,
             notes: 'Venta de prueba 4'
         },
         {
@@ -57,6 +64,7 @@ async function seedSales(customer, user, branch) {
             subtotal: 60.34,
             tax_amount: 9.65,
             total_amount: 69.99,
+            transaction_reference: `TXN-${date}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`,
             notes: 'Venta de prueba 5'
         }
 

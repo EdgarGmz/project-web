@@ -245,7 +245,7 @@ module.exports = (sequelize, DataTypes) => {
         })
         Sale.belongsTo(models.Branch, {
             foreignKey: 'branch_id',
-            as: 'branch'
+            as: 'Branch'
         })
         Sale.belongsTo(models.User, {
             foreignKey: 'user_id',

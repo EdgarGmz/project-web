@@ -128,6 +128,17 @@ const updateProfile = async (req, res) => {
         const { first_name, last_name, phone, email } = req.body;
         const userId = req.user.id;
 
+        console.log('Actualizando perfil:', { first_name, last_name, phone, email, userId });
+
+        // Validar campos requeridos
+        if (!first_name || !last_name || !email) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Nombre, apellido y email son requeridos' 
+            });
+        }
+
+        // Verificar si el email ya existe
         if (email && email !== req.user.email) {
             const existingUser = await User.findOne({
                 where: { email: email.toLowerCase(), id: { [Op.ne]: userId } },
@@ -139,15 +150,19 @@ const updateProfile = async (req, res) => {
             }
         }
 
-        await User.update(
-            {
-                first_name,
-                last_name,
-                phone,
-                email: email ? email.toLowerCase() : undefined,
-            },
-            { where: { id: userId } }
-        );
+        // Preparar datos de actualización (solo campos que no son undefined)
+        const updateData = {
+            first_name,
+            last_name,
+            email: email ? email.toLowerCase() : undefined,
+        };
+
+        // Solo incluir phone si está presente (puede ser vacío)
+        if (phone !== undefined) {
+            updateData.phone = phone || null;
+        }
+
+        await User.update(updateData, { where: { id: userId } });
 
         const updatedUser = await User.findByPk(userId, {
             include: [
@@ -179,7 +194,18 @@ const updateProfile = async (req, res) => {
         });
     } catch (error) {
         console.error('Error al actualizar perfil:', error);
-        res.status(500).json({ success: false, message: 'Error interno del servidor' });
+        console.error('Error detallado:', error.message);
+        if (error.name === 'SequelizeValidationError') {
+            return res.status(400).json({ 
+                success: false, 
+                message: error.errors[0]?.message || 'Error de validación' 
+            });
+        }
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error interno del servidor',
+            error: error.message 
+        });
     }
 };
 
@@ -230,10 +256,50 @@ const logout = async (req, res) => {
     }
 };
 
+// Verificar contraseña
+const verifyPassword = async (req, res) => {
+    try {
+        const { password } = req.body;
+        const userId = req.user.id;
+
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: 'La contraseña es requerida',
+            });
+        }
+
+        const user = await User.scope('withPassword').findByPk(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado',
+            });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                message: 'Contraseña incorrecta',
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Contraseña verificada correctamente',
+        });
+    } catch (error) {
+        console.error('Error al verificar contraseña:', error);
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+};
+
 module.exports = {
     login,
     getProfile,
     updateProfile,
     changePassword,
     logout,
+    verifyPassword,
 };

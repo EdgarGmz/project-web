@@ -161,18 +161,5 @@ module.exports = (sequelize, DataTypes) => {
         }
     })
 
-    // RELACIONES
-    Purchase.associate = function (models) {
-        Purchase.belongsTo(models.Branch, {
-            foreignKey: 'branch_id',
-            as: 'branch'
-        })
-        
-        Purchase.belongsTo(models.User, {
-            foreignKey: 'user_id',
-            as: 'User'
-        })
-    }
-
     return Purchase
 }

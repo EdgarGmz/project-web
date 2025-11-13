@@ -25,6 +25,7 @@ const getAllPayments = async (req, res) => {
             include: [
                 {
                     model: Customer,
+                    as: 'customer',
                     attributes: ['id', 'first_name', 'last_name', 'email']
                 }
             ]
@@ -61,6 +62,7 @@ const getPaymentById = async (req, res) => {
             include: [
                 {
                     model: Customer,
+                    as: 'customer',
                     attributes: ['id', 'first_name', 'last_name', 'email']
                 }
             ]

@@ -19,7 +19,7 @@ const getAllPurchases = async (req, res) => {
             include: [
                 {
                     model: db.Branch,
-                    as: 'branch',
+                    as: 'Branch',
                     attributes: ['id', 'name', 'code']
                 },
                 {
@@ -62,7 +62,7 @@ const getPurchaseById = async (req, res) => {
             include: [
                 {
                     model: db.Branch,
-                    as: 'branch',
+                    as: 'Branch',
                     attributes: ['id', 'name', 'code']
                 },
                 {

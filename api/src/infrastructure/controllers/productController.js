@@ -42,7 +42,7 @@ const getAllProducts = async (req, res) => {
             include: [
                 {
                     model: db.Inventory,
-                    as: 'Inventories',
+                    as: 'inventories',
                     attributes: ['stock_current'],
                     where: { is_active: true },
                     required: false 

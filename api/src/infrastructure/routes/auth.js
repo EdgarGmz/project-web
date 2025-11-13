@@ -181,4 +181,31 @@ router.put('/change-password', authenticate, authController.changePassword)
  */
 router.post('/logout', authenticate, authController.logout)
 
+/**
+ * @swagger
+ * /auth/verify-password:
+ *   post:
+ *     summary: Verificar contraseña del usuario actual
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [password]
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 example: "mypassword123"
+ *     responses:
+ *       200:
+ *         description: Contraseña verificada correctamente
+ *       401:
+ *         description: Contraseña incorrecta
+ */
+router.post('/verify-password', authenticate, authController.verifyPassword)
+
 module.exports = router
