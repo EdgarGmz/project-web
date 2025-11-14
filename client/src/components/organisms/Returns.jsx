@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { returnService } from '../../services/returnService'
 import { authService } from '../../services/authService'
 import { useAuth } from '../../contexts/AuthContext'
+import ConfirmModal from '../molecules/ConfirmModal'
+import PromptModal from '../molecules/PromptModal'
 
 export default function Returns() {
   const [returns, setReturns] = useState([])
@@ -31,6 +33,10 @@ export default function Returns() {
     status: 'pending',
     rejection_reason: ''
   })
+
+  // Estados para modales
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: 'warning', message: '', onConfirm: null })
+  const [promptModal, setPromptModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null })
 
   const { hasPermission } = useAuth()
 
@@ -176,67 +182,90 @@ export default function Returns() {
         return
       }
 
-      const confirmed = window.confirm(
-        '¿Estás seguro de que deseas rechazar esta devolución?\n\n' +
-        'Motivo: ' + formData.rejection_reason
-      )
-      
-      if (!confirmed) {
-        return
-      }
+      // Mostrar modal de confirmación de rechazo
+      setConfirmModal({
+        isOpen: true,
+        type: 'warning',
+        message: `¿Estás seguro de que deseas rechazar esta devolución?\n\nMotivo: ${formData.rejection_reason}`,
+        onConfirm: () => {
+          setConfirmModal({ isOpen: false })
+          // Solicitar contraseña
+          setPromptModal({
+            isOpen: true,
+            title: 'Confirmar Rechazo',
+            message: 'Por favor, ingresa tu contraseña para confirmar el rechazo:',
+            onConfirm: async (password) => {
+              setPromptModal({ isOpen: false })
+              if (!password) {
+                setError('Rechazo cancelado: Se requiere contraseña')
+                return
+              }
 
-      // Solicitar contraseña del usuario
-      const password = window.prompt('Por favor, ingresa tu contraseña para confirmar el rechazo:')
-      
-      if (!password) {
-        setError('Rechazo cancelado: Se requiere contraseña')
-        return
-      }
-
-      // Verificar contraseña
-      try {
-        const verifyResponse = await authService.verifyPassword(password)
-        if (!verifyResponse || !verifyResponse.success) {
-          setError('Contraseña incorrecta. No se puede rechazar la devolución.')
-          return
+              // Verificar contraseña
+              try {
+                const verifyResponse = await authService.verifyPassword(password)
+                if (!verifyResponse || !verifyResponse.success) {
+                  setError('Contraseña incorrecta. No se puede rechazar la devolución.')
+                  return
+                }
+                // Continuar con el guardado
+                await saveReturnData()
+              } catch (err) {
+                setError('Contraseña incorrecta: ' + (err.message || 'Error al verificar'))
+              }
+            }
+          })
         }
-      } catch (err) {
-        setError('Contraseña incorrecta: ' + (err.message || 'Error al verificar'))
-        return
-      }
+      })
+      return
     }
     
     // Si se está aprobando una devolución, solicitar contraseña
     if (formData.status === 'approved' && (!editingReturn || editingReturn.status !== 'approved')) {
-      const confirmed = window.confirm(
-        '⚠️ ATENCIÓN: Una vez aprobada la devolución, se actualizará el inventario y NO se podrán revertir los cambios.\n\n' +
-        '¿Estás seguro de que deseas aprobar esta devolución?'
-      )
-      
-      if (!confirmed) {
-        return
-      }
+      // Mostrar modal de confirmación de aprobación
+      setConfirmModal({
+        isOpen: true,
+        type: 'warning',
+        message: '⚠️ ATENCIÓN: Una vez aprobada la devolución, se actualizará el inventario y NO se podrán revertir los cambios.\n\n¿Estás seguro de que deseas aprobar esta devolución?',
+        onConfirm: () => {
+          setConfirmModal({ isOpen: false })
+          // Solicitar contraseña
+          setPromptModal({
+            isOpen: true,
+            title: 'Confirmar Aprobación',
+            message: 'Por favor, ingresa tu contraseña para confirmar la aprobación:',
+            onConfirm: async (password) => {
+              setPromptModal({ isOpen: false })
+              if (!password) {
+                setError('Aprobación cancelada: Se requiere contraseña')
+                return
+              }
 
-      // Solicitar contraseña del usuario
-      const password = window.prompt('Por favor, ingresa tu contraseña para confirmar la aprobación:')
-      
-      if (!password) {
-        setError('Aprobación cancelada: Se requiere contraseña')
-        return
-      }
-
-      // Verificar contraseña
-      try {
-        const verifyResponse = await authService.verifyPassword(password)
-        if (!verifyResponse || !verifyResponse.success) {
-          setError('Contraseña incorrecta. No se puede aprobar la devolución.')
-          return
+              // Verificar contraseña
+              try {
+                const verifyResponse = await authService.verifyPassword(password)
+                if (!verifyResponse || !verifyResponse.success) {
+                  setError('Contraseña incorrecta. No se puede aprobar la devolución.')
+                  return
+                }
+                // Continuar con el guardado
+                await saveReturnData()
+              } catch (err) {
+                setError('Contraseña incorrecta: ' + (err.message || 'Error al verificar'))
+              }
+            }
+          })
         }
-      } catch (err) {
-        setError('Contraseña incorrecta: ' + (err.message || 'Error al verificar'))
-        return
-      }
+      })
+      return
     }
+    
+    // Si no requiere confirmación especial, guardar directamente
+    await saveReturnData()
+  }
+
+  // Función auxiliar para guardar los datos
+  const saveReturnData = async () => {
     
     try {
       if (editingReturn) {
@@ -675,6 +704,28 @@ export default function Returns() {
           </div>
         </div>
       )}
+
+      {/* Modales */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ isOpen: false })}
+        title={confirmModal.type === 'warning' ? '⚠️ Confirmación Requerida' : '¿Estás seguro?'}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        confirmText="Confirmar"
+        cancelText="Cancelar"
+      />
+
+      <PromptModal
+        isOpen={promptModal.isOpen}
+        onConfirm={promptModal.onConfirm}
+        onCancel={() => setPromptModal({ isOpen: false })}
+        title={promptModal.title}
+        message={promptModal.message}
+        placeholder="Ingresa tu contraseña"
+        isPassword={true}
+      />
     </div>
   )
 }

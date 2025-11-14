@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import ThemeToggle from '../atoms/ThemeToggle'
+import PasswordInput from '../atoms/PasswordInput'
 
 export default function Register() {
 const [formData, setFormData] = useState({
@@ -144,27 +145,27 @@ return (
 
             <div>
             <label className="block text-sm font-medium mb-2">Contraseña</label>
-            <input
-                type="password"
+            <PasswordInput
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-surface border border-slate-600/30 rounded-md focus:border-accent transition"
+                className="bg-surface border-slate-600/30 focus:border-accent"
                 placeholder="Mínimo 6 caracteres"
+                autoComplete="new-password"
             />
             </div>
 
             <div>
             <label className="block text-sm font-medium mb-2">Confirmar Contraseña</label>
-            <input
-                type="password"
+            <PasswordInput
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-surface border border-slate-600/30 rounded-md focus:border-accent transition"
+                className="bg-surface border-slate-600/30 focus:border-accent"
                 placeholder="Repite tu contraseña"
+                autoComplete="new-password"
             />
             </div>
 

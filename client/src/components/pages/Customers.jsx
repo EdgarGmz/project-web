@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import ConfirmModal from '../molecules/ConfirmModal'
 
 export default function Customers() {
   const [customers, setCustomers] = useState([])
@@ -22,6 +23,9 @@ export default function Customers() {
     document_number: '',
     notes: ''
   })
+
+  // Estado para modal de confirmación
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, customer: null })
 
   useEffect(() => {
     fetchCustomers()
@@ -82,24 +86,32 @@ export default function Customers() {
     setShowForm(true)
   }
 
-  const handleDelete = async (customerId) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este cliente?')) {
-      try {
-        const response = await fetch(`http://localhost:3000/api/customers/${customerId}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        })
-        const data = await response.json()
-        if (data.success) {
-          alert('Cliente eliminado exitosamente')
-          fetchCustomers()
-        } else {
-          alert(data.message)
-        }
-      } catch (error) {
-        console.error('Error deleting customer:', error)
-        alert('Error al eliminar cliente')
+  const handleDelete = async (customer) => {
+    setConfirmModal({
+      isOpen: true,
+      customer: customer
+    })
+  }
+
+  const confirmDelete = async () => {
+    const customerId = confirmModal.customer.id
+    setConfirmModal({ isOpen: false, customer: null })
+    
+    try {
+      const response = await fetch(`http://localhost:3000/api/customers/${customerId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      })
+      const data = await response.json()
+      if (data.success) {
+        alert('Cliente eliminado exitosamente')
+        fetchCustomers()
+      } else {
+        alert(data.message)
       }
+    } catch (error) {
+      console.error('Error deleting customer:', error)
+      alert('Error al eliminar cliente')
     }
   }
 
@@ -564,6 +576,18 @@ export default function Customers() {
           </div>
         </div>
       )}
+
+      {/* Modal de confirmación */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, customer: null })}
+        title="Eliminar Cliente"
+        message="¿Estás seguro de que deseas eliminar este cliente?"
+        type="danger"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+      />
     </div>
   )
 }

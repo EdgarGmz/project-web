@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import PasswordInput from '../atoms/PasswordInput'
 
 export default function Profile() {
   const { user, login } = useAuth()
@@ -294,22 +295,22 @@ export default function Profile() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Contraseña Actual *</label>
-                <input
-                  type="password"
+                <PasswordInput
                   value={passwordData.current_password}
                   onChange={(e) => setPasswordData(prev => ({ ...prev, current_password: e.target.value }))}
-                  className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  className="bg-surface border-slate-600/30"
                   placeholder="Ingresa tu contraseña actual"
+                  autoComplete="current-password"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Nueva Contraseña *</label>
-                <input
-                  type="password"
+                <PasswordInput
                   value={passwordData.new_password}
                   onChange={(e) => setPasswordData(prev => ({ ...prev, new_password: e.target.value }))}
-                  className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  className="bg-surface border-slate-600/30"
                   placeholder="Mínimo 6 caracteres"
+                  autoComplete="new-password"
                 />
                 {passwordData.new_password && passwordData.new_password.length < 6 && (
                   <p className="text-xs text-yellow-400 mt-1">La contraseña debe tener al menos 6 caracteres</p>
@@ -317,12 +318,12 @@ export default function Profile() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Confirmar Nueva Contraseña *</label>
-                <input
-                  type="password"
+                <PasswordInput
                   value={passwordData.confirm_password}
                   onChange={(e) => setPasswordData(prev => ({ ...prev, confirm_password: e.target.value }))}
-                  className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  className="bg-surface border-slate-600/30"
                   placeholder="Repite la nueva contraseña"
+                  autoComplete="new-password"
                 />
                 {passwordData.confirm_password && passwordData.new_password !== passwordData.confirm_password && (
                   <p className="text-xs text-red-400 mt-1">Las contraseñas no coinciden</p>

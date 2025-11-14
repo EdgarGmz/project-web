@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { inventoryService } from '../../services/inventoryService'
 import { productService } from '../../services/productService'
 import { branchService } from '../../services/branchService'
+import ConfirmModal from '../molecules/ConfirmModal'
 
 export default function Inventory() {
   const [inventory, setInventory] = useState([])
@@ -31,6 +32,9 @@ export default function Inventory() {
     min_stock: '',
     notes: ''
   })
+
+  // Estado para modal de confirmación
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, item: null })
 
   useEffect(() => {
     fetchInventory()
@@ -183,19 +187,27 @@ export default function Inventory() {
   }
 
   const handleDelete = async (item) => {
-    if (window.confirm(`¿Estás seguro de eliminar este registro de inventario?`)) {
-      try {
-        setError('')
-        const response = await inventoryService.delete(item.id)
-        if (response && response.success) {
-          fetchInventory()
-          setSuccess('Inventario eliminado exitosamente')
-          setTimeout(() => setSuccess(''), 3000)
-        }
-      } catch (error) {
-        console.error('Error deleting inventory:', error)
-        setError(error.message || 'Error al eliminar el inventario.')
+    setConfirmModal({
+      isOpen: true,
+      item: item
+    })
+  }
+
+  const confirmDelete = async () => {
+    const item = confirmModal.item
+    setConfirmModal({ isOpen: false, item: null })
+    
+    try {
+      setError('')
+      const response = await inventoryService.delete(item.id)
+      if (response && response.success) {
+        fetchInventory()
+        setSuccess('Inventario eliminado exitosamente')
+        setTimeout(() => setSuccess(''), 3000)
       }
+    } catch (error) {
+      console.error('Error deleting inventory:', error)
+      setError(error.message || 'Error al eliminar el inventario.')
     }
   }
 
@@ -651,6 +663,18 @@ export default function Inventory() {
           </div>
         </div>
       )}
+
+      {/* Modal de confirmación */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, item: null })}
+        title="Eliminar Inventario"
+        message="¿Estás seguro de que deseas eliminar este registro de inventario?"
+        type="danger"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+      />
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { branchService } from '../../services/branchService'
 import { userService } from '../../services/userService'
+import ConfirmModal from '../molecules/ConfirmModal'
 
 export default function Branches() {
   const [branches, setBranches] = useState([])
@@ -34,6 +35,9 @@ export default function Branches() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
+  
+  // Estado para modal de confirmación
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, branch: null })
 
   useEffect(() => {
     fetchBranches()
@@ -159,19 +163,27 @@ export default function Branches() {
   }
 
   const handleDelete = async (branch) => {
-    if (window.confirm(`¿Estás seguro de que quieres eliminar la sucursal "${branch.name}"?`)) {
-      try {
-        setError('')
-        const response = await branchService.delete(branch.id)
-        if (response && response.success) {
-          fetchBranches()
-          setSuccess('Sucursal eliminada exitosamente')
-          setTimeout(() => setSuccess(''), 3000)
-        }
-      } catch (error) {
-        console.error('Error deleting branch:', error)
-        setError(error.message || 'Error al eliminar la sucursal. Puede que tenga datos asociados.')
+    setConfirmModal({
+      isOpen: true,
+      branch: branch
+    })
+  }
+
+  const confirmDelete = async () => {
+    const branch = confirmModal.branch
+    setConfirmModal({ isOpen: false, branch: null })
+    
+    try {
+      setError('')
+      const response = await branchService.delete(branch.id)
+      if (response && response.success) {
+        fetchBranches()
+        setSuccess('Sucursal eliminada exitosamente')
+        setTimeout(() => setSuccess(''), 3000)
       }
+    } catch (error) {
+      console.error('Error deleting branch:', error)
+      setError(error.message || 'Error al eliminar la sucursal. Puede que tenga datos asociados.')
     }
   }
 
@@ -622,6 +634,18 @@ export default function Branches() {
           </div>
         </div>
       )}
+
+      {/* Modal de confirmación */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, branch: null })}
+        title="Eliminar Sucursal"
+        message={`¿Estás seguro de que quieres eliminar la sucursal "${confirmModal.branch?.name}"?`}
+        type="danger"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+      />
     </div>
   )
 }

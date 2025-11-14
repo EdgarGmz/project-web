@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import ThemeToggle from '../atoms/ThemeToggle'
+import PasswordInput from '../atoms/PasswordInput'
 
 export default function Login() {
 const [email, setEmail] = useState('')
@@ -67,13 +68,13 @@ return (
 
                     <fieldset>
                         <label className="block text-sm font-medium mb-2">Contraseña</label>
-                        <input
-                            type="password"
+                        <PasswordInput
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm border border-white/20 rounded-md focus:border-accent transition"
+                            className="bg-white/5 backdrop-blur-sm border-white/20 focus:border-accent"
                             placeholder="Tu contraseña"
+                            autoComplete="current-password"
                         />
                     </fieldset>
 

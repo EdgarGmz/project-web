@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { productService} from '../../services/productService'
+import ConfirmModal from '../molecules/ConfirmModal'
 
 export default function Products() {
   const [products, setProducts] = useState([])
@@ -32,6 +33,9 @@ export default function Products() {
     max_stock: '1000',
     is_active: true
   })
+
+  // Estado para modal de confirmación
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, product: null })
 
   useEffect(() => {   
     loadProducts()
@@ -119,10 +123,16 @@ export default function Products() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      return
-    }
+  const handleDelete = async (product) => {
+    setConfirmModal({
+      isOpen: true,
+      product: product
+    })
+  }
+
+  const confirmDelete = async () => {
+    const id = confirmModal.product.id
+    setConfirmModal({ isOpen: false, product: null })
 
     try {
       setLoading(true)
@@ -294,7 +304,7 @@ export default function Products() {
                                 ✏️
                               </button>
                               <button
-                                onClick={() => handleDelete(product.id)}
+                                onClick={() => handleDelete(product)}
                                 className="text-red-400 hover:opacity-80 transition"
                                 title="Eliminar producto"
                               >
@@ -502,6 +512,18 @@ export default function Products() {
           </div>
         </div>
       )}
+
+      {/* Modal de confirmación */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, product: null })}
+        title="Eliminar Producto"
+        message="¿Estás seguro de que deseas eliminar este producto?"
+        type="danger"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+      />
     </div>
   )
 }
