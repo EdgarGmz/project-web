@@ -265,7 +265,7 @@ export default function Inventory() {
           <h1 className="text-2xl font-semibold">Inventario</h1>
           <p className="text-muted">Control de stock por sucursal</p>
         </div>
-        {hasPermission(['owner', 'admin', 'supervisor']) && (
+        {hasPermission(['owner', 'admin']) && (
           <button onClick={() => {
             setEditingItem(null)
             setFormData({
@@ -406,7 +406,7 @@ export default function Inventory() {
               <th className="py-3 px-4 text-left text-sm font-medium">Stock Mínimo</th>
               <th className="py-3 px-4 text-left text-sm font-medium">Reservado</th>
               <th className="py-3 px-4 text-left text-sm font-medium">Estado</th>
-              {hasPermission(['owner', 'admin', 'supervisor']) && (
+              {hasPermission(['owner', 'admin']) && (
                 <th className="py-3 px-4 text-right text-sm font-medium">Acciones</th>
               )}
             </tr>
@@ -446,7 +446,7 @@ export default function Inventory() {
                         {status.label}
                       </span>
                     </td>
-                    {hasPermission(['owner', 'admin', 'supervisor']) && (
+                    {hasPermission(['owner', 'admin']) && (
                       <td className="py-3 px-4">
                         <div className="flex gap-2 justify-end">
                           <button

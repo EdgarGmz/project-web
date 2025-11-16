@@ -133,8 +133,8 @@ const checkBranchAccess = (req, res, next) => {
         return next()
     }
 
-    // Los admins pueden acceder a cualquier sucursal
-    if (req.user.role === 'admin') {
+    // Los owner y admins pueden acceder a cualquier sucursal
+    if (req.user.role === 'owner' || req.user.role === 'admin') {
         return next()
     }
 

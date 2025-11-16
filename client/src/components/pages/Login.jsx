@@ -13,7 +13,9 @@ const [error, setError] = useState('')
 const { login, user, clearSession } = useAuth()
 
 if (user) {
-    return <Navigate to="/dashboard" replace />
+    // Redirigir a cajeros directamente al POS
+    const redirectPath = user.role === 'cashier' ? '/pos' : '/dashboard'
+    return <Navigate to={redirectPath} replace />
 }
 
 const handleSubmit = async (e) => {

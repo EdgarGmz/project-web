@@ -130,7 +130,7 @@ router.get('/:id', checkBranchAccess, inventoryController.getInventoryById)
  *       500:
  *         description: Error interno
  */
-router.post('/', authorize('admin', 'manager', 'owner'), checkBranchAccess, inventoryController.createInventory)
+router.post('/', authorize('owner', 'admin'), checkBranchAccess, inventoryController.createInventory)
 
 /**
  * @swagger
@@ -177,7 +177,7 @@ router.post('/', authorize('admin', 'manager', 'owner'), checkBranchAccess, inve
  *       500:
  *         description: Error interno
  */
-router.put('/:id', authorize('admin', 'manager', 'owner'), checkBranchAccess, inventoryController.updateInventory)
+router.put('/:id', authorize('owner', 'admin'), checkBranchAccess, inventoryController.updateInventory)
 
 /**
  * @swagger
@@ -207,7 +207,7 @@ router.put('/:id', authorize('admin', 'manager', 'owner'), checkBranchAccess, in
  *       500:
  *         description: Error interno
  */
-router.delete('/:id', authorize('admin', 'manager', 'owner'), checkBranchAccess, inventoryController.deleteInventory)
+router.delete('/:id', authorize('owner', 'admin'), checkBranchAccess, inventoryController.deleteInventory)
 
 /**
  * @swagger
@@ -256,6 +256,6 @@ router.delete('/:id', authorize('admin', 'manager', 'owner'), checkBranchAccess,
  *       500:
  *         description: Error interno
  */
-router.put('/:id/adjust', authorize('admin', 'manager', 'owner'), checkBranchAccess, inventoryController.adjustStock)
+router.put('/:id/adjust', authorize('owner', 'admin'), checkBranchAccess, inventoryController.adjustStock)
 
 module.exports = router
