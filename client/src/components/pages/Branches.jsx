@@ -256,7 +256,7 @@ export default function Branches() {
             }}
             className="px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
           />
-          {hasPermission(['owner', 'admin']) && (
+          {hasPermission(['owner']) && (
             <button onClick={() => {
               setEditingBranch(null)
               setFormData({
@@ -319,7 +319,7 @@ export default function Branches() {
                   </span>
                 </div>
               </div>
-              {hasPermission(['owner', 'admin']) && (
+              {hasPermission(['owner']) && (
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleAssignUsers(branch)}

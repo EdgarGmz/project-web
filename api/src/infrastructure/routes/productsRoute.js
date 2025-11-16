@@ -175,7 +175,7 @@ router.get('/:id', productController.getProductById)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', authorize('admin', 'manager', 'owner'), productController.createProduct)
+router.post('/', authorize('owner', 'supervisor'), productController.createProduct)
 
 /**
  * @swagger
@@ -221,9 +221,9 @@ router.post('/', authorize('admin', 'manager', 'owner'), productController.creat
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', authorize('admin', 'manager', 'owner'), productController.updateProduct)
+router.put('/:id', authorize('owner', 'supervisor'), productController.updateProduct)
 
-router.patch('/:id/toggle-status', authorize('admin', 'manager', 'owner'), productController.toggleProductStatus)
+router.patch('/:id/toggle-status', authorize('owner', 'supervisor'), productController.toggleProductStatus)
 
 /**
  * @swagger
@@ -262,6 +262,6 @@ router.patch('/:id/toggle-status', authorize('admin', 'manager', 'owner'), produ
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete('/:id', authorize('admin', 'owner'), productController.deleteProduct)
+router.delete('/:id', authorize('owner', 'supervisor'), productController.deleteProduct)
 
 module.exports = router

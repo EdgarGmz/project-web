@@ -41,7 +41,7 @@ export default function Dashboard() {
       icon: '🛒',
       color: 'from-green-500 to-emerald-600',
       route: '/pos',
-      permission: ['owner', 'admin', 'supervisor', 'cashier']
+      permission: ['supervisor', 'cashier']
     },
     {
       title: 'Agregar Producto',
@@ -49,7 +49,7 @@ export default function Dashboard() {
       icon: '📦',
       color: 'from-blue-500 to-cyan-600',
       route: '/products',
-      permission: ['owner', 'admin', 'supervisor']
+      permission: ['owner', 'supervisor']
     },
     {
       title: 'Nuevo Cliente',
@@ -57,7 +57,7 @@ export default function Dashboard() {
       icon: '👤',
       color: 'from-purple-500 to-violet-600',
       route: '/customers',
-      permission: ['owner', 'admin', 'supervisor', 'cashier']
+      permission: ['supervisor', 'cashier']
     },
     {
       title: 'Ver Reportes',
@@ -65,7 +65,7 @@ export default function Dashboard() {
       icon: '📊',
       color: 'from-orange-500 to-red-600',
       route: '/reports',
-      permission: ['owner', 'admin', 'supervisor']
+      permission: ['owner', 'admin']
     }
   ]
 

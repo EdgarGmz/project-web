@@ -39,7 +39,6 @@ import POS from './components/pages/POS'
 import Sales from './components/pages/Sales'
 
 // Reportes y otros
-import Audit from './components/organisms/Audit'
 import InventoryReports from './components/organisms/InventoryReports'
 import SalesReports from './components/organisms/SalesReports'
 import Reports from './components/pages/Reports'
@@ -75,7 +74,7 @@ export default function App() {
           } />
 
           <Route path="/settings" element={
-            <ProtectedRoute roles={['owner', 'admin']}>
+            <ProtectedRoute roles={['owner', 'admin', 'supervisor', 'cashier']}>
               <DashboardLayout>
                 <Settings />
               </DashboardLayout>
@@ -116,21 +115,21 @@ export default function App() {
 
           {/* Gestión de productos */}
           <Route path="/products" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
+            <ProtectedRoute roles={['owner', 'admin', 'supervisor', 'cashier']}>
               <DashboardLayout>
                 <Products />
               </DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/products/new" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
+            <ProtectedRoute roles={['owner', 'supervisor']}>
               <DashboardLayout>
                 <ProductForm />
               </DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/products/:id/edit" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
+            <ProtectedRoute roles={['owner', 'supervisor']}>
               <DashboardLayout>
                 <ProductForm />
               </DashboardLayout>
@@ -139,21 +138,21 @@ export default function App() {
 
           {/* Gestión de clientes */}
           <Route path="/customers" element={
-            <ProtectedRoute>
+            <ProtectedRoute roles={['owner', 'admin', 'supervisor', 'cashier']}>
               <DashboardLayout>
                 <Customers />
               </DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/customers/new" element={
-            <ProtectedRoute>
+            <ProtectedRoute roles={['admin', 'supervisor', 'cashier']}>
               <DashboardLayout>
                 <CustomerForm />
               </DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/customers/:id/edit" element={
-            <ProtectedRoute>
+            <ProtectedRoute roles={['admin', 'supervisor', 'cashier']}>
               <DashboardLayout>
                 <CustomerForm />
               </DashboardLayout>
@@ -171,7 +170,7 @@ export default function App() {
 
           {/* Gestión de compras */}
           <Route path="/purchases" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
+            <ProtectedRoute roles={['owner', 'admin']}>
               <DashboardLayout>
                 <Purchases />
               </DashboardLayout>
@@ -189,21 +188,21 @@ export default function App() {
 
           {/* Sistema de ventas */}
           <Route path="/sales" element={
-            <ProtectedRoute>
+            <ProtectedRoute roles={['owner', 'admin', 'supervisor', 'cashier']}>
               <DashboardLayout>
                 <Sales />
               </DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/sales/new" element={
-            <ProtectedRoute>
+            <ProtectedRoute roles={['admin', 'supervisor', 'cashier']}>
               <DashboardLayout>
                 <SaleForm />
               </DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/sales/:id/edit" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
+            <ProtectedRoute roles={['admin', 'supervisor', 'cashier']}>
               <DashboardLayout>
                 <SaleForm />
               </DashboardLayout>
@@ -212,7 +211,7 @@ export default function App() {
 
           {/* Punto de venta */}
           <Route path="/pos" element={
-            <ProtectedRoute>
+            <ProtectedRoute roles={['supervisor', 'cashier']}>
               <DashboardLayout>
                 <POS />
               </DashboardLayout>
@@ -221,32 +220,23 @@ export default function App() {
 
           {/* Reportes */}
           <Route path="/reports" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
+            <ProtectedRoute roles={['owner', 'admin']}>
               <DashboardLayout>
                 <Reports />
               </DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/reports/sales" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
+            <ProtectedRoute roles={['owner', 'admin']}>
               <DashboardLayout>
                 <SalesReports />
               </DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/reports/inventory" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
+            <ProtectedRoute roles={['owner', 'admin']}>
               <DashboardLayout>
                 <InventoryReports />
-              </DashboardLayout>
-            </ProtectedRoute>
-          } />
-
-          {/* Auditoría */}
-          <Route path="/audit" element={
-            <ProtectedRoute roles={['owner']}>
-              <DashboardLayout>
-                <Audit />
               </DashboardLayout>
             </ProtectedRoute>
           } />
@@ -264,7 +254,7 @@ export default function App() {
 
           {/* Devoluciones */}
           <Route path="/returns" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor', 'cashier']}>
+            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
               <DashboardLayout>
                 <Returns />
               </DashboardLayout>

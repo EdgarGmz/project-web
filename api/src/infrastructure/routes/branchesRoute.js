@@ -133,7 +133,7 @@ router.get('/:id', branchController.getBranchById)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', authorize('admin', 'owner'), branchController.createBranch)
+router.post('/', authorize('owner'), branchController.createBranch)
 
 /**
  * @swagger
@@ -193,7 +193,7 @@ router.post('/', authorize('admin', 'owner'), branchController.createBranch)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', authorize('admin'), branchController.updateBranch)
+router.put('/:id', authorize('owner'), branchController.updateBranch)
 
 /**
  * @swagger
@@ -241,7 +241,7 @@ router.put('/:id', authorize('admin'), branchController.updateBranch)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete('/:id', authorize('admin'), branchController.deleteBranch)
+router.delete('/:id', authorize('owner'), branchController.deleteBranch)
 
 /**
  * @swagger
@@ -278,6 +278,6 @@ router.delete('/:id', authorize('admin'), branchController.deleteBranch)
  *       404:
  *         description: Sucursal no encontrada
  */
-router.put('/:id/assign-users', authorize('admin', 'owner'), branchController.assignUsersToBranch)
+router.put('/:id/assign-users', authorize('owner'), branchController.assignUsersToBranch)
 
 module.exports = router

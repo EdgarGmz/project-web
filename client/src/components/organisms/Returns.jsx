@@ -312,7 +312,7 @@ export default function Returns() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Devoluciones</h1>
-        {hasPermission(['owner', 'admin', 'manager']) && (
+        {hasPermission(['admin', 'supervisor']) && (
           <button onClick={() => handleOpenModal()} className="btn-primary">
             + Nueva Devolución
           </button>
@@ -405,7 +405,7 @@ export default function Returns() {
                     <th className="py-2 px-3 text-left">Motivo</th>
                     <th className="py-2 px-3 text-left">Estado</th>
                     <th className="py-2 px-3 text-left">Aprobada por</th>
-                    {hasPermission(['owner', 'admin', 'manager']) && (
+                    {hasPermission(['owner', 'admin', 'supervisor', 'cashier']) && (
                       <th className="py-2 px-3 text-left">Acciones</th>
                     )}
                   </tr>
@@ -432,7 +432,7 @@ export default function Returns() {
                           `${returnItem.approvedBy.first_name} ${returnItem.approvedBy.last_name}` : 
                           '-'}
                       </td>
-                      {hasPermission(['owner', 'admin', 'manager']) && (
+                      {hasPermission(['owner', 'admin', 'supervisor']) && (
                         <td className="py-2 px-3">
                           <div className="flex gap-2">
                             {returnItem.status === 'approved' ? (

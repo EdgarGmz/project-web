@@ -117,7 +117,7 @@ router.use(authenticate)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/', authorize('admin', 'manager', 'owner'), userController.getAllUsers)
+router.get('/', authorize('owner', 'admin'), userController.getAllUsers)
 
 /**
  * @swagger
@@ -154,7 +154,7 @@ router.get('/', authorize('admin', 'manager', 'owner'), userController.getAllUse
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/:id', authorize('admin', 'manager', 'owner'), userController.getUserById)
+router.get('/:id', authorize('owner', 'admin'), userController.getUserById)
 
 /**
  * @swagger
@@ -191,7 +191,7 @@ router.get('/:id', authorize('admin', 'manager', 'owner'), userController.getUse
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', authorize('admin', 'manager', 'owner'), userController.createUser)
+router.post('/', authorize('owner', 'admin'), userController.createUser)
 
 /**
  * @swagger
@@ -238,7 +238,7 @@ router.post('/', authorize('admin', 'manager', 'owner'), userController.createUs
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.put('/:id', authorize('admin', 'manager', 'owner'), userController.updateUser)
+router.put('/:id', authorize('owner', 'admin'), userController.updateUser)
 
 /**
  * @swagger
@@ -274,6 +274,6 @@ router.put('/:id', authorize('admin', 'manager', 'owner'), userController.update
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.delete('/:id', authorize('admin', 'manager', 'owner'), userController.deleteUser)
+router.delete('/:id', authorize('owner', 'admin'), userController.deleteUser)
 
 module.exports = router

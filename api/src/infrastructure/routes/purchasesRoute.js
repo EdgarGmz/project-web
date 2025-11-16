@@ -8,8 +8,8 @@ const { authenticate, authorize } = require('../../middleware/auth')
 // Autenticación para todas las rutas
 router.use(authenticate)
 
-// Solo owner y admin pueden acceder a las compras
-router.use(authorize('owner', 'admin'))
+// Solo owner, admin y supervisor pueden ver compras
+// Pero crear/eliminar es solo para owner y supervisor
 
 /**
  * @swagger
@@ -96,7 +96,7 @@ router.use(authorize('owner', 'admin'))
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/', purchaseController.getAllPurchases)
+router.get('/', authorize('owner', 'admin'), purchaseController.getAllPurchases)
 
 /**
  * @swagger
@@ -129,7 +129,7 @@ router.get('/', purchaseController.getAllPurchases)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/:id', purchaseController.getPurchaseById)
+router.get('/:id', authorize('owner', 'admin'), purchaseController.getPurchaseById)
 
 /**
  * @swagger
@@ -161,7 +161,7 @@ router.get('/:id', purchaseController.getPurchaseById)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', purchaseController.createPurchase)
+router.post('/', authorize('owner'), purchaseController.createPurchase)
 
 /**
  * @swagger
@@ -199,7 +199,7 @@ router.post('/', purchaseController.createPurchase)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.put('/:id', purchaseController.updatePurchase)
+router.put('/:id', authorize('owner', 'admin'), purchaseController.updatePurchase)
 
 /**
  * @swagger
@@ -231,6 +231,6 @@ router.put('/:id', purchaseController.updatePurchase)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.delete('/:id', purchaseController.deletePurchase)
+router.delete('/:id', authorize('owner'), purchaseController.deletePurchase)
 
 module.exports = router

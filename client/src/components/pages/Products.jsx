@@ -182,7 +182,7 @@ export default function Products() {
           <h1 className="text-2xl font-semibold">Productos</h1>
           <p className="text-muted">Gestiona el catálogo de productos</p>
         </div>
-        {hasPermission(['owner', 'admin', 'supervisor']) && (
+        {hasPermission(['owner', 'supervisor']) && (
           <button onClick={() => setShowForm(true)} className="btn">
             + Nuevo Producto
           </button>
@@ -294,7 +294,7 @@ export default function Products() {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          {hasPermission(['owner', 'admin', 'supervisor']) && (
+                          {hasPermission(['owner', 'supervisor']) && (
                             <>
                               <button
                                 onClick={() => handleEdit(product)}

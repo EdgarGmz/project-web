@@ -149,7 +149,7 @@ export default function Customers() {
           <h1 className="text-2xl font-semibold">Clientes</h1>
           <p className="text-muted">Gestiona la base de datos de clientes</p>
         </div>
-        {hasPermission(['cashier', 'supervisor']) && (
+        {hasPermission(['admin', 'supervisor', 'cashier']) && (
           <button onClick={() => setShowForm(true)} className="btn">
             + Nuevo Cliente
           </button>
@@ -272,7 +272,7 @@ export default function Customers() {
                       >
                         👁️
                       </button>
-                      {hasPermission(['cashier', 'supervisor']) && (
+                      {hasPermission(['admin', 'supervisor', 'cashier']) && (
                         <>
                           <button
                             onClick={() => handleEdit(customer)}
@@ -558,7 +558,7 @@ export default function Customers() {
             </div>
 
             <div className="flex gap-3 pt-6">
-              {hasPermission(['cashier', 'supervisor']) && (
+              {hasPermission(['admin', 'supervisor', 'cashier']) && (
                 <button
                   onClick={() => handleEdit(selectedCustomer)}
                   className="btn"

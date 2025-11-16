@@ -96,7 +96,7 @@ router.use(authenticate)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/', returnController.getAllReturns)
+router.get('/', authorize('owner', 'admin', 'supervisor'), returnController.getAllReturns)
 
 /**
  * @swagger
@@ -119,7 +119,7 @@ router.get('/', returnController.getAllReturns)
  *       500:
  *         description: Error interno
  */
-router.get('/sale', returnController.getSaleByReference)
+router.get('/sale', authorize('owner', 'admin', 'supervisor'), returnController.getSaleByReference)
 
 /**
  * @swagger
@@ -156,7 +156,7 @@ router.get('/sale', returnController.getSaleByReference)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/:id', returnController.getReturnById)
+router.get('/:id', authorize('owner', 'admin', 'supervisor'), returnController.getReturnById)
 
 /**
  * @swagger
@@ -193,7 +193,7 @@ router.get('/:id', returnController.getReturnById)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', authorize('admin', 'manager', 'owner'), returnController.createReturn)
+router.post('/', authorize('admin', 'supervisor'), returnController.createReturn)
 
 /**
  * @swagger
@@ -240,7 +240,7 @@ router.post('/', authorize('admin', 'manager', 'owner'), returnController.create
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.put('/:id', authorize('admin', 'manager', 'owner'), returnController.updateReturn)
+router.put('/:id', authorize('admin', 'supervisor'), returnController.updateReturn)
 
 /**
  * @swagger
@@ -276,6 +276,6 @@ router.put('/:id', authorize('admin', 'manager', 'owner'), returnController.upda
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.delete('/:id', authorize('admin', 'manager', 'owner'), returnController.deleteReturn)
+router.delete('/:id', authorize('admin', 'supervisor'), returnController.deleteReturn)
 
 module.exports = router

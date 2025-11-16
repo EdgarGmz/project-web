@@ -9,19 +9,19 @@ export default function Sidebar() {
 
   const menuItems = [
     { icon: '🏠', label: 'Dashboard', path: '/dashboard', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
-    { icon: '📦', label: 'Productos', path: '/products', roles: ['owner'] },
-    { icon: '👥', label: 'Usuarios', path: '/users', roles: ['owner'] },
+    { icon: '📦', label: 'Productos', path: '/products', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
+    { icon: '👥', label: 'Usuarios', path: '/users', roles: ['owner', 'admin'] },
     { icon: '👤', label: 'Clientes', path: '/customers', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
     { icon: '🏢', label: 'Sucursales', path: '/branches', roles: ['owner', 'admin'] },
     { icon: '📊', label: 'Inventario', path: '/inventory', roles: ['owner', 'admin', 'supervisor'] },
-    { icon: '📋', label: 'Compras', path: '/purchases', roles: ['owner', 'admin', 'supervisor'] },
+    { icon: '📋', label: 'Compras', path: '/purchases', roles: ['owner', 'admin'] },
     { icon: '💰', label: 'Ventas', path: '/sales', roles: ['owner', 'admin', 'supervisor', 'cashier'] },    
-    { icon: '🛒', label: 'POS', path: '/pos', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
-    { icon: '📈', label: 'Reportes', path: '/reports', roles: ['owner', 'admin', 'supervisor'] },
+    { icon: '🛒', label: 'POS', path: '/pos', roles: ['supervisor', 'cashier'] },
+    { icon: '📈', label: 'Reportes', path: '/reports', roles: ['owner', 'admin'] },
     { icon: '💳', label: 'Pagos', path: '/payments', roles: ['owner', 'admin'] },
-    { icon: '↩️', label: 'Devoluciones', path: '/returns', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
+    { icon: '↩️', label: 'Devoluciones', path: '/returns', roles: ['owner', 'admin', 'supervisor'] },
     { icon: '👤', label: 'Perfil', path: '/profile', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
-    { icon: '⚙️', label: 'Configuración', path: '/settings', roles: ['owner', 'admin'] },
+    { icon: '⚙️', label: 'Configuración', path: '/settings', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
   ]
 
   const visibleItems = menuItems.filter(item => hasPermission(item.roles))
