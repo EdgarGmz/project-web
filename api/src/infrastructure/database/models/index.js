@@ -117,6 +117,12 @@ if (db.User && db.Purchase) {
   db.Purchase.belongsTo(db.User, { foreignKey: 'user_id', as: 'User' })
 }
 
+// Asociaciones Log - User
+if (db.User && db.Log) {
+  db.User.hasMany(db.Log, { foreignKey: 'user_id', as: 'logs' })
+  db.Log.belongsTo(db.User, { foreignKey: 'user_id', as: 'user' })
+}
+
 // Asociaciones Report - Branch
 if (db.Branch && db.Report) {
   db.Branch.hasMany(db.Report, { foreignKey: 'branch_id' })

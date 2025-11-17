@@ -20,6 +20,7 @@ export default function Sidebar() {
     { icon: '📈', label: 'Reportes', path: '/reports', roles: ['owner', 'admin'] },
     { icon: '💳', label: 'Pagos', path: '/payments', roles: ['owner', 'admin'] },
     { icon: '↩️', label: 'Devoluciones', path: '/returns', roles: ['owner', 'admin', 'supervisor'] },
+    { icon: '📝', label: 'Logs', path: '/logs', roles: ['owner', 'admin'] },
     { icon: '👤', label: 'Perfil', path: '/profile', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
     { icon: '⚙️', label: 'Configuración', path: '/settings', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
   ]

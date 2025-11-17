@@ -15,6 +15,7 @@ const purchaseRoutes = require('./purchasesRoute')
 const reportRoutes = require('./reportsRoute')
 const settingsRoutes = require('./settingsRoute')
 const dashboardRoutes = require('./dashboardRoute')
+const logsRoutes = require('./logsRoute')
 
 // Rutas de la API
 router.get('/', (req, res) => {
@@ -34,7 +35,8 @@ router.get('/', (req, res) => {
             purchases: '/api/purchases',
             reports: '/api/reports',
             settings: '/api/settings',
-            dashboard: '/api/dashboard'
+            dashboard: '/api/dashboard',
+            logs: '/api/logs'
         }
     })
 })
@@ -53,5 +55,6 @@ router.use('/purchases', purchaseRoutes)
 router.use('/reports', reportRoutes)
 router.use('/settings', settingsRoutes)
 router.use('/dashboard', dashboardRoutes)
+router.use('/logs', logsRoutes)
 
 module.exports = router

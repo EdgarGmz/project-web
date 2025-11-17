@@ -1,5 +1,6 @@
 const db = require('../database/models')
 const { User, Branch } = db
+const { logUser } = require('../../services')
 
 // Obtener todos los usuarios
 const getAllUsers = async (req, res) => {
@@ -254,6 +255,12 @@ const createUser = async (req, res) => {
             is_active: is_active !== false
         })
 
+        // Registrar en logs
+        await logUser.create(
+            req.user.id,
+            `Usuario creado: ${newUser.first_name} ${newUser.last_name} (${newUser.email}) - Rol: ${newUser.role}`
+        )
+
         const userResponse = { ...newUser.toJSON() }
         delete userResponse.password
 
@@ -422,6 +429,12 @@ const updateUser = async (req, res) => {
 
         await user.update(updateData)
 
+        // Registrar en logs
+        await logUser.update(
+            req.user.id,
+            `Usuario actualizado: ${user.first_name} ${user.last_name} (${user.email})`
+        )
+
         const userResponse = { ...user.toJSON() }
         delete userResponse.password
 
@@ -491,6 +504,12 @@ const deleteUser = async (req, res) => {
 
         // Usar soft delete para mantener consistencia con productos
         await user.destroy() // Sequelize soft delete (paranoid: true)
+
+        // Registrar en logs
+        await logUser.delete(
+            req.user.id,
+            `Usuario eliminado: ${user.first_name} ${user.last_name} (${user.email})`
+        )
 
         res.json({
             success: true,

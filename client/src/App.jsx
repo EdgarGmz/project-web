@@ -42,6 +42,7 @@ import Sales from './components/pages/Sales'
 import InventoryReports from './components/organisms/InventoryReports'
 import SalesReports from './components/organisms/SalesReports'
 import Reports from './components/pages/Reports'
+import Logs from './components/pages/Logs'
 
 export default function App() {
   return (
@@ -237,6 +238,15 @@ export default function App() {
             <ProtectedRoute roles={['owner', 'admin']}>
               <DashboardLayout>
                 <InventoryReports />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } />
+
+          {/* Logs del sistema */}
+          <Route path="/logs" element={
+            <ProtectedRoute roles={['owner', 'admin']}>
+              <DashboardLayout>
+                <Logs />
               </DashboardLayout>
             </ProtectedRoute>
           } />
