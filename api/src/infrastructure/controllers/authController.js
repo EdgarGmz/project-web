@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 const { User, Branch } = require('../database/models');
+const { logAuth } = require('../../services');
 
 // Helper para generar JWT
 const generateToken = (userId) =>
@@ -70,6 +71,12 @@ const login = async (req, res) => {
 
         await user.update({ last_login: new Date() });
         const token = generateToken(user.id);
+
+        // Registrar login en logs
+        await logAuth.login(
+            user.id,
+            `Usuario ${user.first_name} ${user.last_name} inició sesión`
+        )
 
         res.status(200).json({
             success: true,
@@ -249,6 +256,12 @@ const changePassword = async (req, res) => {
 // Logout (solo respuesta, JWT no se puede invalidar en backend puro)
 const logout = async (req, res) => {
     try {
+        // Registrar logout en logs
+        await logAuth.logout(
+            req.user.id,
+            `Usuario cerró sesión`
+        )
+
         res.status(200).json({ success: true, message: 'Logout exitoso' });
     } catch (error) {
         console.error('Error en logout:', error);

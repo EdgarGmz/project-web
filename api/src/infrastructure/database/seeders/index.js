@@ -11,6 +11,7 @@ const seedPayments = require('./seedPayments');
 const seedInventory = require('./seedInventory');
 const seedReports = require('./seedReports');
 const seedPurchases = require('./seedPurchases');
+const seedLogs = require('./seedLogs');
 
 // Función para limpiar base de datos usando SQL directo
 const cleanDatabase = async () => {
@@ -19,7 +20,7 @@ const cleanDatabase = async () => {
         await db.sequelize.query('PRAGMA foreign_keys = OFF')
         
         // Limpiar tablas que existen, ignorar errores si no existen
-        const tables = ['purchases', 'inventory', 'sale_items', 'sales', 'users', 'customers', 'products', 'branches']
+        const tables = ['logs', 'purchases', 'inventory', 'sale_items', 'sales', 'users', 'customers', 'products', 'branches']
         for (const table of tables) {
             try {
                 await db.sequelize.query(`DELETE FROM ${table}`)
@@ -60,6 +61,7 @@ const seedDatabase = async (force = false) => {
     const saleItems = await seedSaleItems(sales, products)
     const inventory = await seedInventory(products, branches)
     const reports = await seedReports()
+    const logs = await seedLogs(db)
 
     console.log('Sucursales creadas: ', branches.length)
     console.log('Productos creados: ', products.length)
@@ -71,6 +73,7 @@ const seedDatabase = async (force = false) => {
     console.log('Pagos creados: ', payments.length)
     console.log('Inventario creado: ', inventory.length)
     console.log('Reportes creados: ', reports.length)
+    console.log('Logs creados: 6 logs de ejemplo')
 
     console.log('Seeders completados exitosamente!')
         console.log('')
