@@ -1,6 +1,57 @@
-# 🛒 Proyecto #7: Sistema de Inventario, Ventas y Facturación de PYMES
+# 🛒 Sistema de Inventario, Ventas y Facturación para PYMES
 
-Este proyecto consiste en el desarrollo de un sistema integral para la gestión de inventario, ventas y facturación dirigido a pequeñas y medianas empresas (PYMES). El sistema permite registrar productos 🏷️, controlar el stock 📦, gestionar ventas 🧾 y emitir facturas 🧾 de manera eficiente, facilitando la administración 🧑‍💼 y el seguimiento 📊 de las operaciones comerciales.
+Sistema integral para la gestión de inventario, ventas y facturación dirigido a pequeñas y medianas empresas (PYMES). Permite registrar productos 🏷️, controlar el stock 📦, gestionar ventas 🧾, emitir facturas 🧾 y generar reportes 📊, facilitando la administración completa de operaciones comerciales multi-sucursal.
+
+## ✨ Características Principales
+
+- 🏢 **Gestión Multi-sucursal**: Control independiente de inventario y ventas por sucursal
+- 👥 **Sistema de Usuarios y Roles**: Owner, Admin, Supervisor, Cajero con permisos específicos
+- 📦 **Control de Inventario**: Gestión completa de productos, stock y alertas de inventario
+- 🛒 **Punto de Venta (POS)**: Sistema completo de ventas con múltiples métodos de pago
+- 📊 **Reportes y Analytics**: Informes de ventas, inventario y rendimiento por sucursal
+- 🔐 **Autenticación JWT**: Sistema seguro de autenticación con gestión de sesiones
+- 🌓 **Tema Claro/Oscuro**: Interfaz adaptable con cambio dinámico de tema
+- � **Diseño Responsivo**: Optimizado para desktop, tablet y móvil
+- ⏰ **Dashboard Dinámico**: Header con fecha/hora en tiempo real, clima y ubicación por sucursal
+
+## 📁 Estructura del Proyecto
+
+```
+/project-web
+├── /api                 # 🚀 Backend (Node.js + Express)
+│   ├── /src            # Código fuente del servidor
+│   ├── package.json    # Dependencias del backend
+│   └── .env           # Variables de entorno
+├── /client             # 🎨 Frontend (React + Vite)
+│   ├── /src           # Código fuente de la aplicación
+│   ├── package.json   # Dependencias del frontend
+│   └── .env          # Variables de entorno
+├── /Docs              # 📚 Documentación del proyecto
+├── package.json       # Scripts de nivel raíz
+└── README.md         # Documentación principal
+```
+
+## 🏗️ Arquitectura del Sistema
+
+### Frontend (/client)
+- **React 18** con **Vite** para desarrollo rápido
+- **Tailwind CSS** para estilos modernos y responsivos
+- **Atomic Design** para organización de componentes
+- **Context API** para gestión de estado global
+- **React Router** para navegación SPA
+
+### Backend (/api)
+- **Node.js** con **Express** para API REST
+- **Sequelize ORM** con **SQLite** para desarrollo
+- **JWT** para autenticación y autorización
+- **Arquitectura por capas** (Controllers, Services, Models)
+- **Middleware** personalizado para autenticación y validación
+
+### Base de Datos
+- **SQLite** para desarrollo (migrable a PostgreSQL)
+- **Modelo relacional** normalizado
+- **Migraciones y seeders** con Sequelize
+- **UUIDs** para identificadores únicos
 
 
 
@@ -90,27 +141,84 @@ Este proyecto consiste en el desarrollo de un sistema integral para la gestión 
 
 A continuación se presenta una descripción clara y estructurada de las tecnologías seleccionadas para cada capa del desarrollo del sistema:
 
-### 🖥️ Frontend
+## � Instalación y Configuración
 
-- **Lenguaje:** JavaScript/TypeScript
-- **Framework/Biblioteca:** [React](https://react.dev/) (con [Vite](https://vitejs.dev/) como herramienta de desarrollo)
-- **Arquitectura:** Atomic Design para organización y reutilización de componentes
-- **Motivo:** React es moderno, escalable y ampliamente adoptado; Vite ofrece desarrollo rápido y eficiente.
+### Prerrequisitos
+- **Node.js** (v18 o superior)
+- **npm** o **yarn**
+- **Git**
+
+### Configuración Rápida
+
+1. **Clonar el repositorio**
+   ```bash
+   git clone git@github.com:EdgarGmz/project-web.git
+   cd project-web
+   ```
+
+2. **Instalar dependencias del Backend**
+   ```bash
+   cd api
+   npm install
+   ```
+
+3. **Configurar variables de entorno**
+   ```bash
+   # En la carpeta api/
+   cp .env.example .env
+   # Editar .env con tus configuraciones
+   ```
+
+4. **Ejecutar migraciones y seeders**
+   ```bash
+   # En la carpeta api/
+   npm run migrate
+   npm run seed
+   ```
+
+5. **Iniciar el servidor Backend**
+   ```bash
+   # En la carpeta api/
+   npm run dev
+   # Servidor disponible en http://localhost:3001
+   ```
+
+6. **Instalar dependencias del Frontend**
+   ```bash
+   # En otra terminal, desde la raíz del proyecto
+   cd client
+   npm install
+   ```
+
+7. **Iniciar el servidor Frontend**
+   ```bash
+   # En la carpeta client/
+   npm run dev
+   # Aplicación disponible en http://localhost:5173
+   ```
+
+### Credenciales de Prueba
+```
+Email: admin@example.com
+Password: admin123
+Rol: Owner (acceso completo)
+```
+
+## 🎯 Stack Tecnológico
+
+### 🖥️ Frontend
+- **React 18** con **Vite** para desarrollo rápido y HMR
+- **Tailwind CSS** para estilos utilitarios y diseño responsivo
+- **React Router Dom** para navegación y rutas protegidas
+- **Context API** para gestión de estado (Auth, Theme, Sidebar)
+- **Atomic Design** para organización de componentes reutilizables
 
 ### 🖲️ Backend
-
-- **Lenguaje:** JavaScript
-- **Framework:** [Node.js](https://nodejs.org/) con [Express](https://expressjs.com/)
-- **Arquitectura:** RESTful API, siguiendo principios Clean/Hexagonal para desacoplar lógica de negocio y detalles técnicos
-- **Motivo:** Node.js permite alta concurrencia y desarrollo ágil; Express es minimalista y flexible.
-
-### 🗄️ Base de Datos
-
-- **Tipo:** Relacional
-- **Motor:** [PostgreSQL](https://www.postgresql.org/)
-- **Modelo de datos:** Tablas normalizadas para usuarios, sucursales, productos, inventario, ventas, clientes y sesiones
-- **ORM:** [Sequelize](https://sequelize.org/) o [Prisma](https://www.prisma.io/) para acceso seguro y desacoplado a los datos
-- **Motivo:** PostgreSQL es robusto, seguro y soporta transacciones complejas; el ORM facilita la gestión de datos.
+- **Node.js** con **Express** para API REST escalable
+- **Sequelize ORM** con **SQLite** (migrable a PostgreSQL)
+- **JWT** para autenticación y autorización segura
+- **bcrypt** para encriptación de contraseñas
+- **UUID** para identificadores únicos y seguros
 
 ### 🗂️ Control de versiones
 
@@ -209,14 +317,19 @@ La elección de cada tecnología se fundamenta en criterios clave alineados con 
 
 | 🏷️ Campo        | 📦 Tipo            | 📝 Descripción           |
 |-----------------|--------------------|--------------------------|
-| 🆔 id           | INT PRIMARY KEY    | Identificador único      |
+| 🆔 id           | UUID PRIMARY KEY   | Identificador único      |
 | 🏢 name         | VARCHAR(255)       | Nombre de la sucursal    |
-| 📍 address      | TEXT               | Dirección                |
-| 📱 phone        | VARCHAR(20)        | Teléfono                 |
-| 👤 manager_id   | INT FOREIGN KEY    | ID del gerente           |
+| 🏷️ code         | VARCHAR(20) UNIQUE | Código de sucursal       |
+| 📍 address      | TEXT               | Dirección completa       |
+| 🏙️ city         | VARCHAR(100)       | Ciudad                   |
+| 🏛️ state        | VARCHAR(100)       | Estado/Provincia         |
+| � postal_code  | VARCHAR(20)        | Código postal            |
+| �📱 phone        | VARCHAR(20)        | Teléfono                 |
+| � email        | VARCHAR(255)       | Email de contacto        |
+| �👤 manager_id   | UUID FOREIGN KEY   | ID del gerente           |
 | ✅ is_active    | BOOLEAN            | Sucursal activa          |
-| ⏰ opening_hours| JSON               | Horarios de apertura     |
 | 🗓️ created_at   | TIMESTAMP          | Fecha de creación        |
+| � updated_at   | TIMESTAMP          | Última actualización     |
 
 ---
 
@@ -422,3 +535,42 @@ cd project-web
 
 
 ¡Listo! Ahora tienes el repositorio en tu dispositivo.
+
+---
+
+## 🔄 Actualizaciones Recientes
+
+### v2.0.0 - Dashboard Dinámico y Mejoras UX
+
+#### 🎨 Interfaz de Usuario
+- **Dashboard Header Dinámico**: Reemplazado título estático por información en tiempo real
+  - ⏰ Fecha y hora actualizadas cada segundo
+  - ☀️🌙 Iconos dinámicos día/noche según la hora
+  - 🌡️ Simulación de datos meteorológicos
+  - 📍 Ubicación personalizada por sucursal del usuario
+- **Avatar de Usuario**: Sistema de avatar con iniciales y menú dropdown
+- **Sidebar Optimizado**: Eliminada información duplicada del usuario
+
+#### 🏢 Gestión de Sucursales
+- **CRUD Completo**: Formularios actualizados con todos los campos requeridos
+- **Validación Mejorada**: Manejo correcto de campos opcionales (manager_id)
+- **Campos Agregados**: code, city, state, postal_code, email
+- **Asociaciones Corregidas**: Consistencia en aliases de Sequelize
+
+#### 🔧 Mejoras Técnicas
+- **Manejo de Errores**: Corrección de EagerLoadingError en asociaciones
+- **Validación de Datos**: Conversión apropiada de strings vacíos a null
+- **Contexts React**: SidebarContext para gestión de estado UI
+- **Código Limpio**: Eliminación de duplicación y mejora de legibilidad
+
+#### 🎯 Funcionalidades
+- **Ubicación Contextual**: El header muestra la ciudad y estado de la sucursal del usuario
+- **Responsive Design**: Optimizado para diferentes tamaños de pantalla
+- **Estado en Tiempo Real**: Actualizaciones automáticas de información temporal
+- **UX Mejorada**: Navegación más intuitiva y información relevante
+
+### Próximas Mejoras
+- 🌐 Integración con API real de clima
+- 📊 Widgets de métricas en el dashboard
+- 🔔 Sistema de notificaciones en tiempo real
+- 📱 PWA para uso móvil offline
