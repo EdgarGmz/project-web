@@ -66,7 +66,7 @@ router.use(authenticate)
  *       500:
  *         description: Error del servidor
  */
-router.get('/', authorize('owner', 'admin'), logController.getAllLogs)
+router.get('/', authorize('owner'), logController.getAllLogs)
 
 /**
  * @swagger
@@ -97,7 +97,7 @@ router.get('/', authorize('owner', 'admin'), logController.getAllLogs)
  *       500:
  *         description: Error del servidor
  */
-router.get('/stats', authorize('owner', 'admin'), logController.getLogStats)
+router.get('/stats', authorize('owner'), logController.getLogStats)
 
 /**
  * @swagger
@@ -134,7 +134,7 @@ router.get('/stats', authorize('owner', 'admin'), logController.getLogStats)
  *       500:
  *         description: Error del servidor
  */
-router.get('/user/:userId', authorize('owner', 'admin'), logController.getLogsByUser)
+router.get('/user/:userId', authorize('owner'), logController.getLogsByUser)
 
 /**
  * @swagger
@@ -161,7 +161,7 @@ router.get('/user/:userId', authorize('owner', 'admin'), logController.getLogsBy
  *       500:
  *         description: Error del servidor
  */
-router.get('/:id', authorize('owner', 'admin'), logController.getLogById)
+router.get('/:id', authorize('owner'), logController.getLogById)
 
 /**
  * @swagger
@@ -201,7 +201,7 @@ router.get('/:id', authorize('owner', 'admin'), logController.getLogById)
  *       500:
  *         description: Error del servidor
  */
-router.post('/', authorize('owner', 'admin'), logController.createLog)
+router.post('/', authorize('owner'), logController.createLog)
 
 /**
  * @swagger

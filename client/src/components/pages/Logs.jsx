@@ -128,7 +128,7 @@ export default function Logs() {
     }
 
     // Verificar permisos
-    if (!hasPermission(['owner', 'admin'])) {
+    if (!hasPermission(['owner'])) {
         return (
             <div className="flex items-center justify-center h-screen">
                 <div className="text-center">
