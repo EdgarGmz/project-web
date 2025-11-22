@@ -91,6 +91,16 @@ return (
                     </button>
                 </form>
 
+                {/* Enlace de recuperación de contraseña */}
+                <div className="text-center">
+                    <Link 
+                        to="/forgot-password" 
+                        className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+                    >
+                        ¿Olvidaste tu contraseña?
+                    </Link>
+                </div>
+
                 {/* Botón temporal para limpiar sesión en caso de problemas */}
                 <button 
                     onClick={clearSession}

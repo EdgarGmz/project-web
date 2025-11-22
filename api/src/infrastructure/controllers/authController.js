@@ -308,6 +308,129 @@ const verifyPassword = async (req, res) => {
     }
 };
 
+// Solicitar recuperación de contraseña
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'El email es requerido'
+            });
+        }
+
+        // Buscar usuario por email
+        const user = await User.scope('withPassword').findOne({
+            where: { email: email.toLowerCase() }
+        });
+
+        if (!user || !user.is_active) {
+            // Por seguridad, siempre devolvemos el mismo mensaje
+            return res.status(200).json({
+                success: true,
+                message: 'Si el email existe, se ha enviado un enlace de recuperación'
+            });
+        }
+
+        // Generar token de reset
+        const resetToken = user.generateResetToken();
+        await user.save();
+
+        // Simular el envío de email por consola (para la demostración)
+        console.log('\n' + '='.repeat(50));
+        console.log('📧 [SIMULADOR DE EMAIL - RECUPERACIÓN DE CONTRASEÑA]');
+        console.log('='.repeat(50));
+        console.log(`📧 Para: ${user.email}`);
+        console.log(`👤 Usuario: ${user.first_name} ${user.last_name}`);
+        console.log(`🔑 Token: ${resetToken}`);
+        console.log(`⏰ Válido hasta: ${user.reset_token_expires.toLocaleString()}`);
+        console.log(`🔗 Link de recuperación:`);
+        console.log(`   http://localhost:5173/reset-password/${resetToken}`);
+        console.log('='.repeat(50) + '\n');
+
+        await logAuth.login(
+            user.id,
+            `Usuario ${user.first_name} ${user.last_name} solicitó recuperación de contraseña`
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Si el email existe, se ha enviado un enlace de recuperación'
+        });
+    } catch (error) {
+        console.error('Error en forgotPassword:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error en el servidor'
+        });
+    }
+};
+
+// Restablecer contraseña con token
+const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token y nueva contraseña son requeridos'
+            });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({
+                success: false,
+                message: 'La contraseña debe tener al menos 8 caracteres'
+            });
+        }
+
+        // Buscar usuario por token
+        const user = await User.scope('withPassword').findOne({
+            where: { reset_token: token }
+        });
+
+        if (!user || !user.isResetTokenValid()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token inválido o expirado'
+            });
+        }
+
+        // Actualizar contraseña
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.clearResetToken();
+        await user.save();
+
+        // Log de éxito por consola
+        console.log('\n' + '='.repeat(50));
+        console.log('✅ [CONTRASEÑA RESTABLECIDA EXITOSAMENTE]');
+        console.log('='.repeat(50));
+        console.log(`👤 Usuario: ${user.first_name} ${user.last_name}`);
+        console.log(`📧 Email: ${user.email}`);
+        console.log(`🕐 Fecha: ${new Date().toLocaleString()}`);
+        console.log('🔒 Nueva contraseña establecida correctamente');
+        console.log('='.repeat(50) + '\n');
+
+        await logAuth.login(
+            user.id,
+            `Usuario ${user.first_name} ${user.last_name} restableció su contraseña`
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Contraseña restablecida exitosamente'
+        });
+    } catch (error) {
+        console.error('Error en resetPassword:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error en el servidor'
+        });
+    }
+};
+
 module.exports = {
     login,
     getProfile,
@@ -315,4 +438,6 @@ module.exports = {
     changePassword,
     logout,
     verifyPassword,
+    forgotPassword,
+    resetPassword,
 };

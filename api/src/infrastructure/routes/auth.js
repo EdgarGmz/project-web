@@ -208,4 +208,80 @@ router.post('/logout', authenticate, authController.logout)
  */
 router.post('/verify-password', authenticate, authController.verifyPassword)
 
+/**
+ * @swagger
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Solicitar recuperación de contraseña
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "usuario@ejemplo.com"
+ *     responses:
+ *       200:
+ *         description: Email de recuperación enviado (si el usuario existe)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Si el email existe, se ha enviado un enlace de recuperación"
+ *       400:
+ *         description: Datos inválidos
+ */
+router.post('/forgot-password', authController.forgotPassword)
+
+/**
+ * @swagger
+ * /auth/reset-password:
+ *   post:
+ *     summary: Restablecer contraseña con token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token, newPassword]
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 example: "abc123def456..."
+ *               newPassword:
+ *                 type: string
+ *                 example: "newpassword123"
+ *     responses:
+ *       200:
+ *         description: Contraseña restablecida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Contraseña restablecida exitosamente"
+ *       400:
+ *         description: Token inválido o expirado
+ */
+router.post('/reset-password', authController.resetPassword)
+
 module.exports = router

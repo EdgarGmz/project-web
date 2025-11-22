@@ -105,6 +105,10 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: true,
                 unique: true,
             },
+            reset_token_expires: {
+                type: DataTypes.DATE,
+                allowNull: true,
+            },
         },
         {
             tableName: 'users',
@@ -121,7 +125,7 @@ module.exports = (sequelize, DataTypes) => {
                 withSessions: { include: 'sessions' },
             },
             defaultScope: {
-                attributes: { exclude: ['password', 'reset_token'] },
+                attributes: { exclude: ['password', 'reset_token', 'reset_token_expires'] },
             },
             indexes: [
                 { fields: ['email'], unique: true },
@@ -157,11 +161,18 @@ module.exports = (sequelize, DataTypes) => {
 
     User.prototype.generateResetToken = function () {
         this.reset_token = crypto.randomBytes(32).toString('hex');
+        // El token expira en 30 minutos
+        this.reset_token_expires = new Date(Date.now() + 30 * 60 * 1000);
         return this.reset_token;
     };
 
     User.prototype.clearResetToken = function () {
         this.reset_token = null;
+        this.reset_token_expires = null;
+    };
+
+    User.prototype.isResetTokenValid = function () {
+        return this.reset_token && this.reset_token_expires && new Date() < this.reset_token_expires;
     };
 
     // Relaciones
