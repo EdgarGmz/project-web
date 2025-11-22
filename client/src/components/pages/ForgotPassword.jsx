@@ -39,13 +39,23 @@ export default function ForgotPassword() {
             <p className="text-muted">Ingresa tu email para recibir un enlace de recuperación</p>
           </header>
           {message && (
-            <output className={`p-3 rounded-md text-sm ${
-              isSuccess 
-                ? 'bg-green-500/10 border border-green-500/30 text-green-400' 
-                : 'bg-red-500/10 border border-red-500/30 text-red-400'
-            }`}>
-              {message}
-            </output>
+            <div
+              className={`flex flex-col items-center justify-center gap-2 p-4 my-2 rounded-xl text-base font-medium shadow-lg transition-all duration-300 animate-fade-in
+                ${isSuccess
+                  ? 'bg-green-600/20 border border-green-500 text-green-700'
+                  : 'bg-red-600/20 border border-red-500 text-red-700'}
+              `}
+              style={{ minHeight: '64px' }}
+            >
+              <span className="flex items-center gap-2">
+                {isSuccess ? (
+                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                ) : (
+                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                )}
+                <span>{message}</span>
+              </span>
+            </div>
           )}
 
           {!isSuccess && (

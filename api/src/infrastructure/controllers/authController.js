@@ -329,7 +329,7 @@ const forgotPassword = async (req, res) => {
             // Por seguridad, siempre devolvemos el mismo mensaje
             return res.status(200).json({
                 success: true,
-                message: 'Si el email existe, se ha enviado un enlace de recuperación'
+                message: 'Se ha enviado el enlace de recuperación de contraseña al correo proporcionado.'
             });
         }
 
@@ -356,7 +356,7 @@ const forgotPassword = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Si el email existe, se ha enviado un enlace de recuperación'
+            message: 'Se ha enviado el enlace de recuperación de contraseña al correo proporcionado.'
         });
     } catch (error) {
         console.error('Error en forgotPassword:', error);
