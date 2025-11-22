@@ -7,6 +7,8 @@ import SessionExpiredModal from './components/molecules/SessionExpiredModal'
 import Landing from './components/pages/Landing'
 import Login from './components/pages/Login'
 import Register from './components/pages/Register'
+import ForgotPassword from './components/pages/ForgotPassword'
+import ResetPassword from './components/pages/ResetPassword'
 
 // Páginas protegidas
 import ProtectedRoute from './components/molecules/ProtectedRoute'
@@ -55,6 +57,8 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
           {/* Dashboard principal */}
           <Route path="/dashboard" element={
