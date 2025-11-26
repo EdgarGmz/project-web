@@ -2,16 +2,7 @@ const db = require('../models')
 const { Branch } = db
 
 const seedBranches = require('./seedBranches');
-const seedProducts = require('./seedProducts');
-const seedCustomers = require('./seedCustomers');
 const seedUsers = require('./seedUsers');
-const seedSales = require('./seedSales');
-const seedSaleItems = require('./seedSaleItems');
-const seedPayments = require('./seedPayments');
-const seedInventory = require('./seedInventory');
-const seedReports = require('./seedReports');
-const seedPurchases = require('./seedPurchases');
-const seedLogs = require('./seedLogs');
 
 // Función para limpiar base de datos usando SQL directo
 const cleanDatabase = async () => {
@@ -20,7 +11,7 @@ const cleanDatabase = async () => {
         await db.sequelize.query('PRAGMA foreign_keys = OFF')
         
         // Limpiar tablas que existen, ignorar errores si no existen
-        const tables = ['logs', 'purchases', 'inventory', 'sale_items', 'sales', 'users', 'customers', 'products', 'branches']
+        const tables = ['purchases', 'inventory', 'sale_items', 'sales', 'users', 'customers', 'products', 'branches']
         for (const table of tables) {
             try {
                 await db.sequelize.query(`DELETE FROM ${table}`)
@@ -50,48 +41,36 @@ const seedDatabase = async (force = false) => {
             return
         }  
 
-    // Ejecutar seeds en orden correcto
+    // Ejecutar seeds en orden correcto - Solo datos mínimos para deploy
     const branches = await seedBranches()
-    const products = await seedProducts()
-    const customers = await seedCustomers(branches)
     const users = await seedUsers(branches)
-    const purchases = await seedPurchases(users, branches)
-    const sales = await seedSales(customers, users, branches)
-    const payments = await seedPayments(sales)
-    const saleItems = await seedSaleItems(sales, products)
-    const inventory = await seedInventory(products, branches)
-    const reports = await seedReports()
-    const logs = await seedLogs(db)
+    
+    // No crear datos de prueba (cero productos, clientes, ventas, compras, etc.)
+    const products = []
+    const customers = []
+    const purchases = []
+    const sales = []
+    const payments = []
+    const saleItems = []
+    const inventory = []
+    const reports = []
 
-    console.log('Sucursales creadas: ', branches.length)
-    console.log('Productos creados: ', products.length)
-    console.log('Clientes creados: ', customers.length)
-    console.log('Usuarios creados: ', users.length)
-    console.log('Compras creadas: ', purchases.length)
-    console.log('Ventas creadas: ', sales.length)
-    console.log('Items de venta creados: ', saleItems.length)
-    console.log('Pagos creados: ', payments.length)
-    console.log('Inventario creado: ', inventory.length)
-    console.log('Reportes creados: ', reports.length)
-    console.log('Logs creados: 6 logs de ejemplo')
-
-    console.log('Seeders completados exitosamente!')
-        console.log('')
-        console.log('Datos de prueba disponibles:')
-        console.log(`   - ${branches.length} sucursales`)
-        console.log(`   - ${products.length} productos`)
-        console.log(`   - ${customers.length} clientes`)
-        console.log(`   - ${users.length} usuarios (owner, admin, manager, cashier)`)
-        console.log(`   - ${purchases.length} compras`)
-        console.log(`   - ${sales.length} ventas`)
-        console.log(`   - ${inventory.length} items de inventario`)
-        console.log('')
-        console.log('Endpoints para probar:')
-        console.log('   - GET /branches')
-        console.log('   - GET /products')
-        console.log('   - GET /customers')
-        console.log('   - GET /users')
-        console.log('   - GET /inventory')
+    console.log('✅ Seeders completados exitosamente!')
+    console.log('')
+    console.log('📊 Datos creados para deploy:')
+    console.log(`   - ${branches.length} sucursal(es) (CEDIS)`)
+    console.log(`   - ${users.length} usuario(s) (owner)`)
+    console.log(`   - ${products.length} productos`)
+    console.log(`   - ${customers.length} clientes`)
+    console.log(`   - ${purchases.length} compras`)
+    console.log(`   - ${sales.length} ventas`)
+    console.log(`   - ${payments.length} pagos`)
+    console.log(`   - ${inventory.length} items de inventario`)
+    console.log('')
+    console.log('')
+    console.log('📡 Endpoints disponibles:')
+    console.log('   - GET /branches')
+    console.log('   - GET /users')
 
     } catch (error) {
         console.error('Error en seeders:', error)

@@ -120,8 +120,8 @@ const generateInventoryReport = async (branch_id) => {
   const inventory = await Inventory.findAll({
     where: whereClause,
     include: [
-      { model: Product, as: 'Product' },
-      { model: Branch, as: 'Branch' }
+      { model: Product, as: 'product' },
+      { model: Branch, as: 'branch' }
     ]
   });
 
@@ -148,12 +148,28 @@ const generateInventoryReport = async (branch_id) => {
     }))
     .slice(0, 20);
 
+  // Mapeo para frontend: productsList (todos los productos)
+  const productsList = inventory.map(item => {
+    let status = 'Normal';
+    if (item.stock_current <= 0) status = 'Agotado';
+    else if (item.stock_current <= (item.product?.min_stock || 10)) status = 'Crítico';
+    return {
+      name: item.product?.name || 'Sin nombre',
+      branch: item.branch?.name || 'Sin sucursal',
+      stock: item.stock_current,
+      min_stock: item.product?.min_stock || 10,
+      cost: item.average_cost,
+      status
+    };
+  });
+
   return {
     totalProducts,
     inventoryValue: inventoryValue.toFixed(2),
     lowStockItems,
     outOfStockItems,
-    criticalStock
+    criticalStock,
+    productsList
   };
 };
 
@@ -230,63 +246,84 @@ const generateCustomersReport = async (whereClause) => {
   const customers = await Customer.findAll({
     where: whereClause,
     include: [
-      { model: Branch, as: 'branch' }
+      { model: Branch, as: 'branches' }
     ]
   });
 
-  // Obtener ventas por cliente
-  const sales = await Sale.findAll({
-    where: whereClause,
-    include: [
-      { model: Customer, as: 'Customer' }
-    ]
-  });
+    // Obtener ventas por cliente
+    const sales = await Sale.findAll({
+      where: whereClause,
+      include: [
+        { model: Customer, as: 'customer' }
+      ]
+    });
 
   const totalCustomers = customers.length;
   const activeCustomers = customers.filter(c => c.is_active).length;
   const inactiveCustomers = totalCustomers - activeCustomers;
 
-  // Calcular ventas por cliente
-  const customerSales = {};
-  sales.forEach(sale => {
-    const customerId = sale.customer_id;
-    if (customerId) {
-      if (!customerSales[customerId]) {
-        customerSales[customerId] = {
-          customer_id: customerId,
-          name: sale.Customer ? `${sale.Customer.first_name} ${sale.Customer.last_name}` : 'Sin nombre',
-          email: sale.Customer?.email || '',
-          totalPurchases: 0,
-          totalSpent: 0
-        };
+    // Calcular ventas por cliente
+    const customerSales = {};
+    sales.forEach(sale => {
+      const customerId = sale.customer_id;
+      if (customerId) {
+        if (!customerSales[customerId]) {
+          customerSales[customerId] = {
+            customer_id: customerId,
+            totalPurchases: 0,
+            totalSpent: 0
+          };
+        }
+        customerSales[customerId].totalPurchases += 1;
+        customerSales[customerId].totalSpent += parseFloat(sale.total_amount || 0);
       }
-      customerSales[customerId].totalPurchases += 1;
-      customerSales[customerId].totalSpent += parseFloat(sale.total_amount || 0);
-    }
-  });
+    });
 
-  // Top clientes por gasto
-  const topCustomers = Object.values(customerSales)
-    .sort((a, b) => b.totalSpent - a.totalSpent)
-    .slice(0, 10)
-    .map(c => ({
-      ...c,
-      totalSpent: c.totalSpent.toFixed(2)
-    }));
+    // Mostrar todos los clientes registrados, aunque no tengan compras
+    const allCustomers = customers.map(c => {
+      const salesData = customerSales[c.id] || { totalPurchases: 0, totalSpent: 0 };
+      return {
+        customer_id: c.id,
+        name: `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Cliente sin nombre',
+        email: c.email || 'Sin email',
+        totalPurchases: salesData.totalPurchases,
+        totalSpent: salesData.totalSpent.toFixed(2)
+      };
+    });
 
-  // Clientes nuevos (registrados en el periodo)
-  const newCustomers = customers.length;
+    // Top clientes por gasto
+    const topCustomers = Object.values(customerSales)
+      .sort((a, b) => b.totalSpent - a.totalSpent)
+      .slice(0, 10)
+      .map(c => {
+        const customer = customers.find(cust => cust.id === c.customer_id);
+        return {
+          customer_id: c.customer_id,
+          name: customer ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Cliente sin nombre' : 'Cliente desconocido',
+          email: customer?.email || 'Sin email',
+          totalPurchases: c.totalPurchases,
+          totalSpent: c.totalSpent.toFixed(2)
+        };
+      });
 
-  return {
-    totalCustomers,
-    activeCustomers,
-    inactiveCustomers,
-    newCustomers,
-    topCustomers,
-    averageSpent: topCustomers.length > 0 
-      ? (Object.values(customerSales).reduce((sum, c) => sum + c.totalSpent, 0) / Object.values(customerSales).length).toFixed(2)
-      : "0.00"
-  };
+    // Clientes nuevos (registrados en el periodo)
+    const newCustomers = customers.length;
+
+    // Calcular promedio de gasto
+    const customersWithSales = Object.values(customerSales);
+    const averageSpent = customersWithSales.length > 0 
+      ? (customersWithSales.reduce((sum, c) => sum + c.totalSpent, 0) / customersWithSales.length).toFixed(2)
+      : "0.00";
+
+    return {
+      totalCustomers,
+      activeCustomers,
+      inactiveCustomers,
+      newCustomers,
+      customers: allCustomers,
+      topCustomers,
+      averageSpent
+    };
 };
 
 // Reporte financiero
@@ -327,9 +364,9 @@ const generateFinancialReport = async (whereClause) => {
       status: 'approved'
     },
     include: [
-      { model: Product, as: 'Product' },
-      { model: Customer, as: 'Customer' },
-      { model: Sale, as: 'Sale', include: [{ model: SaleItem, as: 'items' }] }
+        { model: Product, as: 'product' },
+        { model: Customer, as: 'customer' },
+      { model: Sale, as: 'sale', include: [{ model: SaleItem, as: 'items' }] }
     ]
   });
 
@@ -371,35 +408,34 @@ const generateFinancialReport = async (whereClause) => {
 
 // Reporte de devoluciones
 const generateReturnsReport = async (whereClause) => {
+  // Asegurar que el filtro de fechas se aplique correctamente
   const returns = await Return.findAll({
     where: whereClause,
     include: [
-      { model: Product, as: 'Product', attributes: ['id', 'name', 'sku'] },
-      { model: Customer, as: 'Customer', attributes: ['id', 'first_name', 'last_name', 'email'] },
-      { model: db.User, as: 'ApprovedBy', attributes: ['id', 'first_name', 'last_name'] },
-      { model: db.User, as: 'RejectedBy', attributes: ['id', 'first_name', 'last_name'] },
-      { 
-        model: Sale, 
-        as: 'Sale',
-        include: [
-          { 
-            model: SaleItem, 
-            as: 'items',
-            include: [{ model: Product, as: 'product' }]
-          }
-        ]
-      }
+      { model: Product, as: 'product', attributes: ['id', 'name', 'sku'] },
+      { model: Customer, as: 'customer', attributes: ['id', 'first_name', 'last_name', 'email'] },
+      { model: db.User, as: 'approvedBy', attributes: ['id', 'first_name', 'last_name'] },
+      { model: db.User, as: 'rejectedBy', attributes: ['id', 'first_name', 'last_name'] }
     ],
     order: [['created_at', 'DESC']]
   });
 
-  // Estadísticas generales
-  const totalReturns = returns.length;
-  const approvedReturns = returns.filter(r => r.status === 'approved').length;
-  const rejectedReturns = returns.filter(r => r.status === 'rejected').length;
-  const pendingReturns = returns.filter(r => r.status === 'pending').length;
-  
-  // Calcular valor monetario de devoluciones aprobadas
+  // Procesar y devolver todas las devoluciones del periodo
+  return {
+    total: returns.length,
+    devoluciones: returns.map(r => ({
+      id: r.id,
+      status: r.status,
+      quantity: r.quantity,
+      reason: r.reason,
+      rejection_reason: r.rejection_reason,
+      product: r.product?.name,
+      customer: r.customer ? `${r.customer.first_name} ${r.customer.last_name}` : 'N/A',
+      approvedBy: r.ApprovedBy ? `${r.ApprovedBy.first_name} ${r.ApprovedBy.last_name}` : null,
+      rejectedBy: r.RejectedBy ? `${r.RejectedBy.first_name} ${r.RejectedBy.last_name}` : null,
+      created_at: r.created_at
+    }))
+  };
   let totalReturnValue = 0;
   let totalReturnedQuantity = 0;
   

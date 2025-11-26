@@ -8,12 +8,13 @@ const getAllPayments = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10
         const offset = (page - 1) * limit
 
-        // Búsqueda opcional por referencia o método
+        // Búsqueda opcional por referencia o método (case-insensitive para SQLite)
         const search = req.query.search || ''
+        const searchLower = search.toLowerCase()
         const whereClause = search ? {
             [db.Sequelize.Op.or]: [
-                { reference: { [db.Sequelize.Op.iLike]: `%${search}%` } },
-                { method: { [db.Sequelize.Op.iLike]: `%${search}%` } }
+                db.Sequelize.literal(`LOWER("Payment"."reference") LIKE '%${searchLower}%'`),
+                db.Sequelize.literal(`LOWER("Payment"."method") LIKE '%${searchLower}%'`)
             ]
         } : {}
 

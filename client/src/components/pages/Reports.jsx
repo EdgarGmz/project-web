@@ -3,6 +3,10 @@ import { useAuth } from '../../contexts/AuthContext'
 import { reportService } from '../../services/reportService'
 
 export default function Reports() {
+      const [filterBranch, setFilterBranch] = useState('');
+    // Paginación para inventario
+    const [inventoryPage, setInventoryPage] = useState(1);
+    const pageSize = 10;
   const [reportType, setReportType] = useState('sales')
   const [dateRange, setDateRange] = useState({
     startDate: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
@@ -12,11 +16,11 @@ export default function Reports() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [filterStatus, setFilterStatus] = useState('');
   const { hasPermission } = useAuth()
 
   const reportTypes = [
     { value: 'sales', label: 'Ventas', icon: '💰' },
-    { value: 'products', label: 'Productos', icon: '📦' },
     { value: 'inventory', label: 'Inventario', icon: '📊' },
     { value: 'customers', label: 'Clientes', icon: '👥' },
     { value: 'financial', label: 'Financiero', icon: '💹' },
@@ -24,8 +28,9 @@ export default function Reports() {
   ]
 
   useEffect(() => {
-    generateReport()
-  }, [reportType, dateRange])
+    generateReport();
+    setInventoryPage(1); // Reiniciar página al cambiar filtro
+  }, [reportType, dateRange, filterStatus, filterBranch])
 
   const generateReport = async () => {
     if (!hasPermission(['owner', 'admin', 'supervisor'])) return
@@ -153,7 +158,7 @@ export default function Reports() {
             >
               {reportTypes.map(type => (
                 <option key={type.value} value={type.value}>
-                  {type.icon} {type.label}
+                  {type.icon}{type.label}
                 </option>
               ))}
             </select>
@@ -272,18 +277,45 @@ export default function Reports() {
           {/* Reporte de Inventario */}
           {reportType === 'inventory' && (
             <>
+              <div className="mb-4 flex gap-4 items-center">
+                {/* Filtros envueltos en un solo div padre */}
+                <div className="flex gap-4">
+                  <div className="flex gap-2 items-center">
+                    <label className="font-medium text-slate-500">Filtrar por estado:</label>
+                    <select
+                      value={filterStatus}
+                      onChange={e => setFilterStatus(e.target.value)}
+                      className="px-3 py-2 rounded-lg border border-slate-600/40 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+                    >
+                      <option value="" className="text-slate-400">Todos</option>
+                      <option value="Agotado" className="text-red-400">Agotado</option>
+                      <option value="Crítico" className="text-yellow-400">Crítico</option>
+                      <option value="Normal" className="text-green-400">Normal</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <label className="font-medium text-slate-500">Filtrar por sucursal:</label>
+                    <select
+                      value={filterBranch}
+                      onChange={e => setFilterBranch(e.target.value)}
+                      className="px-3 py-2 rounded-lg border border-slate-600/40 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+                    >
+                      <option value="">Todas</option>
+                      {Array.from(new Set((reportData.productsList || []).map(p => p.branch)))
+                        .filter(branch => branch)
+                        .map(branch => (
+                          <option key={branch} value={branch}>{branch}</option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="card text-center">
                   <div className="text-2xl font-semibold text-accent">
                     {reportData.totalProducts}
                   </div>
                   <div className="text-muted">Total Productos</div>
-                </div>
-                <div className="card text-center">
-                  <div className="text-2xl font-semibold text-green-400">
-                    ${reportData.inventoryValue}
-                  </div>
-                  <div className="text-muted">Valor Inventario</div>
                 </div>
                 <div className="card text-center">
                   <div className="text-2xl font-semibold text-yellow-400">
@@ -297,15 +329,21 @@ export default function Reports() {
                   </div>
                   <div className="text-muted">Sin Stock</div>
                 </div>
+                <div className="card text-center">
+                  <div className="text-2xl font-semibold text-green-400">
+                    ${reportData.inventoryValue}
+                  </div>
+                  <div className="text-muted">Valor Inventario</div>
+                </div>
               </div>
-
               <div className="card">
-                <h3 className="font-semibold mb-4">Productos con Stock Crítico</h3>
+                <h3 className="font-semibold mb-4">Inventario de Productos</h3>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-slate-600/20">
                         <th className="text-left py-2 px-3">Producto</th>
+                        <th className="text-left py-2 px-3">Sucursal</th>
                         <th className="text-left py-2 px-3">Stock Actual</th>
                         <th className="text-left py-2 px-3">Stock Mínimo</th>
                         <th className="text-left py-2 px-3">Estado</th>
@@ -313,84 +351,51 @@ export default function Reports() {
                       </tr>
                     </thead>
                     <tbody>
-                      {reportData.criticalStock?.map((product, index) => (
-                        <tr key={index} className="border-b border-slate-600/10 last:border-0">
-                          <td className="py-2 px-3">{product.name}</td>
-                          <td className="py-2 px-3">{product.stock}</td>
-                          <td className="py-2 px-3">{product.min_stock}</td>
-                          <td className="py-2 px-3">
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              product.stock <= 0 ? 'bg-red-500/20 text-red-400' :
-                              product.stock <= product.min_stock ? 'bg-yellow-500/20 text-yellow-400' :
-                              'bg-green-500/20 text-green-400'
-                            }`}>
-                              {product.stock <= 0 ? 'Agotado' : 
-                               product.stock <= product.min_stock ? 'Crítico' : 'Normal'}
-                            </span>
-                          </td>
-                          <td className="py-2 px-3">${(product.stock * product.cost).toFixed(2)}</td>
-                        </tr>
-                      ))}
+                      {(() => {
+                        const filtered = (reportData.productsList || [])
+                          .filter(product => (!filterStatus || product.status === filterStatus) && (!filterBranch || product.branch === filterBranch));
+                        const totalPages = Math.ceil(filtered.length / pageSize);
+                        const startIdx = (inventoryPage - 1) * pageSize;
+                        const pageProducts = filtered.slice(startIdx, startIdx + pageSize);
+                        return pageProducts.map((product, index) => (
+                          <tr key={index} className="border-b border-slate-600/10 last:border-0">
+                            <td className="py-2 px-3">{product.name}</td>
+                            <td className="py-2 px-3">{product.branch}</td>
+                            <td className="py-2 px-3">{product.stock}</td>
+                            <td className="py-2 px-3">{product.min_stock}</td>
+                            <td className="py-2 px-3">
+                              <span className={`px-2 py-1 rounded text-xs ${
+                                product.status === 'Agotado' ? 'bg-red-500/20 text-red-400' :
+                                product.status === 'Crítico' ? 'bg-yellow-500/20 text-yellow-400' :
+                                'bg-green-500/20 text-green-400'
+                              }`}>
+                                {product.status}
+                              </span>
+                            </td>
+                            <td className="py-2 px-3">${(product.stock * product.cost).toFixed(2)}</td>
+                          </tr>
+                        ))
+                      })()}
                     </tbody>
                   </table>
                 </div>
-              </div>
-            </>
-          )}
-
-          {/* Otros tipos de reportes... */}
-          {reportType === 'products' && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="card text-center">
-                  <div className="text-2xl font-semibold text-blue-400">
-                    {reportData.totalProducts}
-                  </div>
-                  <div className="text-muted">Total Productos</div>
-                </div>
-                <div className="card text-center">
-                  <div className="text-2xl font-semibold text-green-400">
-                    {reportData.activeProducts}
-                  </div>
-                  <div className="text-muted">Activos</div>
-                </div>
-                <div className="card text-center">
-                  <div className="text-2xl font-semibold text-yellow-400">
-                    {reportData.lowStockProducts}
-                  </div>
-                  <div className="text-muted">Stock Bajo</div>
-                </div>
-                <div className="card text-center">
-                  <div className="text-2xl font-semibold text-purple-400">
-                    {reportData.totalProductsSold}
-                  </div>
-                  <div className="text-muted">Unidades Vendidas</div>
-                </div>
-              </div>
-
-              <div className="card">
-                <h3 className="font-semibold mb-4">Top 10 Productos Más Vendidos</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-slate-600/20">
-                        <th className="text-left py-2 px-3">Producto</th>
-                        <th className="text-left py-2 px-3">SKU</th>
-                        <th className="text-left py-2 px-3">Cantidad Vendida</th>
-                        <th className="text-left py-2 px-3">Ingresos</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {reportData.topProducts?.map((product, index) => (
-                        <tr key={index} className="border-b border-slate-600/10 last:border-0">
-                          <td className="py-2 px-3">{product.name}</td>
-                          <td className="py-2 px-3">{product.sku}</td>
-                          <td className="py-2 px-3">{product.quantitySold}</td>
-                          <td className="py-2 px-3">${product.revenue}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                {/* Paginación */}
+                <div className="flex justify-end items-center mt-4 gap-2">
+                  <button
+                    className="btn px-3 py-1 text-sm"
+                    disabled={inventoryPage === 1}
+                    onClick={() => setInventoryPage(p => Math.max(1, p - 1))}
+                  >Anterior</button>
+                  <button
+                    className="btn px-3 py-1 text-sm"
+                    disabled={(() => {
+                      const filtered = (reportData.productsList || [])
+                        .filter(product => (!filterStatus || product.status === filterStatus) && (!filterBranch || product.branch === filterBranch));
+                      const totalPages = Math.ceil(filtered.length / pageSize);
+                      return inventoryPage === totalPages || totalPages === 0;
+                    })()}
+                    onClick={() => setInventoryPage(p => p + 1)}
+                  >Siguiente</button>
                 </div>
               </div>
             </>
@@ -426,7 +431,7 @@ export default function Reports() {
               </div>
 
               <div className="card">
-                <h3 className="font-semibold mb-4">Top 10 Clientes</h3>
+                <h3 className="font-semibold mb-4">Clientes Registrados</h3>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
@@ -438,7 +443,7 @@ export default function Reports() {
                       </tr>
                     </thead>
                     <tbody>
-                      {reportData.topCustomers?.map((customer, index) => (
+                      {reportData.customers?.map((customer, index) => (
                         <tr key={index} className="border-b border-slate-600/10 last:border-0">
                           <td className="py-2 px-3">{customer.name}</td>
                           <td className="py-2 px-3">{customer.email}</td>
@@ -455,56 +460,63 @@ export default function Reports() {
 
           {reportType === 'financial' && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="card text-center">
+              {/* KPIs principales en una sola fila */}
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                <div className="card text-center flex flex-col items-center justify-center">
+                  <div className="text-3xl mb-2">💵</div>
                   <div className="text-2xl font-semibold text-green-400">
-                    ${reportData.totalIncome}
+                    {parseFloat(reportData.totalIncome).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
                   </div>
                   <div className="text-muted">Ingresos Totales</div>
                 </div>
-                <div className="card text-center">
+                <div className="card text-center flex flex-col items-center justify-center">
+                  <div className="text-3xl mb-2">💸</div>
                   <div className="text-2xl font-semibold text-red-400">
-                    ${reportData.totalExpenses}
+                    {parseFloat(reportData.totalExpenses).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
                   </div>
-                  <div className="text-muted">Gastos Totales (Compras)</div>
+                  <div className="text-muted">Gastos Totales</div>
                 </div>
-                <div className="card text-center">
+                <div className="card text-center flex flex-col items-center justify-center">
+                  <div className="text-3xl mb-2">↩️</div>
                   <div className="text-2xl font-semibold text-orange-400">
-                    ${reportData.totalReturns}
+                    {parseFloat(reportData.totalReturns).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
                   </div>
                   <div className="text-muted">Devoluciones</div>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="card text-center">
+                <div className="card text-center flex flex-col items-center justify-center">
+                  <div className="text-3xl mb-2">📈</div>
                   <div className="text-2xl font-semibold text-accent">
-                    ${reportData.netProfit}
+                    {parseFloat(reportData.netProfit).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
                   </div>
                   <div className="text-muted">Ganancia Neta</div>
                 </div>
-                <div className="card text-center">
-                  <div className="text-2xl font-semibold text-blue-400">
-                    {reportData.totalPurchases}
-                  </div>
-                  <div className="text-muted">Total de Compras</div>
-                </div>
-                <div className="card text-center">
-                  <div className="text-2xl font-semibold text-purple-400">
-                    ${reportData.averagePurchase}
-                  </div>
-                  <div className="text-muted">Compra Promedio</div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="card text-center">
+                <div className="card text-center flex flex-col items-center justify-center">
+                  <div className="text-3xl mb-2">🟡</div>
                   <div className="text-2xl font-semibold text-yellow-400">
                     {reportData.profitMargin}%
                   </div>
                   <div className="text-muted">Margen de Ganancia</div>
                 </div>
-                <div className="card text-center">
+              </div>
+
+              {/* KPIs secundarios */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div className="card text-center flex flex-col items-center justify-center">
+                  <div className="text-3xl mb-2">🛒</div>
+                  <div className="text-2xl font-semibold text-blue-400">
+                    {reportData.totalPurchases}
+                  </div>
+                  <div className="text-muted">Total de Compras</div>
+                </div>
+                <div className="card text-center flex flex-col items-center justify-center">
+                  <div className="text-3xl mb-2">💳</div>
+                  <div className="text-2xl font-semibold text-purple-400">
+                    {parseFloat(reportData.averagePurchase).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
+                  </div>
+                  <div className="text-muted">Compra Promedio</div>
+                </div>
+                <div className="card text-center flex flex-col items-center justify-center">
+                  <div className="text-3xl mb-2">↩️</div>
                   <div className="text-2xl font-semibold text-orange-400">
                     {reportData.totalReturnCount || 0}
                   </div>

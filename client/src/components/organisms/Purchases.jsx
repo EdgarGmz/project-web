@@ -3,15 +3,38 @@ import { useAuth } from '../../contexts/AuthContext'
 import { purchaseService } from '../../services/purchaseService'
 import { branchService } from '../../services/branchService'
 import { userService } from '../../services/userService'
+import ConfirmModal from '../molecules/ConfirmModal'
+import SuccessModal from '../molecules/SuccessModal'
+import CancelledModal from '../molecules/CancelledModal'
 
 export default function Purchases() {
-  const { hasPermission } = useAuth()
+  const { hasPermission, user } = useAuth()
   const [purchases, setPurchases] = useState([])
   const [branches, setBranches] = useState([])
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  
+  // Estados para formulario
+  const [showForm, setShowForm] = useState(false)
+  const [editingPurchase, setEditingPurchase] = useState(null)
+  const [formData, setFormData] = useState({
+    supplier_name: '',
+    supplier_contact: '',
+    supplier_phone: '',
+    total_amount: '',
+    purchase_date: new Date().toISOString().split('T')[0],
+    invoice_number: '',
+    status: 'pending',
+    notes: ''
+  })
+  
+  // Estado para modal de éxito
+  const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' })
+  // Estado para modal de cancelación
+  const [cancelledModal, setCancelledModal] = useState({ isOpen: false, message: '' })
   
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1)
@@ -22,6 +45,9 @@ export default function Purchases() {
   const [filterUser, setFilterUser] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [filterSearch, setFilterSearch] = useState('')
+  
+  // Estado para modal de confirmación
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, purchase: null })
 
   useEffect(() => {
     fetchBranches()
@@ -97,6 +123,91 @@ export default function Purchases() {
     setCurrentPage(1)
   }
 
+  const resetForm = () => {
+    setFormData({
+      supplier_name: '',
+      supplier_contact: '',
+      supplier_phone: '',
+      total_amount: '',
+      purchase_date: new Date().toISOString().split('T')[0],
+      invoice_number: '',
+      status: 'pending',
+      notes: ''
+    })
+    setEditingPurchase(null)
+  }
+
+  const handleOpenForm = (purchase = null) => {
+    if (purchase) {
+      setEditingPurchase(purchase)
+      setFormData({
+        supplier_name: purchase.supplier_name || '',
+        supplier_contact: purchase.supplier_contact || '',
+        supplier_phone: purchase.supplier_phone || '',
+        total_amount: purchase.total_amount || '',
+        purchase_date: purchase.purchase_date ? new Date(purchase.purchase_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        invoice_number: purchase.invoice_number || '',
+        status: purchase.status || 'pending',
+        notes: purchase.notes || ''
+      })
+    } else {
+      resetForm()
+    }
+    setShowForm(true)
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const purchaseData = {
+        ...formData,
+        total_amount: parseFloat(formData.total_amount)
+      }
+
+      let response
+      if (editingPurchase) {
+        response = await purchaseService.update(editingPurchase.id, purchaseData)
+      } else {
+        response = await purchaseService.create(purchaseData)
+      }
+
+      if (response && response.success) {
+        const message = editingPurchase ? 'Compra actualizada exitosamente' : 'Compra creada exitosamente'
+        setSuccessModal({ isOpen: true, message })
+        setShowForm(false)
+        resetForm()
+        fetchPurchases()
+      }
+    } catch (error) {
+      console.error('Error saving purchase:', error)
+      setError(error.response?.data?.message || error.message || 'Error al guardar la compra')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!confirmModal.purchase) return
+
+    try {
+      setError('')
+      const response = await purchaseService.delete(confirmModal.purchase.id)
+      if (response && response.success) {
+        setCancelledModal({ isOpen: true, message: 'Compra eliminada exitosamente' })
+        setConfirmModal({ isOpen: false, purchase: null })
+        fetchPurchases()
+      }
+    } catch (error) {
+      console.error('Error deleting purchase:', error)
+      setError(error.response?.data?.message || error.message || 'Error al eliminar la compra')
+      setConfirmModal({ isOpen: false, purchase: null })
+    }
+  }
+
   const getStatusBadge = (status) => {
     const badges = {
       pending: { color: 'bg-yellow-500/20 text-yellow-400', label: 'Pendiente' },
@@ -128,6 +239,14 @@ export default function Purchases() {
           <h1 className="text-2xl font-semibold">Compras</h1>
           <p className="text-muted">Gestión de compras a proveedores</p>
         </div>
+        {hasPermission(['owner', 'admin']) && (
+          <button 
+            onClick={() => handleOpenForm()}
+            className="btn"
+          >
+            + Nueva Compra
+          </button>
+        )}
       </div>
 
       {/* Mensajes */}
@@ -145,13 +264,16 @@ export default function Purchases() {
       {/* Filtros */}
       <div className="card">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold">Filtros</h3>
-          <button
-            onClick={handleClearFilters}
-            className="text-sm text-accent hover:opacity-80 transition flex items-center gap-2"
-          >
-            <span>✖</span> Limpiar filtros
-          </button>
+          <h2 className="text-lg font-semibold">Filtros</h2>
+          {(filterBranch || filterUser || filterStatus || filterSearch) && (
+            <button
+              onClick={handleClearFilters}
+              className="text-sm text-accent hover:opacity-80 transition flex items-center gap-2"
+              title="Limpiar filtros"
+            >
+              🗑️ Limpiar filtros
+            </button>
+          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
@@ -248,6 +370,9 @@ export default function Purchases() {
                     <th className="text-left py-3 px-4">Usuario</th>
                     <th className="text-left py-3 px-4">Total</th>
                     <th className="text-left py-3 px-4">Estado</th>
+                    {hasPermission(['owner', 'admin']) && (
+                      <th className="text-left py-3 px-4">Acciones</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -282,6 +407,26 @@ export default function Purchases() {
                           {getStatusBadge(purchase.status).label}
                         </span>
                       </td>
+                      {hasPermission(['owner', 'admin']) && (
+                        <td className="py-3 px-4">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleOpenForm(purchase)}
+                              className="text-blue-400 hover:text-blue-300 text-sm"
+                              title="Editar"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => setConfirmModal({ isOpen: true, purchase })}
+                              className="text-red-400 hover:text-red-300 text-sm"
+                              title="Eliminar"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -313,6 +458,171 @@ export default function Purchases() {
           </>
         )}
       </div>
+
+      {/* Modal formulario */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="card max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold">
+                {editingPurchase ? 'Editar Compra' : 'Nueva Compra'}
+              </h3>
+              <button 
+                onClick={() => {
+                  setShowForm(false)
+                  resetForm()
+                }} 
+                className="text-2xl hover:opacity-70"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Proveedor *</label>
+                  <input
+                    type="text"
+                    value={formData.supplier_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, supplier_name: e.target.value }))}
+                    required
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                    placeholder="Nombre del proveedor"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Contacto</label>
+                  <input
+                    type="text"
+                    value={formData.supplier_contact}
+                    onChange={(e) => setFormData(prev => ({ ...prev, supplier_contact: e.target.value }))}
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                    placeholder="Nombre del contacto"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Teléfono</label>
+                  <input
+                    type="tel"
+                    value={formData.supplier_phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, supplier_phone: e.target.value }))}
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                    placeholder="Teléfono del proveedor"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Monto Total *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    value={formData.total_amount}
+                    onChange={(e) => setFormData(prev => ({ ...prev, total_amount: e.target.value }))}
+                    required
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Fecha de Compra *</label>
+                  <input
+                    type="date"
+                    value={formData.purchase_date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, purchase_date: e.target.value }))}
+                    required
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Número de Factura</label>
+                  <input
+                    type="text"
+                    value={formData.invoice_number}
+                    onChange={(e) => setFormData(prev => ({ ...prev, invoice_number: e.target.value }))}
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                    placeholder="Número de factura"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Estado *</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                    required
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  >
+                    <option value="pending">Pendiente</option>
+                    <option value="completed">Completada</option>
+                    <option value="cancelled">Cancelada</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Notas</label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                  rows={3}
+                  className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  placeholder="Notas adicionales sobre la compra"
+                />
+              </div>
+
+              <div className="flex gap-3 justify-end pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForm(false)
+                    resetForm()
+                  }}
+                  className="px-4 py-2 border border-slate-600/30 rounded-md hover:bg-surface/50"
+                  disabled={saving}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="btn"
+                  disabled={saving}
+                >
+                  {saving ? 'Guardando...' : (editingPurchase ? 'Actualizar' : 'Crear')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, purchase: null })}
+        onConfirm={handleDelete}
+        title="Eliminar Compra"
+        message={`¿Estás seguro de que deseas eliminar la compra de ${confirmModal.purchase?.supplier_name}? Esta acción no se puede deshacer.`}
+      />
+
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ isOpen: false, message: '' })}
+        message={successModal.message}
+      />
+
+      {/* Modal de cancelación */}
+      <CancelledModal
+        isOpen={cancelledModal.isOpen}
+        onClose={() => setCancelledModal({ isOpen: false, message: '' })}
+        message={cancelledModal.message}
+      />
     </div>
   )
 }

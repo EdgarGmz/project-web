@@ -9,13 +9,14 @@ const getAllUsers = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10
         const offset = (page - 1) * limit
 
-        // Búsqueda opcional por nombre o email
+        // Búsqueda opcional por nombre o email (case-insensitive para SQLite)
         const search = req.query.search || ''
+        const searchLower = search.toLowerCase()
         const whereClause = search ? {
             [db.Sequelize.Op.or]: [
-                { first_name: { [db.Sequelize.Op.iLike]: `%${search}%` } },
-                { last_name: { [db.Sequelize.Op.iLike]: `%${search}%` } },
-                { email: { [db.Sequelize.Op.iLike]: `%${search}%` } }
+                db.Sequelize.literal(`LOWER("User"."first_name") LIKE '%${searchLower}%'`),
+                db.Sequelize.literal(`LOWER("User"."last_name") LIKE '%${searchLower}%'`),
+                db.Sequelize.literal(`LOWER("User"."email") LIKE '%${searchLower}%'`)
             ]
         } : {}
 
@@ -256,10 +257,13 @@ const createUser = async (req, res) => {
         })
 
         // Registrar en logs
-        await logUser.create(
-            req.user.id,
-            `Usuario creado: ${newUser.first_name} ${newUser.last_name} (${newUser.email}) - Rol: ${newUser.role}`
-        )
+            await logUser.create(
+                req.user.id,
+                `Usuario creado: ${newUser.first_name} ${newUser.last_name} (${newUser.email}) - Rol: ${newUser.role}`,
+                {
+                    service: 'user'
+                }
+            )
 
         const userResponse = { ...newUser.toJSON() }
         delete userResponse.password

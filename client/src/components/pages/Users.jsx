@@ -3,6 +3,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import UserForm from '../organisms/UserForm'
 import { userService } from '../../services/userService'
 import { branchService } from '../../services/branchService'
+import SuccessModal from '../molecules/SuccessModal'
+import CancelledModal from '../molecules/CancelledModal'
 
 export default function Users() {
 const [users, setUsers] = useState([])
@@ -14,6 +16,8 @@ const [searchTerm, setSearchTerm] = useState('')
 const [roleFilter, setRoleFilter] = useState('all')
 const [statusFilter, setStatusFilter] = useState('all')
 const [branchFilter, setBranchFilter] = useState('all')
+const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' })
+const [cancelledModal, setCancelledModal] = useState({ isOpen: false, message: '' })
 const { user, hasPermission } = useAuth()
 
 const roles = [
@@ -151,8 +155,8 @@ const handleDeleteUser = async (userToDelete) => {
     try {
         const response = await userService.delete(userToDelete.id)
         if (response.success) {
+            setCancelledModal({ isOpen: true, message: 'Usuario eliminado exitosamente' })
             fetchUsers() // Refresh list
-            alert('Usuario eliminado correctamente')
         } else {
             alert(response.message)
         }
@@ -233,6 +237,23 @@ return (
 
     {/* Filtros y búsqueda */}
     <div className="card p-4">
+        <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Filtros</h2>
+            {(searchTerm || roleFilter !== 'all' || statusFilter !== 'all' || branchFilter !== 'all') && (
+                <button
+                    onClick={() => {
+                        setSearchTerm('')
+                        setRoleFilter('all')
+                        setStatusFilter('all')
+                        setBranchFilter('all')
+                    }}
+                    className="text-sm text-accent hover:opacity-80 transition flex items-center gap-2"
+                    title="Limpiar filtros"
+                >
+                    🗑️ Limpiar filtros
+                </button>
+            )}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {/* Búsqueda por nombre/email */}
             <div className="md:col-span-2">
@@ -518,6 +539,10 @@ return (
         <UserForm
         user={editingUser}
         onSuccess={() => {
+            setSuccessModal({ 
+              isOpen: true, 
+              message: editingUser ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente' 
+            })
             setShowForm(false)
             setEditingUser(null)
             fetchUsers() // Refresh la lista
@@ -528,6 +553,20 @@ return (
         }}
         />
     )}
+
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ isOpen: false, message: '' })}
+        message={successModal.message}
+      />
+
+      {/* Modal de cancelación */}
+      <CancelledModal
+        isOpen={cancelledModal.isOpen}
+        onClose={() => setCancelledModal({ isOpen: false, message: '' })}
+        message={cancelledModal.message}
+      />
     </div>
 )
 }

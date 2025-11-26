@@ -21,36 +21,85 @@ export default function Logs() {
 
     const { hasPermission } = useAuth()
 
-    // Tipos de acciones
+    // Tipos de acciones con iconos
     const actions = [
-        { value: '', label: 'Todas las acciones' },
-        { value: 'CREATE', label: 'Crear', color: 'bg-green-500/20 text-green-400' },
-        { value: 'UPDATE', label: 'Actualizar', color: 'bg-blue-500/20 text-blue-400' },
-        { value: 'DELETE', label: 'Eliminar', color: 'bg-red-500/20 text-red-400' },
-        { value: 'LOGIN', label: 'Login', color: 'bg-purple-500/20 text-purple-400' },
-        { value: 'LOGOUT', label: 'Logout', color: 'bg-gray-500/20 text-gray-400' },
-        { value: 'VIEW', label: 'Ver', color: 'bg-cyan-500/20 text-cyan-400' },
-        { value: 'EXPORT', label: 'Exportar', color: 'bg-yellow-500/20 text-yellow-400' },
-        { value: 'APPROVE', label: 'Aprobar', color: 'bg-green-500/20 text-green-400' },
-        { value: 'REJECT', label: 'Rechazar', color: 'bg-red-500/20 text-red-400' },
-        { value: 'ERROR', label: 'Error', color: 'bg-red-600/20 text-red-500' }
+        { value: '', label: 'Todas las acciones', icon: '📋', color: 'bg-gray-500/20 text-gray-400' },
+        { value: 'CREATE', label: 'Crear', icon: '➕', color: 'bg-green-500/20 text-green-400' },
+        { value: 'UPDATE', label: 'Actualizar', icon: '✏️', color: 'bg-blue-500/20 text-blue-400' },
+        { value: 'DELETE', label: 'Eliminar', icon: '🗑️', color: 'bg-red-500/20 text-red-400' },
+        { value: 'LOGIN', label: 'Login', icon: '🔓', color: 'bg-purple-500/20 text-purple-400' },
+        { value: 'LOGOUT', label: 'Logout', icon: '🔒', color: 'bg-gray-500/20 text-gray-400' },
+        { value: 'VIEW', label: 'Ver', icon: '👁️', color: 'bg-cyan-500/20 text-cyan-400' },
+        { value: 'EXPORT', label: 'Exportar', icon: '📤', color: 'bg-yellow-500/20 text-yellow-400' },
+        { value: 'APPROVE', label: 'Aprobar', icon: '✅', color: 'bg-green-500/20 text-green-400' },
+        { value: 'REJECT', label: 'Rechazar', icon: '❌', color: 'bg-red-500/20 text-red-400' },
+        { value: 'ERROR', label: 'Error', icon: '⚠️', color: 'bg-red-600/20 text-red-500' }
     ]
 
-    // Servicios/Módulos
+    // Función para obtener el icono de una acción
+    const getActionIcon = (action) => {
+        const actionObj = actions.find(a => a.value === action)
+        return actionObj?.icon || '📋'
+    }
+
+    // Debug: verificar que actions tenga las opciones correctas
+    if (process.env.NODE_ENV === 'development') {
+        console.log('Actions array:', actions)
+    }
+
+    // Mapeo de iconos por módulo
+    const getServiceIcon = (service) => {
+        const iconMap = {
+            'auth': '🔐',
+            'user': '👤',
+            'product': '📦',
+            'customer': '👥',
+            'sale': '💰',
+            'inventory': '📊',
+            'purchase': '🛒',
+            'return': '↩️',
+            'payment': '💳',
+            'report': '📈',
+            'branch': '🏢',
+            'settings': '⚙️'
+        }
+        return iconMap[service] || '📋'
+    }
+
+    // Mapeo de nombres amigables por módulo
+    const getServiceLabel = (service) => {
+        const labelMap = {
+            'auth': 'Autenticación',
+            'user': 'Usuarios',
+            'product': 'Productos',
+            'customer': 'Clientes',
+            'sale': 'Ventas',
+            'inventory': 'Inventario',
+            'purchase': 'Compras',
+            'return': 'Devoluciones',
+            'payment': 'Pagos',
+            'report': 'Reportes',
+            'branch': 'Sucursales',
+            'settings': 'Configuración'
+        }
+        return labelMap[service] || service
+    }
+
+    // Servicios/Módulos (todos en singular para consistencia)
     const services = [
-        { value: '', label: 'Todos los módulos' },
-        { value: 'auth', label: 'Autenticación' },
-        { value: 'users', label: 'Usuarios' },
-        { value: 'products', label: 'Productos' },
-        { value: 'customers', label: 'Clientes' },
-        { value: 'sales', label: 'Ventas' },
-        { value: 'inventory', label: 'Inventario' },
-        { value: 'purchases', label: 'Compras' },
-        { value: 'returns', label: 'Devoluciones' },
-        { value: 'payments', label: 'Pagos' },
-        { value: 'reports', label: 'Reportes' },
-        { value: 'branches', label: 'Sucursales' },
-        { value: 'settings', label: 'Configuración' }
+        { value: '', label: 'Todos los módulos', icon: '📋' },
+        { value: 'auth', label: 'Autenticación', icon: '🔐' },
+        { value: 'user', label: 'Usuarios', icon: '👤' },
+        { value: 'product', label: 'Productos', icon: '📦' },
+        { value: 'customer', label: 'Clientes', icon: '👥' },
+        { value: 'sale', label: 'Ventas', icon: '💰' },
+        { value: 'inventory', label: 'Inventario', icon: '📊' },
+        { value: 'purchase', label: 'Compras', icon: '🛒' },
+        { value: 'return', label: 'Devoluciones', icon: '↩️' },
+        { value: 'payment', label: 'Pagos', icon: '💳' },
+        { value: 'report', label: 'Reportes', icon: '📈' },
+        { value: 'branch', label: 'Sucursales', icon: '🏢' },
+        { value: 'settings', label: 'Configuración', icon: '⚙️' }
     ]
 
     useEffect(() => {
@@ -153,12 +202,15 @@ export default function Logs() {
             <div className="card p-6 space-y-4">
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold">Filtros</h2>
-                    <button
-                        onClick={handleClearFilters}
-                        className="text-sm text-accent hover:text-accent/80"
-                    >
-                        Limpiar filtros
-                    </button>
+                    {(filters.search || filters.action || filters.service || filters.user_id) && (
+                        <button
+                            onClick={handleClearFilters}
+                            className="text-sm text-accent hover:opacity-80 transition flex items-center gap-2"
+                            title="Limpiar filtros"
+                        >
+                            🗑️ Limpiar filtros
+                        </button>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -193,31 +245,37 @@ export default function Logs() {
 
                     {/* Acción */}
                     <div>
-                        <label className="block text-sm font-medium mb-2">Acción</label>
+                        <label htmlFor="action-filter" className="block text-sm font-medium mb-2">Acción</label>
                         <select
-                            value={filters.action}
-                            onChange={(e) => handleFilterChange('action', e.target.value)}
+                            name="action"
+                            id="action-filter"
+                            value={filters.action || ''}
+                            onChange={(e) => {
+                                handleFilterChange('action', e.target.value)
+                            }}
                             className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
                         >
-                            {actions.map(action => (
-                                <option key={action.value} value={action.value}>
-                                    {action.label}
+                            {actions.map((action) => (
+                                <option key={`action-${action.value}`} value={action.value}>
+                                    {action.icon} {action.label}
                                 </option>
                             ))}
                         </select>
                     </div>
 
-                    {/* Servicio */}
+                    {/* Servicio/Módulo */}
                     <div>
-                        <label className="block text-sm font-medium mb-2">Módulo</label>
+                        <label htmlFor="service-filter" className="block text-sm font-medium mb-2">Módulo</label>
                         <select
-                            value={filters.service}
+                            name="service"
+                            id="service-filter"
+                            value={filters.service || ''}
                             onChange={(e) => handleFilterChange('service', e.target.value)}
                             className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
                         >
                             {services.map(service => (
-                                <option key={service.value} value={service.value}>
-                                    {service.label}
+                                <option key={`service-${service.value}`} value={service.value}>
+                                    {service.icon} {service.label}
                                 </option>
                             ))}
                         </select>
@@ -297,13 +355,21 @@ export default function Logs() {
                                             )}
                                         </td>
                                         <td className="py-3 px-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getActionColor(log.action)}`}>
-                                                {log.action}
-                                            </span>
+                                            {(() => {
+                                                const actionKey = log.action?.toUpperCase();
+                                                const actionObj = actions.find(a => a.value === actionKey);
+                                                return (
+                                                    <span className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 w-fit ${getActionColor(actionKey)}`}>
+                                                        <span className="text-base">{getActionIcon(actionKey)}</span>
+                                                        <span>{actionObj ? actionObj.label : log.action}</span>
+                                                    </span>
+                                                );
+                                            })()}
                                         </td>
                                         <td className="py-3 px-4">
-                                            <span className="px-2 py-1 bg-surface/50 rounded text-xs font-medium">
-                                                {log.service}
+                                            <span className="px-3 py-1.5 bg-surface/50 rounded-lg text-xs font-medium flex items-center gap-2 w-fit">
+                                                <span className="text-base">{getServiceIcon(log.service)}</span>
+                                                <span>{getServiceLabel(log.service)}</span>
                                             </span>
                                         </td>
                                         <td className="py-3 px-4 max-w-md">

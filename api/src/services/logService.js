@@ -21,19 +21,19 @@ const ACTIONS = {
     ERROR: 'ERROR'
 }
 
-// Servicios del sistema
+// Servicios del sistema (todos en singular para consistencia)
 const SERVICES = {
     AUTH: 'auth',
-    USERS: 'users',
-    PRODUCTS: 'products',
-    CUSTOMERS: 'customers',
-    SALES: 'sales',
+    USER: 'user',
+    PRODUCT: 'product',
+    CUSTOMER: 'customer',
+    SALE: 'sale',
     INVENTORY: 'inventory',
-    PURCHASES: 'purchases',
-    RETURNS: 'returns',
-    PAYMENTS: 'payments',
-    REPORTS: 'reports',
-    BRANCHES: 'branches',
+    PURCHASE: 'purchase',
+    RETURN: 'return',
+    PAYMENT: 'payment',
+    REPORT: 'report',
+    BRANCH: 'branch',
     SETTINGS: 'settings'
 }
 
@@ -96,22 +96,22 @@ const logAuth = {
  */
 const logProduct = {
     create: async (userId, message) => {
-        return createLog(userId, ACTIONS.CREATE, SERVICES.PRODUCTS, message)
+        return createLog(userId, ACTIONS.CREATE, SERVICES.PRODUCT, message)
     },
     update: async (userId, message) => {
-        return createLog(userId, ACTIONS.UPDATE, SERVICES.PRODUCTS, message)
+        return createLog(userId, ACTIONS.UPDATE, SERVICES.PRODUCT, message)
     },
     delete: async (userId, message) => {
-        return createLog(userId, ACTIONS.DELETE, SERVICES.PRODUCTS, message)
+        return createLog(userId, ACTIONS.DELETE, SERVICES.PRODUCT, message)
     },
     view: async (userId, message) => {
-        return createLog(userId, ACTIONS.VIEW, SERVICES.PRODUCTS, message)
+        return createLog(userId, ACTIONS.VIEW, SERVICES.PRODUCT, message)
     },
     import: async (userId, message) => {
-        return createLog(userId, ACTIONS.IMPORT, SERVICES.PRODUCTS, message)
+        return createLog(userId, ACTIONS.IMPORT, SERVICES.PRODUCT, message)
     },
     export: async (userId, message) => {
-        return createLog(userId, ACTIONS.EXPORT, SERVICES.PRODUCTS, message)
+        return createLog(userId, ACTIONS.EXPORT, SERVICES.PRODUCT, message)
     }
 }
 
@@ -120,16 +120,16 @@ const logProduct = {
  */
 const logCustomer = {
     create: async (userId, message) => {
-        return createLog(userId, ACTIONS.CREATE, SERVICES.CUSTOMERS, message)
+        return createLog(userId, ACTIONS.CREATE, SERVICES.CUSTOMER, message)
     },
     update: async (userId, message) => {
-        return createLog(userId, ACTIONS.UPDATE, SERVICES.CUSTOMERS, message)
+        return createLog(userId, ACTIONS.UPDATE, SERVICES.CUSTOMER, message)
     },
     delete: async (userId, message) => {
-        return createLog(userId, ACTIONS.DELETE, SERVICES.CUSTOMERS, message)
+        return createLog(userId, ACTIONS.DELETE, SERVICES.CUSTOMER, message)
     },
     view: async (userId, message) => {
-        return createLog(userId, ACTIONS.VIEW, SERVICES.CUSTOMERS, message)
+        return createLog(userId, ACTIONS.VIEW, SERVICES.CUSTOMER, message)
     }
 }
 
@@ -138,22 +138,22 @@ const logCustomer = {
  */
 const logSale = {
     create: async (userId, message) => {
-        return createLog(userId, ACTIONS.CREATE, SERVICES.SALES, message)
+        return createLog(userId, ACTIONS.CREATE, SERVICES.SALE, message)
     },
     update: async (userId, message) => {
-        return createLog(userId, ACTIONS.UPDATE, SERVICES.SALES, message)
+        return createLog(userId, ACTIONS.UPDATE, SERVICES.SALE, message)
     },
     delete: async (userId, message) => {
-        return createLog(userId, ACTIONS.DELETE, SERVICES.SALES, message)
+        return createLog(userId, ACTIONS.DELETE, SERVICES.SALE, message)
     },
     view: async (userId, message) => {
-        return createLog(userId, ACTIONS.VIEW, SERVICES.SALES, message)
+        return createLog(userId, ACTIONS.VIEW, SERVICES.SALE, message)
     },
     approve: async (userId, message) => {
-        return createLog(userId, ACTIONS.APPROVE, SERVICES.SALES, message)
+        return createLog(userId, ACTIONS.APPROVE, SERVICES.SALE, message)
     },
     reject: async (userId, message) => {
-        return createLog(userId, ACTIONS.REJECT, SERVICES.SALES, message)
+        return createLog(userId, ACTIONS.REJECT, SERVICES.SALE, message)
     }
 }
 
@@ -180,16 +180,19 @@ const logInventory = {
  */
 const logPurchase = {
     create: async (userId, message) => {
-        return createLog(userId, ACTIONS.CREATE, SERVICES.PURCHASES, message)
+        return createLog(userId, ACTIONS.CREATE, SERVICES.PURCHASE, message)
     },
     update: async (userId, message) => {
-        return createLog(userId, ACTIONS.UPDATE, SERVICES.PURCHASES, message)
+        return createLog(userId, ACTIONS.UPDATE, SERVICES.PURCHASE, message)
     },
     delete: async (userId, message) => {
-        return createLog(userId, ACTIONS.DELETE, SERVICES.PURCHASES, message)
+        return createLog(userId, ACTIONS.DELETE, SERVICES.PURCHASE, message)
+    },
+    view: async (userId, message) => {
+        return createLog(userId, ACTIONS.VIEW, SERVICES.PURCHASE, message)
     },
     approve: async (userId, message) => {
-        return createLog(userId, ACTIONS.APPROVE, SERVICES.PURCHASES, message)
+        return createLog(userId, ACTIONS.APPROVE, SERVICES.PURCHASE, message)
     }
 }
 
@@ -198,16 +201,16 @@ const logPurchase = {
  */
 const logReturn = {
     create: async (userId, message) => {
-        return createLog(userId, ACTIONS.CREATE, SERVICES.RETURNS, message)
+        return createLog(userId, ACTIONS.CREATE, SERVICES.RETURN, message)
     },
     update: async (userId, message) => {
-        return createLog(userId, ACTIONS.UPDATE, SERVICES.RETURNS, message)
+        return createLog(userId, ACTIONS.UPDATE, SERVICES.RETURN, message)
     },
     delete: async (userId, message) => {
-        return createLog(userId, ACTIONS.DELETE, SERVICES.RETURNS, message)
+        return createLog(userId, ACTIONS.DELETE, SERVICES.RETURN, message)
     },
     approve: async (userId, message) => {
-        return createLog(userId, ACTIONS.APPROVE, SERVICES.RETURNS, message)
+        return createLog(userId, ACTIONS.APPROVE, SERVICES.RETURN, message)
     }
 }
 
@@ -216,16 +219,16 @@ const logReturn = {
  */
 const logPayment = {
     create: async (userId, message) => {
-        return createLog(userId, ACTIONS.CREATE, SERVICES.PAYMENTS, message)
+        return createLog(userId, ACTIONS.CREATE, SERVICES.PAYMENT, message)
     },
     update: async (userId, message) => {
-        return createLog(userId, ACTIONS.UPDATE, SERVICES.PAYMENTS, message)
+        return createLog(userId, ACTIONS.UPDATE, SERVICES.PAYMENT, message)
     },
     delete: async (userId, message) => {
-        return createLog(userId, ACTIONS.DELETE, SERVICES.PAYMENTS, message)
+        return createLog(userId, ACTIONS.DELETE, SERVICES.PAYMENT, message)
     },
     approve: async (userId, message) => {
-        return createLog(userId, ACTIONS.APPROVE, SERVICES.PAYMENTS, message)
+        return createLog(userId, ACTIONS.APPROVE, SERVICES.PAYMENT, message)
     }
 }
 
@@ -234,13 +237,13 @@ const logPayment = {
  */
 const logReport = {
     create: async (userId, message) => {
-        return createLog(userId, ACTIONS.CREATE, SERVICES.REPORTS, message)
+        return createLog(userId, ACTIONS.CREATE, SERVICES.REPORT, message)
     },
     view: async (userId, message) => {
-        return createLog(userId, ACTIONS.VIEW, SERVICES.REPORTS, message)
+        return createLog(userId, ACTIONS.VIEW, SERVICES.REPORT, message)
     },
     export: async (userId, message) => {
-        return createLog(userId, ACTIONS.EXPORT, SERVICES.REPORTS, message)
+        return createLog(userId, ACTIONS.EXPORT, SERVICES.REPORT, message)
     }
 }
 
@@ -249,16 +252,16 @@ const logReport = {
  */
 const logUser = {
     create: async (userId, message) => {
-        return createLog(userId, ACTIONS.CREATE, SERVICES.USERS, message)
+        return createLog(userId, ACTIONS.CREATE, SERVICES.USER, message)
     },
     update: async (userId, message) => {
-        return createLog(userId, ACTIONS.UPDATE, SERVICES.USERS, message)
+        return createLog(userId, ACTIONS.UPDATE, SERVICES.USER, message)
     },
     delete: async (userId, message) => {
-        return createLog(userId, ACTIONS.DELETE, SERVICES.USERS, message)
+        return createLog(userId, ACTIONS.DELETE, SERVICES.USER, message)
     },
     view: async (userId, message) => {
-        return createLog(userId, ACTIONS.VIEW, SERVICES.USERS, message)
+        return createLog(userId, ACTIONS.VIEW, SERVICES.USER, message)
     }
 }
 
@@ -267,16 +270,16 @@ const logUser = {
  */
 const logBranch = {
     create: async (userId, message) => {
-        return createLog(userId, ACTIONS.CREATE, SERVICES.BRANCHES, message)
+        return createLog(userId, ACTIONS.CREATE, SERVICES.BRANCH, message)
     },
     update: async (userId, message) => {
-        return createLog(userId, ACTIONS.UPDATE, SERVICES.BRANCHES, message)
+        return createLog(userId, ACTIONS.UPDATE, SERVICES.BRANCH, message)
     },
     delete: async (userId, message) => {
-        return createLog(userId, ACTIONS.DELETE, SERVICES.BRANCHES, message)
+        return createLog(userId, ACTIONS.DELETE, SERVICES.BRANCH, message)
     },
     view: async (userId, message) => {
-        return createLog(userId, ACTIONS.VIEW, SERVICES.BRANCHES, message)
+        return createLog(userId, ACTIONS.VIEW, SERVICES.BRANCH, message)
     }
 }
 

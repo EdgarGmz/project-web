@@ -4,6 +4,8 @@ import { inventoryService } from '../../services/inventoryService'
 import { productService } from '../../services/productService'
 import { branchService } from '../../services/branchService'
 import ConfirmModal from '../molecules/ConfirmModal'
+import SuccessModal from '../molecules/SuccessModal'
+import CancelledModal from '../molecules/CancelledModal'
 
 export default function Inventory() {
   const [inventory, setInventory] = useState([])
@@ -15,6 +17,8 @@ export default function Inventory() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' })
+  const [cancelledModal, setCancelledModal] = useState({ isOpen: false, message: '' })
   const { hasPermission } = useAuth()
 
   // Estados para paginación y filtros
@@ -138,6 +142,10 @@ export default function Inventory() {
       }
       
       if (response && response.success) {
+        setSuccessModal({ 
+          isOpen: true, 
+          message: editingItem ? 'Inventario actualizado exitosamente' : 'Inventario creado exitosamente' 
+        })
         fetchInventory()
         setShowForm(false)
         setEditingItem(null)
@@ -148,8 +156,6 @@ export default function Inventory() {
           min_stock: '',
           notes: ''
         })
-        setSuccess(editingItem ? 'Inventario actualizado exitosamente' : 'Inventario creado exitosamente')
-        setTimeout(() => setSuccess(''), 3000)
       }
     } catch (error) {
       console.error('Error saving inventory:', error)
@@ -201,9 +207,8 @@ export default function Inventory() {
       setError('')
       const response = await inventoryService.delete(item.id)
       if (response && response.success) {
+        setCancelledModal({ isOpen: true, message: 'Inventario eliminado exitosamente' })
         fetchInventory()
-        setSuccess('Inventario eliminado exitosamente')
-        setTimeout(() => setSuccess(''), 3000)
       }
     } catch (error) {
       console.error('Error deleting inventory:', error)
@@ -301,8 +306,7 @@ export default function Inventory() {
       {/* Filtros */}
       <div className="card">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Filtros de Búsqueda</h3>
-          {/* Botón para limpiar filtros - visible siempre */}
+          <h2 className="text-lg font-semibold">Filtros</h2>
           {(filterSearch || filterProduct || filterBranch || filterLowStock) && (
             <button
               onClick={() => {
@@ -312,12 +316,10 @@ export default function Inventory() {
                 setFilterLowStock(false)
                 setCurrentPage(1)
               }}
-              className="px-4 py-2 text-sm border border-slate-600/30 rounded-md hover:bg-surface/50 flex items-center gap-2"
+              className="text-sm text-accent hover:opacity-80 transition flex items-center gap-2"
+              title="Limpiar filtros"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Limpiar filtros
+              🗑️ Limpiar filtros
             </button>
           )}
         </div>
@@ -674,6 +676,20 @@ export default function Inventory() {
         type="danger"
         confirmText="Eliminar"
         cancelText="Cancelar"
+      />
+
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ isOpen: false, message: '' })}
+        message={successModal.message}
+      />
+
+      {/* Modal de cancelación */}
+      <CancelledModal
+        isOpen={cancelledModal.isOpen}
+        onClose={() => setCancelledModal({ isOpen: false, message: '' })}
+        message={cancelledModal.message}
       />
     </div>
   )

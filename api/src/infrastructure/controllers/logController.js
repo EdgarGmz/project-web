@@ -21,12 +21,16 @@ const getAllLogs = async (req, res) => {
 
         // Filtro por acción
         if (action) {
-            whereClause.action = action
+            whereClause.action = action.toUpperCase()
         }
 
-        // Filtro por servicio
+        // Filtro por servicio (case-insensitive para SQLite)
         if (service) {
-            whereClause.service = service
+            const serviceLower = service.toLowerCase()
+            whereClause.service = db.Sequelize.where(
+                db.Sequelize.fn('LOWER', db.Sequelize.col('Log.service')),
+                { [Op.eq]: serviceLower }
+            )
         }
 
         // Filtro por rango de fechas
@@ -40,11 +44,13 @@ const getAllLogs = async (req, res) => {
             }
         }
 
-        // Búsqueda en mensaje
+        // Búsqueda en mensaje (case-insensitive para SQLite)
         if (search) {
-            whereClause.message = {
-                [Op.like]: `%${search}%`
-            }
+            const searchLower = search.toLowerCase()
+            whereClause.message = db.Sequelize.where(
+                db.Sequelize.fn('LOWER', db.Sequelize.col('Log.message')),
+                { [Op.like]: `%${searchLower}%` }
+            )
         }
 
         const { count, rows } = await Log.findAndCountAll({

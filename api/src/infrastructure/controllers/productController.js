@@ -100,6 +100,18 @@ const toggleProductStatus = async (req, res) => {
 
         await product.update({ is_active: !product.is_active })
         
+        // Registrar en logs
+        try {
+            await db.Log.create({
+                user_id: req.user?.id || null,
+                action: product.is_active ? 'activate' : 'deactivate',
+                service: 'product',
+                message: `Producto ${product.is_active ? 'activado' : 'desactivado'}: ${product.name} (SKU: ${product.sku})`
+            });
+        } catch (logError) {
+            console.error('Error al registrar log de activación/desactivación de producto:', logError);
+        }
+
         res.json({
             success: true,
             message: `Producto ${product.is_active ? 'activado' : 'desactivado'} exitosamente`,
@@ -185,6 +197,7 @@ const createProduct = async (req, res) => {
             }
         }
 
+
         const newProduct = await Product.create({
             name,
             description: description || null,
@@ -197,13 +210,25 @@ const createProduct = async (req, res) => {
             min_stock: parseInt(min_stock) || 5,
             max_stock: parseInt(max_stock) || 1000,
             is_active: is_active !== false
-        })
+        });
+
+        // Registrar en logs
+        try {
+            await db.Log.create({
+                user_id: req.user?.id || null,
+                action: 'create',
+                service: 'product',
+                message: `Producto creado: ${newProduct.name} (SKU: ${newProduct.sku})`
+            });
+        } catch (logError) {
+            console.error('Error al registrar log de creación de producto:', logError);
+        }
 
         res.status(201).json({
             success: true,
             message: 'Producto creado exitosamente',
             data: newProduct
-        })
+        });
 
     } catch (error) {
         console.error('Error al crear producto:', error)
@@ -268,6 +293,18 @@ const updateProduct = async (req, res) => {
 
         await product.update(updateData)
 
+        // Registrar en logs
+        try {
+            await db.Log.create({
+                user_id: req.user?.id || null,
+                action: 'update',
+                service: 'product',
+                message: `Producto actualizado: ${product.name} (SKU: ${product.sku})`
+            });
+        } catch (logError) {
+            console.error('Error al registrar log de actualización de producto:', logError);
+        }
+
         res.json({
             success: true,
             message: 'Producto actualizado exitosamente',
@@ -308,6 +345,18 @@ const deleteProduct = async (req, res) => {
 
         // Usar soft delete en lugar de destroy para mantener consistencia con usuarios
         await product.destroy() // Sequelize soft delete (paranoid: true)
+
+        // Registrar en logs
+        try {
+            await db.Log.create({
+                user_id: req.user?.id || null,
+                action: 'delete',
+                service: 'product',
+                message: `Producto eliminado: ${product.name} (SKU: ${product.sku})`
+            });
+        } catch (logError) {
+            console.error('Error al registrar log de eliminación de producto:', logError);
+        }
 
         res.json({
             success: true,

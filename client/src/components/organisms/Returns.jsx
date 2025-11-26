@@ -4,12 +4,14 @@ import { authService } from '../../services/authService'
 import { useAuth } from '../../contexts/AuthContext'
 import ConfirmModal from '../molecules/ConfirmModal'
 import PromptModal from '../molecules/PromptModal'
+import SuccessModal from '../molecules/SuccessModal'
 
 export default function Returns() {
   const [returns, setReturns] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' })
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [statistics, setStatistics] = useState(null)
@@ -270,15 +272,14 @@ export default function Returns() {
     try {
       if (editingReturn) {
         await returnService.update(editingReturn.id, formData)
-        setSuccessMessage('Devolución actualizada exitosamente')
+        setSuccessModal({ isOpen: true, message: 'Devolución actualizada exitosamente' })
       } else {
         await returnService.create(formData)
-        setSuccessMessage('Devolución creada exitosamente')
+        setSuccessModal({ isOpen: true, message: 'Devolución creada exitosamente' })
       }
       
       handleCloseModal()
       fetchReturns()
-      setTimeout(() => setSuccessMessage(''), 3000)
     } catch (err) {
       setError('Error al guardar la devolución: ' + (err.message || 'Error desconocido'))
     }
@@ -359,6 +360,21 @@ export default function Returns() {
 
       {/* Filtros */}
       <div className="card">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Filtros</h2>
+          {(search || statusFilter) && (
+            <button
+              onClick={() => {
+                handleSearchChange('')
+                handleStatusChange('')
+              }}
+              className="text-sm text-accent hover:opacity-80 transition flex items-center gap-2"
+              title="Limpiar filtros"
+            >
+              🗑️ Limpiar filtros
+            </button>
+          )}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm mb-2">Buscar</label>
@@ -725,6 +741,13 @@ export default function Returns() {
         message={promptModal.message}
         placeholder="Ingresa tu contraseña"
         isPassword={true}
+      />
+
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ isOpen: false, message: '' })}
+        message={successModal.message}
       />
     </div>
   )

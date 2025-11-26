@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import ConfirmModal from '../molecules/ConfirmModal'
+import SuccessModal from '../molecules/SuccessModal'
+import CancelledModal from '../molecules/CancelledModal'
 
 export default function Customers() {
   const [customers, setCustomers] = useState([])
@@ -26,6 +28,10 @@ export default function Customers() {
 
   // Estado para modal de confirmación
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, customer: null })
+  // Estado para modal de éxito
+  const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' })
+  // Estado para modal de cancelación
+  const [cancelledModal, setCancelledModal] = useState({ isOpen: false, message: '' })
 
   useEffect(() => {
     fetchCustomers()
@@ -63,6 +69,10 @@ export default function Customers() {
       })
       
       if (response.ok) {
+        setSuccessModal({ 
+          isOpen: true, 
+          message: editingCustomer ? 'Cliente actualizado exitosamente' : 'Cliente creado exitosamente' 
+        })
         fetchCustomers()
         setShowForm(false)
         setEditingCustomer(null)
@@ -104,7 +114,7 @@ export default function Customers() {
       })
       const data = await response.json()
       if (data.success) {
-        alert('Cliente eliminado exitosamente')
+        setCancelledModal({ isOpen: true, message: 'Cliente eliminado exitosamente' })
         fetchCustomers()
       } else {
         alert(data.message)
@@ -128,6 +138,10 @@ export default function Customers() {
     } catch (error) {
       console.error('Error fetching customer details:', error)
     }
+  }
+
+  const clearFilters = () => {
+    setSearchTerm('')
   }
 
   const filteredCustomers = customers.filter(customer =>
@@ -178,6 +192,18 @@ export default function Customers() {
 
       {/* Búsqueda */}
       <div className="card">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Filtros</h2>
+          {searchTerm && (
+            <button
+              onClick={clearFilters}
+              className="text-sm text-accent hover:opacity-80 transition flex items-center gap-2"
+              title="Limpiar filtros"
+            >
+              🗑️ Limpiar filtros
+            </button>
+          )}
+        </div>
         <input
           type="text"
           placeholder="Buscar por nombre, email, teléfono o documento..."
@@ -587,6 +613,20 @@ export default function Customers() {
         type="danger"
         confirmText="Eliminar"
         cancelText="Cancelar"
+      />
+
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ isOpen: false, message: '' })}
+        message={successModal.message}
+      />
+
+      {/* Modal de cancelación */}
+      <CancelledModal
+        isOpen={cancelledModal.isOpen}
+        onClose={() => setCancelledModal({ isOpen: false, message: '' })}
+        message={cancelledModal.message}
       />
     </div>
   )

@@ -4,6 +4,7 @@ import { productService } from '../../services/productService'
 import { customerService } from '../../services/customerService'
 import { saleService } from '../../services/saleServices'
 import { inventoryService } from '../../services/inventoryService'
+import SuccessModal from '../molecules/SuccessModal'
 
 export default function POS() {
   const [products, setProducts] = useState([])
@@ -18,6 +19,7 @@ export default function POS() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' })
   const { user } = useAuth()
 
   useEffect(() => {
@@ -206,14 +208,15 @@ export default function POS() {
       console.log('Respuesta del servidor:', response)
       
       if (response.success) {
-        setSuccessMessage(`Venta procesada exitosamente. Total: $${getCartTotal().toFixed(2)}`)
+        setSuccessModal({ 
+          isOpen: true, 
+          message: `Venta procesada exitosamente. Total: $${getCartTotal().toFixed(2)}` 
+        })
         setCart([])
         setSelectedCustomer(null)
         setAmountReceived('')
         setShowPayment(false)
         fetchInventory() // Actualizar inventario
-        
-        setTimeout(() => setSuccessMessage(''), 5000)
       }
     } catch (error) {
       console.error('Error processing sale:', error)
@@ -497,6 +500,13 @@ export default function POS() {
           </div>
         </div>
       )}
+
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ isOpen: false, message: '' })}
+        message={successModal.message}
+      />
     </div>
   )
 }

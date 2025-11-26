@@ -17,20 +17,30 @@ const getAllCustomers = async (req, res) => {
             })
         }
 
-        // Búsqueda opcional por nombre o email
+        // Búsqueda opcional por nombre o email (case-insensitive para SQLite)
         const search = req.query.search || ''
+        const searchLower = search.toLowerCase()
         let whereClause = search ? {
             [db.Sequelize.Op.or]: [
-                { first_name: { [db.Sequelize.Op.iLike]: `%${search}%` } },
-                { last_name: { [db.Sequelize.Op.iLike]: `%${search}%` } },
-                { email: { [db.Sequelize.Op.iLike]: `%${search}%` } }
+                db.Sequelize.literal(`LOWER("Customer"."first_name") LIKE '%${searchLower}%'`),
+                db.Sequelize.literal(`LOWER("Customer"."last_name") LIKE '%${searchLower}%'`),
+                db.Sequelize.literal(`LOWER("Customer"."email") LIKE '%${searchLower}%'`)
             ]
         } : {}
 
         // Aplicar filtros por sucursal según el rol
+        let includeOptions = [
+            {
+                model: db.Branch,
+                as: 'branches',
+                attributes: ['id', 'name', 'code'],
+                through: { attributes: [] } // No incluir campos de la tabla intermedia
+            }
+        ]
+
         if (currentUser.role === 'cashier' || currentUser.role === 'supervisor') {
             // Cajeros y supervisores solo ven clientes de su sucursal
-            whereClause.branch_id = currentUser.branch_id
+            includeOptions[0].where = { id: currentUser.branch_id }
         }
         // Admin y owner pueden ver todos los clientes (sin filtro adicional)
 
@@ -39,13 +49,8 @@ const getAllCustomers = async (req, res) => {
             limit,
             offset,
             order: [['created_at', 'DESC']],
-            include: [
-                {
-                    model: db.Branch,
-                    as: 'branch',
-                    attributes: ['id', 'name', 'code']
-                }
-            ]
+            include: includeOptions,
+            distinct: true // Importante para contar correctamente con relaciones N:N
         })
 
         res.json({
@@ -118,8 +123,9 @@ const getCustomerDetails = async (req, res) => {
             include: [
                 {
                     model: db.Branch,
-                    as: 'branch',
-                    attributes: ['id', 'name', 'code', 'city']
+                    as: 'branches',
+                    attributes: ['id', 'name', 'code', 'city'],
+                    through: { attributes: [] } // No incluir campos de la tabla intermedia
                 }
             ]
         })
@@ -134,7 +140,8 @@ const getCustomerDetails = async (req, res) => {
         // Verificar permisos por rol
         if (['cashier', 'supervisor'].includes(currentUser.role)) {
             // Cajeros y supervisores solo pueden ver clientes de su sucursal
-            if (customer.branch_id !== currentUser.branch_id) {
+            const customerBranchIds = customer.branches.map(b => b.id.toString())
+            if (!customerBranchIds.includes(currentUser.branch_id.toString())) {
                 return res.status(403).json({
                     success: false,
                     message: 'No tienes permisos para ver este cliente'
@@ -218,9 +225,21 @@ const createCustomer = async (req, res) => {
             birth_date,
             document_type,
             document_number,
-            notes,
-            branch_id: currentUser.branch_id // Asignar la sucursal del usuario que crea
+            notes
         })
+
+        // Asociar el cliente con la sucursal del usuario que lo crea (relación N:N)
+        if (currentUser.branch_id) {
+            await newCustomer.addBranch(currentUser.branch_id)
+        }
+
+        // Registrar en el log
+        await db.Log.create({
+            user_id: currentUser.id,
+            action: 'create',
+            service: 'customer',
+            message: `Cliente creado: ${newCustomer.first_name} ${newCustomer.last_name} (${newCustomer.email})`
+        });
 
         res.status(201).json({
             success: true,
@@ -261,7 +280,13 @@ const updateCustomer = async (req, res) => {
             })
         }
 
-        const customer = await Customer.findByPk(id)
+        const customer = await Customer.findByPk(id, {
+            include: [{
+                model: db.Branch,
+                as: 'branches',
+                attributes: ['id']
+            }]
+        })
         if (!customer) {
             return res.status(404).json({
                 success: false,
@@ -270,7 +295,8 @@ const updateCustomer = async (req, res) => {
         }
 
         // Verificar que el cliente pertenezca a la sucursal del usuario
-        if (customer.branch_id !== currentUser.branch_id) {
+        const customerBranchIds = customer.branches.map(b => b.id.toString())
+        if (!customerBranchIds.includes(currentUser.branch_id.toString())) {
             return res.status(403).json({
                 success: false,
                 message: 'Solo puedes actualizar clientes de tu sucursal'
@@ -349,7 +375,13 @@ const deleteCustomer = async (req, res) => {
             })
         }
 
-        const customer = await Customer.findByPk(id)
+        const customer = await Customer.findByPk(id, {
+            include: [{
+                model: db.Branch,
+                as: 'branches',
+                attributes: ['id']
+            }]
+        })
         if (!customer) {
             return res.status(404).json({
                 success: false,
@@ -358,7 +390,8 @@ const deleteCustomer = async (req, res) => {
         }
 
         // Verificar que el cliente pertenezca a la sucursal del usuario
-        if (customer.branch_id !== currentUser.branch_id) {
+        const customerBranchIds = customer.branches.map(b => b.id.toString())
+        if (!customerBranchIds.includes(currentUser.branch_id.toString())) {
             return res.status(403).json({
                 success: false,
                 message: 'Solo puedes eliminar clientes de tu sucursal'

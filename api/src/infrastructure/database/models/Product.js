@@ -198,6 +198,10 @@ module.exports = (sequelize, DataTypes) => {
 
     // Relaciones
     Product.associate = (models) => {
+                Product.hasMany(models.Return, {
+                    foreignKey: 'product_id',
+                    as: 'returns'
+                })
         Product.hasMany(models.SaleItem, {
             foreignKey: 'product_id',
             as: 'sales_items'
