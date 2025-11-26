@@ -9,8 +9,9 @@ const getStats = async (req, res) => {
         const userId = req.user.id;
         const userBranchId = req.user.branch_id;
         
-        // Filtro por sucursal si el usuario no es owner
-        const branchFilter = req.user.role === 'owner' ? {} : { branch_id: userBranchId };
+        // Filtro por sucursal si el usuario no es owner o admin
+        const isAdminOrOwner = req.user.role === 'owner' || req.user.role === 'admin';
+        const branchFilter = isAdminOrOwner ? {} : { branch_id: userBranchId };
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -99,10 +100,30 @@ const getStats = async (req, res) => {
             ? ((revenueThisMonth - revenueLastMonth) / revenueLastMonth * 100).toFixed(1)
             : 0;
 
-        // Total de productos
-        const totalProducts = await Product.count({
-            where: branchFilter
-        });
+        // Total de productos (productos únicos que tienen inventario en la sucursal)
+        let totalProducts;
+        if (isAdminOrOwner) {
+            // Owner ve todos los productos únicos
+            totalProducts = await Product.count({
+                distinct: true,
+                include: [{
+                    model: Inventory,
+                    as: 'inventories',
+                    required: true
+                }]
+            });
+        } else {
+            // Otros roles ven productos de su sucursal
+            totalProducts = await Product.count({
+                distinct: true,
+                include: [{
+                    model: Inventory,
+                    as: 'inventories',
+                    where: { branch_id: userBranchId },
+                    required: true
+                }]
+            });
+        }
 
         // Productos con stock bajo
         const lowStockProducts = await Inventory.count({
@@ -123,18 +144,41 @@ const getStats = async (req, res) => {
             }
         });
 
-        // Total de clientes
-        const totalCustomers = await Customer.count({
-            where: branchFilter
-        });
-
-        // Clientes nuevos este mes
-        const newCustomers = await Customer.count({
-            where: {
-                ...branchFilter,
-                created_at: { [Op.gte]: thisMonthStart }
-            }
-        });
+        // Total de clientes (clientes asociados a la sucursal)
+        let totalCustomers;
+        let newCustomers;
+        if (isAdminOrOwner) {
+            // Owner ve todos los clientes
+            totalCustomers = await Customer.count();
+            newCustomers = await Customer.count({
+                where: {
+                    created_at: { [Op.gte]: thisMonthStart }
+                }
+            });
+        } else {
+            // Otros roles ven clientes de su sucursal (relación N:N)
+            totalCustomers = await Customer.count({
+                distinct: true,
+                include: [{
+                    model: Branch,
+                    as: 'branches',
+                    where: { id: userBranchId },
+                    required: true
+                }]
+            });
+            newCustomers = await Customer.count({
+                distinct: true,
+                include: [{
+                    model: Branch,
+                    as: 'branches',
+                    where: { id: userBranchId },
+                    required: true
+                }],
+                where: {
+                    created_at: { [Op.gte]: thisMonthStart }
+                }
+            });
+        }
 
         res.status(200).json({
             success: true,
@@ -176,7 +220,8 @@ const getStats = async (req, res) => {
 const getRecentSales = async (req, res) => {
     try {
         const userBranchId = req.user.branch_id;
-        const branchFilter = req.user.role === 'owner' ? {} : { branch_id: userBranchId };
+        const isAdminOrOwner = req.user.role === 'owner' || req.user.role === 'admin';
+        const branchFilter = isAdminOrOwner ? {} : { branch_id: userBranchId };
 
         const recentSales = await Sale.findAll({
             where: {
@@ -228,7 +273,8 @@ const getRecentSales = async (req, res) => {
 const getTopProducts = async (req, res) => {
     try {
         const userBranchId = req.user.branch_id;
-        const branchFilter = req.user.role === 'owner' ? {} : { branch_id: userBranchId };
+        const isAdminOrOwner = req.user.role === 'owner' || req.user.role === 'admin';
+        const branchFilter = isAdminOrOwner ? {} : { branch_id: userBranchId };
 
         const topProducts = await SaleItem.findAll({
             attributes: [
@@ -280,7 +326,8 @@ const getTopProducts = async (req, res) => {
 const getLowStockProducts = async (req, res) => {
     try {
         const userBranchId = req.user.branch_id;
-        const branchFilter = req.user.role === 'owner' ? {} : { branch_id: userBranchId };
+        const isAdminOrOwner = req.user.role === 'owner' || req.user.role === 'admin';
+        const branchFilter = isAdminOrOwner ? {} : { branch_id: userBranchId };
 
         const lowStockProducts = await Inventory.findAll({
             where: {

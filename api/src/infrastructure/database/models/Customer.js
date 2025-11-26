@@ -72,14 +72,6 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: true
-        },
-        branch_id: {
-            type: DataTypes.UUID,
-            allowNull: true,
-            references: {
-                model: 'branches',
-                key: 'id'
-            }
         }
     }, {
         tableName: 'customers',
@@ -137,9 +129,12 @@ module.exports = (sequelize, DataTypes) => {
             as: 'sales'
         })
         
-        Customer.belongsTo(models.Branch, {
-            foreignKey: 'branch_id',
-            as: 'branch'
+        // Relación N:N con Branch a través de la tabla intermedia customer_branches
+        Customer.belongsToMany(models.Branch, {
+            through: 'customer_branches',
+            foreignKey: 'customer_id',
+            otherKey: 'branch_id',
+            as: 'branches'
         })
     }
 

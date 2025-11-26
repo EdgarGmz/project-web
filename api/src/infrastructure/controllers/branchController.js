@@ -9,10 +9,11 @@ const getAllBranches = async (req, res) => {
         const offset = (page - 1) * limit
 
         const search = req.query.search || ''
+        const searchLower = search.toLowerCase()
         const whereClause = search ? {
-            name: {
-                [db.Sequelize.Op.iLike]: `%${search}%`
-            }
+            [db.Sequelize.Op.and]: [
+                db.Sequelize.literal(`LOWER("Branch"."name") LIKE '%${searchLower}%'`)
+            ]
         } : {}
 
         const { count, rows } = await Branch.findAndCountAll({

@@ -32,10 +32,20 @@ if (db.Branch && db.Inventory) {
   db.Inventory.belongsTo(db.Branch, { foreignKey: 'branch_id', as: 'branch' })
 }
 
-// Asociación Customer - Branch (agregada para soporte de clientes por sucursal)
+// Asociación Customer - Branch (N:N a través de customer_branches)
 if (db.Branch && db.Customer) {
-  db.Branch.hasMany(db.Customer, { foreignKey: 'branch_id' })
-  db.Customer.belongsTo(db.Branch, { foreignKey: 'branch_id', as: 'branch' })
+  db.Branch.belongsToMany(db.Customer, {
+    through: 'customer_branches',
+    foreignKey: 'branch_id',
+    otherKey: 'customer_id',
+    as: 'customers'
+  })
+  db.Customer.belongsToMany(db.Branch, {
+    through: 'customer_branches',
+    foreignKey: 'customer_id',
+    otherKey: 'branch_id',
+    as: 'branches'
+  })
 }
 
 if (db.Product && db.Inventory) {

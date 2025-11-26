@@ -2,7 +2,7 @@ const db = require('../models');
 const { Customer } = db;
 
 async function seedCustomers(branches) {
-	return await Customer.bulkCreate([
+	const customers = await Customer.bulkCreate([
 		// Clientes de Sucursal Norte
 		{
             first_name: 'Juan',
@@ -14,7 +14,6 @@ async function seedCustomers(branches) {
             postal_code: '01000',
             company_name: 'Empresa S.A. de C.V.',
             tax_id: 'RFC123456789',
-            branch_id: branches[1].id, // Sucursal Norte
             is_active: true
         },
         {
@@ -27,7 +26,6 @@ async function seedCustomers(branches) {
             postal_code: '01100',
             company_name: 'Comercializadora Lopez',
             tax_id: 'RFC987654321',
-            branch_id: branches[1].id, // Sucursal Norte
             is_active: true
         },
         {
@@ -40,7 +38,6 @@ async function seedCustomers(branches) {
             postal_code: '64000',
             company_name: 'Ramirez y Asociados',
             tax_id: 'RFC112233445',
-            branch_id: branches[1].id, // Sucursal Norte
             is_active: true
         },
         {
@@ -53,7 +50,6 @@ async function seedCustomers(branches) {
             postal_code: '44100',
             company_name: 'Gonzalez Consultores',
             tax_id: 'RFC556677889',
-            branch_id: branches[1].id, // Sucursal Norte
             is_active: true
         },
         {
@@ -66,7 +62,6 @@ async function seedCustomers(branches) {
             postal_code: '72000',
             company_name: 'Fernandez Servicios',
             tax_id: 'RFC998877665',
-            branch_id: branches[1].id, // Sucursal Norte
             is_active: true
         },
         // Clientes de Sucursal Sur
@@ -80,7 +75,6 @@ async function seedCustomers(branches) {
             postal_code: '50000',
             company_name: 'Diaz y Cia',
             tax_id: 'RFC223344556',
-            branch_id: branches[2].id, // Sucursal Sur
             is_active: true
         },
         {
@@ -93,7 +87,6 @@ async function seedCustomers(branches) {
             postal_code: '37000',
             company_name: 'Hernandez Distribuciones',
             tax_id: 'RFC334455667',
-            branch_id: branches[2].id, // Sucursal Sur
             is_active: true
         },
         {
@@ -106,7 +99,6 @@ async function seedCustomers(branches) {
             postal_code: '76000',
             company_name: 'Martinez Flores S.A.',
             tax_id: 'RFC445566778',
-            branch_id: branches[2].id, // Sucursal Sur
             is_active: true
         },
         {
@@ -119,7 +111,6 @@ async function seedCustomers(branches) {
             postal_code: '77500',
             company_name: 'Castillo Morales',
             tax_id: 'RFC556677880',
-            branch_id: branches[2].id, // Sucursal Sur
             is_active: true
         },
         {
@@ -132,7 +123,6 @@ async function seedCustomers(branches) {
             postal_code: '97000',
             company_name: 'Sanchez Gomez S.A.',
             tax_id: 'RFC667788990',
-            branch_id: branches[2].id, // Sucursal Sur
             is_active: true
         },
         {
@@ -145,10 +135,22 @@ async function seedCustomers(branches) {
             postal_code: '22000',
             company_name: 'Vega Luna',
             tax_id: 'RFC778899001',
-            branch_id: branches[2].id, // Sucursal Sur
             is_active: true
         }
 	]);
+
+	// Asociar clientes con sucursales usando la relación N:N
+	// Primeros 5 clientes a Sucursal Norte (branches[1])
+	for (let i = 0; i < 5 && i < customers.length; i++) {
+		await customers[i].addBranch(branches[1].id);
+	}
+
+	// Últimos 6 clientes a Sucursal Sur (branches[2])
+	for (let i = 5; i < customers.length; i++) {
+		await customers[i].addBranch(branches[2].id);
+	}
+
+	return customers;
 }
 
 module.exports = seedCustomers;

@@ -162,6 +162,14 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'branch_id',
             as: 'inventory'
         })
+
+        // Relación N:N con Customer a través de la tabla intermedia customer_branches
+        Branch.belongsToMany(models.Customer, {
+            through: 'customer_branches',
+            foreignKey: 'branch_id',
+            otherKey: 'customer_id',
+            as: 'customers'
+        })
     }
 
     return Branch
