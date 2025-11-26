@@ -257,10 +257,13 @@ const createUser = async (req, res) => {
         })
 
         // Registrar en logs
-        await logUser.create(
-            req.user.id,
-            `Usuario creado: ${newUser.first_name} ${newUser.last_name} (${newUser.email}) - Rol: ${newUser.role}`
-        )
+            await logUser.create(
+                req.user.id,
+                `Usuario creado: ${newUser.first_name} ${newUser.last_name} (${newUser.email}) - Rol: ${newUser.role}`,
+                {
+                    service: 'user'
+                }
+            )
 
         const userResponse = { ...newUser.toJSON() }
         delete userResponse.password

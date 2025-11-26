@@ -1,5 +1,6 @@
 const db = require('../database/models')
 const { Inventory, Product, Branch } = db
+const { logInventory } = require('../../services/logService')
 
 // Obtener todo el inventario
 const getAllInventory = async (req, res) => {
@@ -17,42 +18,58 @@ const getAllInventory = async (req, res) => {
         if (branch_id) whereClause.branch_id = branch_id
         if (product_id) whereClause.product_id = product_id
 
+        // Configurar includes
+        let includeOptions = [
+            {
+                model: Product,
+                as: 'product',
+                attributes: ['id', 'name', 'sku', 'min_stock', 'max_stock'],
+                required: low_stock // Si filtra por low_stock, requiere que exista el producto
+            },
+            {
+                model: Branch,
+                as: 'branch',
+                attributes: ['id', 'name', 'address']
+            }
+        ]
+
+        // Si se filtra por stock bajo, agregar condición usando Sequelize.col
+        if (low_stock) {
+            whereClause[db.Sequelize.Op.and] = [
+                db.Sequelize.where(
+                    db.Sequelize.col('Inventory.stock_current'),
+                    db.Sequelize.Op.lte,
+                    db.Sequelize.fn('COALESCE', db.Sequelize.col('product.min_stock'), 0)
+                )
+            ]
+        }
+
         const { count, rows } = await Inventory.findAndCountAll({
             where: whereClause,
             limit,
             offset,
             order: [['updated_at', 'DESC']],
-            include: [
-                {
-                    model: Product,
-                    as: 'product',
-                    attributes: ['id', 'name', 'sku', 'min_stock', 'max_stock']
-                },
-                {
-                    model: Branch,
-                    as: 'branch',
-                    attributes: ['id', 'name', 'address']
-                }
-            ]
+            include: includeOptions,
+            distinct: true // Importante para contar correctamente con joins
         })
 
-        // Filtrar por stock bajo si se solicita
-        let filteredRows = rows
-        if (low_stock) {
-            filteredRows = rows.filter(item =>
-                item.stock_current <= (item.product?.min_stock || 0)
+        // Registrar log de visualización
+        if (req.user?.id) {
+            await logInventory.view(
+                req.user.id,
+                `Visualización de lista de inventario (${count} registros)`
             )
         }
 
         res.json({
             success: true,
             message: 'Inventario obtenido exitosamente',
-            data: filteredRows,
+            data: rows,
             pagination: {
-                total: low_stock ? filteredRows.length : count,
+                total: count,
                 page,
                 limit,
-                pages: Math.ceil((low_stock ? filteredRows.length : count) / limit)
+                pages: Math.ceil(count / limit)
             }
         })
 
@@ -176,6 +193,14 @@ const createInventory = async (req, res) => {
             ]
         })
 
+        // Registrar log de creación
+        if (req.user?.id) {
+            await logInventory.create(
+                req.user.id,
+                `Inventario creado: ${inventoryWithRelations.product?.name || 'Producto'} - Sucursal: ${inventoryWithRelations.branch?.name || 'N/A'} - Stock: ${newInventory.stock_current}`
+            )
+        }
+
         res.status(201).json({
             success: true,
             message: 'Item de inventario creado exitosamente',
@@ -244,6 +269,14 @@ const updateInventory = async (req, res) => {
             ]
         })
 
+        // Registrar log de actualización
+        if (req.user?.id) {
+            await logInventory.update(
+                req.user.id,
+                `Inventario actualizado: ${updatedInventory.product?.name || 'Producto'} - Sucursal: ${updatedInventory.branch?.name || 'N/A'} - Stock: ${updatedInventory.stock_current}`
+            )
+        }
+
         res.json({
             success: true,
             message: 'Item de inventario actualizado exitosamente',
@@ -265,7 +298,20 @@ const deleteInventory = async (req, res) => {
     try {
         const { id } = req.params
 
-        const inventory = await Inventory.findByPk(id)
+        const inventory = await Inventory.findByPk(id, {
+            include: [
+                {
+                    model: Product,
+                    as: 'product',
+                    attributes: ['id', 'name', 'sku']
+                },
+                {
+                    model: Branch,
+                    as: 'branch',
+                    attributes: ['id', 'name']
+                }
+            ]
+        })
         if (!inventory) {
             return res.status(404).json({
                 success: false,
@@ -273,7 +319,18 @@ const deleteInventory = async (req, res) => {
             })
         }
 
+        const productName = inventory.product?.name || 'Producto'
+        const branchName = inventory.branch?.name || 'N/A'
+
         await inventory.destroy()
+
+        // Registrar log de eliminación
+        if (req.user?.id) {
+            await logInventory.delete(
+                req.user.id,
+                `Inventario eliminado: ${productName} - Sucursal: ${branchName} - Stock: ${inventory.stock_current}`
+            )
+        }
 
         res.json({
             success: true,
@@ -319,15 +376,41 @@ const adjustStock = async (req, res) => {
             })
         }
 
+        // Obtener información del producto y sucursal antes de actualizar
+        const inventoryWithRelations = await Inventory.findByPk(id, {
+            include: [
+                {
+                    model: Product,
+                    as: 'product',
+                    attributes: ['id', 'name', 'sku']
+                },
+                {
+                    model: Branch,
+                    as: 'branch',
+                    attributes: ['id', 'name']
+                }
+            ]
+        })
+
+        const previousQuantity = inventory.stock_current
+
         await inventory.update({
             stock_current: newQuantity
         })
+
+        // Registrar log de ajuste de stock
+        if (req.user?.id) {
+            await logInventory.update(
+                req.user.id,
+                `Stock ajustado: ${inventoryWithRelations.product?.name || 'Producto'} - Sucursal: ${inventoryWithRelations.branch?.name || 'N/A'} - Anterior: ${previousQuantity}, Nuevo: ${newQuantity}, Ajuste: ${adjustment > 0 ? '+' : ''}${adjustment} - Razón: ${reason}`
+            )
+        }
 
         res.json({
             success: true,
             message: 'Stock ajustado exitosamente',
             data: {
-                previous_quantity: inventory.stock_current,
+                previous_quantity: previousQuantity,
                 current_quantity: newQuantity,
                 adjustment: parseInt(adjustment),
                 reason

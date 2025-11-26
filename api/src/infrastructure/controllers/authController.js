@@ -239,7 +239,7 @@ const changePassword = async (req, res) => {
         const isCurrentPasswordValid = await bcrypt.compare(current_password, user.password);
         if (!isCurrentPasswordValid) {
             return res
-                .status(401)
+                .status(400)
                 .json({ success: false, message: 'La contraseña actual es incorrecta' });
         }
 

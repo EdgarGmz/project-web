@@ -2,7 +2,11 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { productService} from '../../services/productService'
+import { inventoryService } from '../../services/inventoryService'
 import ConfirmModal from '../molecules/ConfirmModal'
+import SuccessModal from '../molecules/SuccessModal'
+import CancelledModal from '../molecules/CancelledModal'
+import Modal from '../molecules/Modal'
 
 export default function Products() {
   const [products, setProducts] = useState([])
@@ -18,6 +22,10 @@ export default function Products() {
     total: 0,
     pages: 0
   })
+  const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' })
+  const [cancelledModal, setCancelledModal] = useState({ isOpen: false, message: '' })
+  const [inventoryModal, setInventoryModal] = useState({ isOpen: false, product: null, inventory: [] })
+  const [loadingInventory, setLoadingInventory] = useState(false)
   const { hasPermission } = useAuth()
   
   const [formData, setFormData] = useState({
@@ -111,7 +119,10 @@ export default function Products() {
       }
       
       if (response.success) {
-        alert('Producto guardado exitosamente')
+        setSuccessModal({ 
+          isOpen: true, 
+          message: editingProduct ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente' 
+        })
         loadProducts()
         setShowForm(false)
         setEditingProduct(null)
@@ -139,8 +150,8 @@ export default function Products() {
       const response = await productService.delete(id)
       
       if(response.success){
+        setCancelledModal({ isOpen: true, message: 'Producto eliminado exitosamente' })
         loadProducts()
-        alert('Producto eliminado correctamente')
       }
     } catch (error) {
       console.error('Error al eliminar el producto:', error)
@@ -163,6 +174,31 @@ export default function Products() {
       unit_measure: 'pza', min_stock: '5', max_stock: '1000',
       is_active: true
     })
+  }
+
+  const clearFilters = () => {
+    setSearchTerm('')
+    setStatusFilter('all')
+  }
+
+  const handleViewInventory = async (product) => {
+    setInventoryModal({ isOpen: true, product, inventory: [] })
+    setLoadingInventory(true)
+    try {
+      // Obtener inventario de todas las sucursales para este producto
+      const response = await inventoryService.getAll({
+        page: 1,
+        limit: 1000,
+        product_id: product.id
+      })
+      if (response && response.success) {
+        setInventoryModal({ isOpen: true, product, inventory: response.data || [] })
+      }
+    } catch (error) {
+      console.error('Error fetching inventory:', error)
+    } finally {
+      setLoadingInventory(false)
+    }
   }
 
   const getStockStatus = (product) => {
@@ -191,6 +227,18 @@ export default function Products() {
       
       {/* Filtros */}
       <section className="card">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Filtros</h2>
+          {(searchTerm || statusFilter !== 'all') && (
+            <button
+              onClick={clearFilters}
+              className="text-sm text-accent hover:opacity-80 transition flex items-center gap-2"
+              title="Limpiar filtros"
+            >
+              🗑️ Limpiar filtros
+            </button>
+          )}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Búsqueda por nombre/SKU/descripción */}
           <div className="md:col-span-2">
@@ -279,9 +327,13 @@ export default function Products() {
                         <div className="text-muted text-sm">
                           Mín: {product.min_stock} / Máx: {product.max_stock}
                         </div>
-                        <div className="text-muted text-xs">
+                        <button
+                          onClick={() => handleViewInventory(product)}
+                          className="text-muted text-xs hover:text-accent transition cursor-pointer underline"
+                          title="Ver detalles de inventario por sucursal"
+                        >
                           Ver detalle en Inventario
-                        </div>
+                        </button>
                       </td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded text-xs ${
@@ -524,6 +576,137 @@ export default function Products() {
         confirmText="Eliminar"
         cancelText="Cancelar"
       />
+
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ isOpen: false, message: '' })}
+        message={successModal.message}
+      />
+
+      {/* Modal de cancelación */}
+      <CancelledModal
+        isOpen={cancelledModal.isOpen}
+        onClose={() => setCancelledModal({ isOpen: false, message: '' })}
+        message={cancelledModal.message}
+      />
+
+      {/* Modal de detalles de inventario */}
+      <Modal
+        isOpen={inventoryModal.isOpen}
+        onClose={() => setInventoryModal({ isOpen: false, product: null, inventory: [] })}
+        size="lg"
+      >
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">
+              Detalles de Inventario - {inventoryModal.product?.name}
+            </h2>
+            <button
+              onClick={() => setInventoryModal({ isOpen: false, product: null, inventory: [] })}
+              className="text-muted hover:text-white transition"
+            >
+              ✕
+            </button>
+          </div>
+
+          {loadingInventory ? (
+            <div className="text-center py-8">
+              <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full mx-auto mb-4"></div>
+              <div className="text-muted">Cargando inventario...</div>
+            </div>
+          ) : inventoryModal.inventory.length === 0 ? (
+            <div className="text-center py-8 text-muted">
+              <p className="mb-2">No hay inventario registrado para este producto.</p>
+              <p className="text-sm">El producto no está disponible en ninguna sucursal.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="bg-surface/50 rounded-lg p-4 mb-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted">SKU:</span>
+                    <span className="ml-2 font-medium">{inventoryModal.product?.sku}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted">Unidad:</span>
+                    <span className="ml-2 font-medium">{inventoryModal.product?.unit_measure}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-600/20">
+                      <th className="text-left py-3 px-4">Sucursal</th>
+                      <th className="text-left py-3 px-4">Stock Actual</th>
+                      <th className="text-left py-3 px-4">Stock Mínimo</th>
+                      <th className="text-left py-3 px-4">Estado</th>
+                      <th className="text-left py-3 px-4">Notas</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inventoryModal.inventory.map((item) => {
+                      const stockStatus = item.stock_current <= item.stock_minimum
+                        ? { color: 'text-yellow-400', label: 'Stock Bajo' }
+                        : item.stock_current === 0
+                        ? { color: 'text-red-400', label: 'Agotado' }
+                        : { color: 'text-green-400', label: 'En Stock' }
+                      
+                      return (
+                        <tr key={item.id} className="border-b border-slate-600/10 last:border-0 hover:bg-surface/50 transition">
+                          <td className="py-3 px-4">
+                            <div className="font-medium">{item.branch?.name || 'N/A'}</div>
+                            <div className="text-muted text-xs">{item.branch?.code || ''}</div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-semibold">{item.stock_current || 0}</div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="text-muted">{item.stock_minimum || 0}</div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-1 rounded text-xs ${stockStatus.color.includes('yellow') ? 'bg-yellow-500/20 text-yellow-400' : stockStatus.color.includes('red') ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
+                              {stockStatus.label}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="text-muted text-sm max-w-xs truncate" title={item.notes || ''}>
+                              {item.notes || '-'}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-slate-600/20">
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted">Total Sucursales:</span>
+                    <span className="ml-2 font-semibold">{inventoryModal.inventory.length}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted">Stock Total:</span>
+                    <span className="ml-2 font-semibold">
+                      {inventoryModal.inventory.reduce((sum, item) => sum + (item.stock_current || 0), 0)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted">Con Stock Bajo:</span>
+                    <span className="ml-2 font-semibold text-yellow-400">
+                      {inventoryModal.inventory.filter(item => item.stock_current <= item.stock_minimum).length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   )
 }

@@ -119,6 +119,18 @@ const createBranch = async (req, res) => {
             is_active: is_active !== false
         })
 
+        // Registrar en logs
+        try {
+            await db.Log.create({
+                user_id: req.user?.id || null,
+                action: 'create',
+                service: 'branch',
+                message: `Sucursal creada: ${newBranch.name} (${newBranch.code})`
+            });
+        } catch (logError) {
+            console.error('Error al registrar log de creación de sucursal:', logError);
+        }
+
         res.status(201).json({
             success: true,
             message: 'Sucursal creada exitosamente',
@@ -151,6 +163,18 @@ const updateBranch = async (req, res) => {
 
         await branch.update(updateData)
 
+        // Registrar en logs
+        try {
+            await db.Log.create({
+                user_id: req.user?.id || null,
+                action: 'update',
+                service: 'branch',
+                message: `Sucursal actualizada: ${branch.name} (${branch.code})`
+            });
+        } catch (logError) {
+            console.error('Error al registrar log de actualización de sucursal:', logError);
+        }
+
         res.json({
             success: true,
             message: 'Sucursal actualizada exitosamente',
@@ -181,6 +205,18 @@ const deleteBranch = async (req, res) => {
         }
 
         await branch.update({ is_active: false })
+
+        // Registrar en logs
+        try {
+            await db.Log.create({
+                user_id: req.user?.id || null,
+                action: 'delete',
+                service: 'branch',
+                message: `Sucursal eliminada: ${branch.name} (${branch.code})`
+            });
+        } catch (logError) {
+            console.error('Error al registrar log de eliminación de sucursal:', logError);
+        }
 
         res.json({
             success: true,
@@ -258,6 +294,18 @@ const assignUsersToBranch = async (req, res) => {
                 required: false
             }]
         })
+
+        // Registrar en logs
+        try {
+            await db.Log.create({
+                user_id: req.user?.id || null,
+                action: 'update',
+                service: 'branch',
+                message: `Usuarios asignados a sucursal: ${updatedBranch.name} (${updatedBranch.code})`
+            });
+        } catch (logError) {
+            console.error('Error al registrar log de asignación de usuarios a sucursal:', logError);
+        }
 
         res.json({
             success: true,

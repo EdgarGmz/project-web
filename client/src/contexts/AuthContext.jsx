@@ -84,6 +84,14 @@ export function AuthProvider({ children }) {
         }
     }
 
+    const updateUser = (userData) => {
+        // Actualizar el usuario en el contexto y localStorage sin limpiar la sesión
+        if (userData) {
+            localStorage.setItem('user', JSON.stringify(userData))
+            setUser(userData)
+        }
+    }
+
     const logout = () => {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
@@ -108,7 +116,7 @@ export function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, hasPermission, loading, clearSession }}>
+        <AuthContext.Provider value={{ user, login, logout, updateUser, hasPermission, loading, clearSession }}>
         {children}
         </AuthContext.Provider>
     )

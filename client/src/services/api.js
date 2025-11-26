@@ -46,8 +46,8 @@ const apiRequest = async (endpoint, options = {}) =>{
             console.log(`❌ Error en petición: ${method} ${endpoint} - Status: ${response.status}`)
             console.log('Response data:', data)
             
-            // Si el token es invalido, mostrar el modal y cerrar sesion (excepto durante login)
-            if (response.status === 401 && !sessionExpiredShown && endpoint !== '/auth/login') {
+            // Si el token es invalido, mostrar el modal y cerrar sesion (excepto durante login y change-password)
+            if (response.status === 401 && !sessionExpiredShown && endpoint !== '/auth/login' && endpoint !== '/auth/change-password') {
                 console.log('🔐 Token expirado detectado, mostrando modal de sesión expirada')
                 sessionExpiredShown = true
 
@@ -72,6 +72,18 @@ const apiRequest = async (endpoint, options = {}) =>{
         console.error('Error en la peticion: ', error)
         throw error
     }    
+}
+
+// Registrar en logs
+try {
+    await db.Log.create({
+        user_id: req.user?.id || null,
+        action: 'update',
+        service: 'product',
+        message: `Producto actualizado: ${product.name} (SKU: ${product.sku})`
+    });
+} catch (logError) {
+    console.error('Error al registrar log de actualización de producto:', logError);
 }
 
 // Exportar metodos para cada tipo de peticion HTTP

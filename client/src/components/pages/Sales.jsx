@@ -179,13 +179,16 @@ export default function Sales() {
       {/* Filtros */}
       <div className="card">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold">Filtros</h3>
-          <button
-            onClick={handleClearFilters}
-            className="text-sm text-accent hover:opacity-80 transition flex items-center gap-2"
-          >
-            <span>✖</span> Limpiar filtros
-          </button>
+          <h2 className="text-lg font-semibold">Filtros</h2>
+          {(filterBranch || filterUser || filterPaymentMethod || filterDateFrom || filterDateTo) && (
+            <button
+              onClick={handleClearFilters}
+              className="text-sm text-accent hover:opacity-80 transition flex items-center gap-2"
+              title="Limpiar filtros"
+            >
+              🗑️ Limpiar filtros
+            </button>
+          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>

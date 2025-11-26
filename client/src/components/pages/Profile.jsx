@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import PasswordInput from '../atoms/PasswordInput'
+import SuccessModal from '../molecules/SuccessModal'
 
 export default function Profile() {
-  const { user, login } = useAuth()
+  const { user, updateUser } = useAuth()
   const [editing, setEditing] = useState(false)
   const [formData, setFormData] = useState({
     first_name: '',
@@ -21,55 +22,79 @@ export default function Profile() {
   const [error, setError] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [success, setSuccess] = useState('')
-  const [passwordSuccess, setPasswordSuccess] = useState('')
+  const [showPasswordSuccessModal, setShowPasswordSuccessModal] = useState(false)
 
   useEffect(() => {
+    // Usar los datos del usuario del contexto directamente
+    // No hacer llamada al servidor para evitar problemas de autenticación
     if (user) {
       setFormData({
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
         phone: user.phone || ''
-      })
+      });
     }
-  }, [user])
+  }, [user]);
 
   const handleSave = async () => {
+    // Validar formato de teléfono antes de enviar (debe coincidir con la validación del backend)
+    // El backend requiere: /^[+]?[\d\s\-().]{10,20}$/
+    // Permite: un '+' opcional al inicio, seguido de 10-20 caracteres (dígitos, espacios, guiones, paréntesis, puntos)
+    if (formData.phone && formData.phone.trim() !== '') {
+      const phoneRegex = /^[+]?[\d\s\-().]{10,20}$/;
+      const phoneWithoutSpaces = formData.phone.replace(/\s/g, '');
+      
+      if (!phoneRegex.test(formData.phone)) {
+        setError("El teléfono debe tener entre 10 y 20 caracteres y solo puede contener números, espacios, guiones, paréntesis, puntos y un '+' inicial");
+        setTimeout(() => setError(''), 5000);
+        return;
+      }
+      
+      // Validar que tenga al menos 10 dígitos (sin contar espacios, guiones, paréntesis, puntos)
+      if (phoneWithoutSpaces.replace(/[+\-().]/g, '').length < 10) {
+        setError("El teléfono debe contener al menos 10 dígitos");
+        setTimeout(() => setError(''), 5000);
+        return;
+      }
+    }
+    
     setLoading(true)
     setError('')
     setSuccess('')
-    
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      })
+      // Preparar datos para enviar (convertir teléfono vacío a null)
+      const updateData = {
+        ...formData,
+        phone: formData.phone && formData.phone.trim() !== '' ? formData.phone.trim() : null
+      };
       
-      const data = await response.json()
-      
-      if (response.ok && data.success) {
-        setEditing(false)
-        setSuccess('Perfil actualizado correctamente')
-        
-        // Actualizar los datos del usuario en el contexto
-        const updatedUser = { ...user, ...formData }
-        localStorage.setItem('userData', JSON.stringify(updatedUser))
-        
-        setTimeout(() => setSuccess(''), 3000)
+      // Usar el servicio estándar para actualizar usuario
+      const response = await import('../../services/userService').then(mod => mod.userService.update(user.id, updateData));
+      if (response && response.success) {
+        setEditing(false);
+        setSuccess('Perfil actualizado correctamente');
+        // Actualizar los datos del usuario en el contexto y localStorage
+        const updatedUser = { 
+          ...user, 
+          ...updateData,
+          phone: updateData.phone || null
+        };
+        // Actualizar el contexto de autenticación sin limpiar la sesión
+        if (typeof updateUser === 'function') {
+          updateUser(updatedUser);
+        }
+        setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError(data.message || 'Error al actualizar el perfil')
-        setTimeout(() => setError(''), 5000)
+        setError(response?.message || 'Error al actualizar el perfil');
+        setTimeout(() => setError(''), 5000);
       }
     } catch (error) {
-      console.error('Error updating profile:', error)
-      setError('Error de conexión al actualizar el perfil')
-      setTimeout(() => setError(''), 5000)
+      console.error('Error updating profile:', error);
+      setError('Error de conexión al actualizar el perfil');
+      setTimeout(() => setError(''), 5000);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -106,7 +131,6 @@ export default function Profile() {
 
   const handlePasswordChange = async () => {
     setPasswordError('')
-    setPasswordSuccess('')
     
     if (!validatePassword()) {
       setTimeout(() => setPasswordError(''), 5000)
@@ -115,31 +139,24 @@ export default function Profile() {
 
     setLoadingPassword(true)
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/change-password`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          current_password: passwordData.current_password,
-          new_password: passwordData.new_password
-        })
+      // Usar el servicio api para mantener consistencia y manejo correcto del token
+      const { api } = await import('../../services/api')
+      const response = await api.put('/auth/change-password', {
+        current_password: passwordData.current_password,
+        new_password: passwordData.new_password
       })
       
-      const data = await response.json()
-      
-      if (response.ok && data.success) {
+      if (response && response.success) {
         setPasswordData({ current_password: '', new_password: '', confirm_password: '' })
-        setPasswordSuccess('Contraseña actualizada correctamente')
-        setTimeout(() => setPasswordSuccess(''), 3000)
+        setPasswordError('')
+        setShowPasswordSuccessModal(true)
       } else {
-        setPasswordError(data.message || 'Error al cambiar la contraseña')
+        setPasswordError(response?.message || 'Error al cambiar la contraseña')
         setTimeout(() => setPasswordError(''), 5000)
       }
     } catch (error) {
       console.error('Error updating password:', error)
-      setPasswordError('Error de conexión al cambiar la contraseña')
+      setPasswordError(error.message || 'Error de conexión al cambiar la contraseña')
       setTimeout(() => setPasswordError(''), 5000)
     } finally {
       setLoadingPassword(false)
@@ -278,74 +295,133 @@ export default function Profile() {
 
           {/* Cambiar contraseña */}
           <div className="card">
-            <h3 className="font-semibold mb-4">Cambiar Contraseña</h3>
-            
-            {passwordSuccess && (
-              <div className="mb-4 bg-green-500/20 border border-green-500/30 text-green-400 px-4 py-3 rounded-md">
-                {passwordSuccess}
+            {/* Header con icono */}
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-600/20">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500/30 to-purple-500/10 border-2 border-purple-500/40 flex items-center justify-center text-2xl">
+                🔐
               </div>
-            )}
-            
-            {passwordError && (
-              <div className="mb-4 bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-3 rounded-md">
-                {passwordError}
-              </div>
-            )}
-            
-            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Contraseña Actual *</label>
+                <h3 className="font-bold text-lg text-white">Cambiar Contraseña</h3>
+                <p className="text-xs text-muted mt-0.5">Actualiza tu contraseña para mantener tu cuenta segura</p>
+              </div>
+            </div>
+            
+            {/* Mensajes de error */}
+            {passwordError && (
+              <div className="mb-4 bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg flex items-center gap-2">
+                <span className="text-lg">⚠️</span>
+                <span>{passwordError}</span>
+              </div>
+            )}
+            
+            <div className="space-y-5">
+              {/* Contraseña Actual */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-white">
+                  <span>🔑</span>
+                  Contraseña Actual *
+                </label>
                 <PasswordInput
                   value={passwordData.current_password}
                   onChange={(e) => setPasswordData(prev => ({ ...prev, current_password: e.target.value }))}
-                  className="bg-surface border-slate-600/30"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all placeholder:text-slate-500"
                   placeholder="Ingresa tu contraseña actual"
                   autoComplete="current-password"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Nueva Contraseña *</label>
+
+              {/* Nueva Contraseña */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-white">
+                  <span>✨</span>
+                  Nueva Contraseña *
+                </label>
                 <PasswordInput
                   value={passwordData.new_password}
                   onChange={(e) => setPasswordData(prev => ({ ...prev, new_password: e.target.value }))}
-                  className="bg-surface border-slate-600/30"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all placeholder:text-slate-500"
                   placeholder="Mínimo 6 caracteres"
                   autoComplete="new-password"
                 />
                 {passwordData.new_password && passwordData.new_password.length < 6 && (
-                  <p className="text-xs text-yellow-400 mt-1">La contraseña debe tener al menos 6 caracteres</p>
+                  <div className="flex items-center gap-2 text-xs text-yellow-400 mt-1">
+                    <span>ℹ️</span>
+                    <span>La contraseña debe tener al menos 6 caracteres</span>
+                  </div>
+                )}
+                {passwordData.new_password && passwordData.new_password.length >= 6 && (
+                  <div className="flex items-center gap-2 text-xs text-green-400 mt-1">
+                    <span>✅</span>
+                    <span>Contraseña válida</span>
+                  </div>
                 )}
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Confirmar Nueva Contraseña *</label>
+
+              {/* Confirmar Nueva Contraseña */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-white">
+                  <span>🔒</span>
+                  Confirmar Nueva Contraseña *
+                </label>
                 <PasswordInput
                   value={passwordData.confirm_password}
                   onChange={(e) => setPasswordData(prev => ({ ...prev, confirm_password: e.target.value }))}
-                  className="bg-surface border-slate-600/30"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all placeholder:text-slate-500"
                   placeholder="Repite la nueva contraseña"
                   autoComplete="new-password"
                 />
                 {passwordData.confirm_password && passwordData.new_password !== passwordData.confirm_password && (
-                  <p className="text-xs text-red-400 mt-1">Las contraseñas no coinciden</p>
+                  <div className="flex items-center gap-2 text-xs text-red-400 mt-1">
+                    <span>❌</span>
+                    <span>Las contraseñas no coinciden</span>
+                  </div>
+                )}
+                {passwordData.confirm_password && passwordData.new_password === passwordData.confirm_password && passwordData.new_password.length >= 6 && (
+                  <div className="flex items-center gap-2 text-xs text-green-400 mt-1">
+                    <span>✅</span>
+                    <span>Las contraseñas coinciden</span>
+                  </div>
                 )}
               </div>
-              <button
-                onClick={handlePasswordChange}
-                className="w-full btn-primary"
-                disabled={
-                  loadingPassword || 
-                  !passwordData.current_password || 
-                  !passwordData.new_password || 
-                  !passwordData.confirm_password ||
-                  passwordData.new_password !== passwordData.confirm_password
-                }
-              >
-                {loadingPassword ? 'Actualizando...' : 'Actualizar Contraseña'}
-              </button>
+
+              {/* Botón de actualizar */}
+              <div className="pt-2">
+                <button
+                  onClick={handlePasswordChange}
+                  className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                  disabled={
+                    loadingPassword || 
+                    !passwordData.current_password || 
+                    !passwordData.new_password || 
+                    !passwordData.confirm_password ||
+                    passwordData.new_password !== passwordData.confirm_password ||
+                    passwordData.new_password.length < 6
+                  }
+                >
+                  {loadingPassword ? (
+                    <>
+                      <span className="animate-spin">⏳</span>
+                      Actualizando...
+                    </>
+                  ) : (
+                    <>
+                      <span>🔐</span>
+                      Actualizar Contraseña
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Modal de éxito para cambio de contraseña */}
+      <SuccessModal
+        isOpen={showPasswordSuccessModal}
+        onClose={() => setShowPasswordSuccessModal(false)}
+        message="Contraseña actualizada correctamente"
+      />
     </div>
   )
 }

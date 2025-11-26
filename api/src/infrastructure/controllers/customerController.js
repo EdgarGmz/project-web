@@ -233,6 +233,14 @@ const createCustomer = async (req, res) => {
             await newCustomer.addBranch(currentUser.branch_id)
         }
 
+        // Registrar en el log
+        await db.Log.create({
+            user_id: currentUser.id,
+            action: 'create',
+            service: 'customer',
+            message: `Cliente creado: ${newCustomer.first_name} ${newCustomer.last_name} (${newCustomer.email})`
+        });
+
         res.status(201).json({
             success: true,
             message: 'Cliente creado exitosamente',

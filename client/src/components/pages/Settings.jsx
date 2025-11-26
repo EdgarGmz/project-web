@@ -1,891 +1,264 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
+import SuccessModal from '../molecules/SuccessModal'
+import { api } from '../../services/api'
 
 export default function Settings() {
   const { user, hasPermission } = useAuth()
   const { theme, toggle } = useTheme()
-  const [activeTab, setActiveTab] = useState('appearance')
   const [loading, setLoading] = useState(false)
+  const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' })
   const [settings, setSettings] = useState({
-    general: {
-      company_name: '',
-      company_address: '',
-      company_phone: '',
-      company_email: '',
-      tax_id: '',
-      currency: 'USD',
-      timezone: 'America/Mexico_City',
-      language: 'es'
-    },
-    pos: {
-      auto_print_receipt: true,
-      receipt_footer_text: '',
-      default_payment_method: 'cash',
-      allow_negative_stock: false,
-      require_customer_info: false,
-      barcode_scanner_enabled: true
-    },
-    inventory: {
-      low_stock_alert: true,
-      auto_reorder: false,
-      reorder_point_days: 7,
-      cost_calculation_method: 'average',
-      track_expiration_dates: false
-    },
-    notifications: {
-      email_notifications: true,
-      low_stock_notifications: true,
-      daily_sales_report: false,
-      system_alerts: true,
-      new_user_notifications: true
-    },
-    security: {
-      session_timeout: 60,
-      require_password_change: false,
-      password_expiry_days: 90,
-      two_factor_auth: false,
-      login_attempts_limit: 5
-    },
-    backup: {
-      auto_backup: false,
-      backup_frequency: 'daily',
-      backup_retention_days: 30,
-      last_backup: null
-    }
+    company_name: '',
+    company_email: '',
+    company_phone: '',
+    currency: 'MXN',
+    language: 'es',
+    low_stock_alert: true,
+    email_notifications: true
   })
 
-  const tabs = [
-    { id: 'appearance', label: 'Apariencia', icon: '🎨', permission: ['owner', 'admin', 'supervisor', 'cashier'] },
-    { id: 'general', label: 'General', icon: '🏢', permission: ['owner', 'admin'] },
-    { id: 'pos', label: 'Punto de Venta', icon: '🛒', permission: ['owner', 'admin', 'supervisor'] },
-    { id: 'inventory', label: 'Inventario', icon: '📦', permission: ['owner', 'admin', 'supervisor'] },
-    { id: 'notifications', label: 'Notificaciones', icon: '🔔', permission: ['owner', 'admin'] },
-    { id: 'security', label: 'Seguridad', icon: '🔒', permission: ['owner'] },
-    { id: 'backup', label: 'Respaldos', icon: '💾', permission: ['owner'] }
-  ]
-
-  useEffect(() => {
-    fetchSettings()
-  }, [])
-
-  const fetchSettings = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/api/settings', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      })
-      const data = await response.json()
-      if (data.success) {
-        setSettings(prevSettings => ({
-          ...prevSettings,
-          ...data.data
-        }))
-      }
-    } catch (error) {
-      console.error('Error fetching settings:', error)
-    }
-  }
-
-  const saveSettings = async (section) => {
-    setLoading(true)
-    try {
-      const response = await fetch(`http://localhost:3000/api/settings/${section}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(settings[section])
-      })
-      
-      if (response.ok) {
-        alert('Configuración guardada exitosamente')
-      }
-    } catch (error) {
-      console.error('Error saving settings:', error)
-      alert('Error al guardar la configuración')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const updateSetting = (section, key, value) => {
+  const updateSetting = (key, value) => {
     setSettings(prev => ({
       ...prev,
-      [section]: {
-        ...prev[section],
-        [key]: value
-      }
+      [key]: value
     }))
   }
 
-  const performBackup = async () => {
+  const handleSave = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/api/backup', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      })
+      // Aquí puedes agregar la lógica para guardar en el backend si es necesario
+      // Por ahora solo guardamos en localStorage
+      localStorage.setItem('appSettings', JSON.stringify(settings))
       
-      if (response.ok) {
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `backup_${new Date().toISOString().split('T')[0]}.sql`
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
-        
-        updateSetting('backup', 'last_backup', new Date().toISOString())
-        alert('Respaldo creado exitosamente')
-      }
+      setSuccessModal({ isOpen: true, message: 'Configuración guardada exitosamente' })
     } catch (error) {
-      console.error('Error creating backup:', error)
-      alert('Error al crear el respaldo')
+      console.error('Error saving settings:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const resetToDefaults = async (section) => {
-    if (confirm('¿Estás seguro de restaurar la configuración por defecto? Esta acción no se puede deshacer.')) {
+  // Cargar configuración guardada al iniciar
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('appSettings')
+    if (savedSettings) {
       try {
-        const response = await fetch(`http://localhost:3000/api/settings/${section}/reset`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        })
-        
-        if (response.ok) {
-          fetchSettings()
-          alert('Configuración restaurada a valores por defecto')
-        }
+        setSettings(JSON.parse(savedSettings))
       } catch (error) {
-        console.error('Error resetting settings:', error)
-        alert('Error al restaurar la configuración')
+        console.error('Error loading settings:', error)
       }
     }
-  }
-
-  const availableTabs = tabs.filter(tab => hasPermission(tab.permission))
+  }, [])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl">
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold">Configuración</h1>
-        <p className="text-muted">Personaliza el comportamiento del sistema</p>
+        <p className="text-muted">Ajustes básicos de la aplicación</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2 bg-surface/50 p-1 rounded-lg">
-        {availableTabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md transition ${
-              activeTab === tab.id 
-                ? 'bg-accent text-black' 
-                : 'text-muted hover:text-text'
-            }`}
-          >
-            <span>{tab.icon}</span>
-            <span className="text-sm">{tab.label}</span>
-          </button>
-        ))}
-      </div>
+      {/* Apariencia */}
+      <div className="card">
+        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-600/20">
+          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500/30 to-purple-500/10 border-2 border-purple-500/40 flex items-center justify-center text-2xl">
+            🎨
+          </div>
+          <div>
+            <h3 className="font-bold text-lg text-white">Apariencia</h3>
+            <p className="text-xs text-muted mt-0.5">Personaliza la interfaz visual</p>
+          </div>
+        </div>
 
-      {/* Tab Content */}
-      <div className="space-y-6">
-        {/* Appearance Settings */}
-        {activeTab === 'appearance' && (
-          <div className="card">
-            <div className="flex items-center justify-between mb-6">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-slate-800/30 rounded-lg border border-slate-600/20">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{theme === 'dark' ? '🌙' : '☀️'}</span>
               <div>
-                <h3 className="text-lg font-semibold">Configuración de Apariencia</h3>
-                <p className="text-sm text-muted mt-1">Personaliza la interfaz según tus preferencias</p>
+                <div className="font-medium text-white">Tema</div>
+                <div className="text-sm text-muted">Modo {theme === 'dark' ? 'Oscuro' : 'Claro'}</div>
               </div>
-            </div>
-
-            <div className="space-y-6">
-              {/* Theme Selector */}
-              <div className="p-4 border border-slate-600/20 rounded-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <div className="font-medium text-base">Tema de color</div>
-                    <div className="text-sm text-muted mt-1">Cambia entre modo claro y oscuro</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted">{theme === 'dark' ? 'Oscuro' : 'Claro'}</span>
-                    <button
-                      onClick={toggle}
-                      className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                        theme === 'dark' ? 'bg-accent' : 'bg-slate-300'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform flex items-center justify-center ${
-                          theme === 'dark' ? 'translate-x-7' : 'translate-x-1'
-                        }`}
-                      >
-                        {theme === 'dark' ? (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-slate-700">
-                            <path d="M12 3a9 9 0 1 0 9 9a7 7 0 0 1-9-9Z"/>
-                          </svg>
-                        ) : (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500">
-                            <circle cx="12" cy="12" r="5"/>
-                            <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                          </svg>
-                        )}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Theme Preview */}
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div 
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition ${
-                      theme === 'light' 
-                        ? 'border-accent bg-accent/5' 
-                        : 'border-slate-600/30 bg-white/5'
-                    }`}
-                    onClick={() => theme === 'dark' && toggle()}
-                  >
-                    <div className="space-y-2">
-                      <div className="h-3 bg-slate-200 rounded w-3/4"></div>
-                      <div className="h-3 bg-slate-200 rounded w-full"></div>
-                      <div className="h-3 bg-slate-200 rounded w-5/6"></div>
-                    </div>
-                    <div className="mt-3 text-center">
-                      <span className="text-sm font-medium">Modo Claro</span>
-                    </div>
-                  </div>
-                  
-                  <div 
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition ${
-                      theme === 'dark' 
-                        ? 'border-accent bg-accent/5' 
-                        : 'border-slate-600/30 bg-slate-800/50'
-                    }`}
-                    onClick={() => theme === 'light' && toggle()}
-                  >
-                    <div className="space-y-2">
-                      <div className="h-3 bg-slate-600 rounded w-3/4"></div>
-                      <div className="h-3 bg-slate-600 rounded w-full"></div>
-                      <div className="h-3 bg-slate-600 rounded w-5/6"></div>
-                    </div>
-                    <div className="mt-3 text-center">
-                      <span className="text-sm font-medium">Modo Oscuro</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Additional appearance settings */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 border border-slate-600/20 rounded-lg">
-                  <div className="font-medium mb-2">Tamaño de fuente</div>
-                  <select className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md">
-                    <option value="small">Pequeño</option>
-                    <option value="medium" selected>Mediano</option>
-                    <option value="large">Grande</option>
-                  </select>
-                </div>
-
-                <div className="p-4 border border-slate-600/20 rounded-lg">
-                  <div className="font-medium mb-2">Densidad de información</div>
-                  <select className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md">
-                    <option value="compact">Compacta</option>
-                    <option value="comfortable" selected>Cómoda</option>
-                    <option value="spacious">Espaciosa</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <span className="text-blue-400">ℹ️</span>
-                  <div className="text-sm">
-                    <div className="font-medium text-blue-400 mb-1">Consejo</div>
-                    <div className="text-muted">
-                      El tema seleccionado se aplicará automáticamente en todas las páginas del sistema
-                      y se guardará en tu navegador para futuras sesiones.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* General Settings */}
-        {activeTab === 'general' && (
-          <div className="card">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Configuración General</h3>
-              <button
-                onClick={() => saveSettings('general')}
-                disabled={loading}
-                className="btn"
-              >
-                {loading ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Nombre de la Empresa</label>
-                  <input
-                    type="text"
-                    value={settings.general.company_name}
-                    onChange={(e) => updateSetting('general', 'company_name', e.target.value)}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Dirección</label>
-                  <textarea
-                    value={settings.general.company_address}
-                    onChange={(e) => updateSetting('general', 'company_address', e.target.value)}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                    rows="3"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Teléfono</label>
-                  <input
-                    type="tel"
-                    value={settings.general.company_phone}
-                    onChange={(e) => updateSetting('general', 'company_phone', e.target.value)}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={settings.general.company_email}
-                    onChange={(e) => updateSetting('general', 'company_email', e.target.value)}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">RFC/NIT</label>
-                  <input
-                    type="text"
-                    value={settings.general.tax_id}
-                    onChange={(e) => updateSetting('general', 'tax_id', e.target.value)}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Moneda</label>
-                  <select
-                    value={settings.general.currency}
-                    onChange={(e) => updateSetting('general', 'currency', e.target.value)}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  >
-                    <option value="USD">USD - Dólar Americano</option>
-                    <option value="MXN">MXN - Peso Mexicano</option>
-                    <option value="EUR">EUR - Euro</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Zona Horaria</label>
-                  <select
-                    value={settings.general.timezone}
-                    onChange={(e) => updateSetting('general', 'timezone', e.target.value)}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  >
-                    <option value="America/Mexico_City">Ciudad de México</option>
-                    <option value="America/New_York">Nueva York</option>
-                    <option value="Europe/Madrid">Madrid</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* POS Settings */}
-        {activeTab === 'pos' && (
-          <div className="card">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Configuración de Punto de Venta</h3>
-              <button
-                onClick={() => saveSettings('pos')}
-                disabled={loading}
-                className="btn"
-              >
-                {loading ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
-            </div>
-
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                    <div>
-                      <div className="font-medium">Imprimir recibo automáticamente</div>
-                      <div className="text-sm text-muted">Imprime el recibo después de cada venta</div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={settings.pos.auto_print_receipt}
-                      onChange={(e) => updateSetting('pos', 'auto_print_receipt', e.target.checked)}
-                      className="w-4 h-4"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                    <div>
-                      <div className="font-medium">Permitir stock negativo</div>
-                      <div className="text-sm text-muted">Permite vender aunque no haya stock</div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={settings.pos.allow_negative_stock}
-                      onChange={(e) => updateSetting('pos', 'allow_negative_stock', e.target.checked)}
-                      className="w-4 h-4"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                    <div>
-                      <div className="font-medium">Requerir información del cliente</div>
-                      <div className="text-sm text-muted">Obligatorio seleccionar cliente en cada venta</div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={settings.pos.require_customer_info}
-                      onChange={(e) => updateSetting('pos', 'require_customer_info', e.target.checked)}
-                      className="w-4 h-4"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Método de pago por defecto</label>
-                    <select
-                      value={settings.pos.default_payment_method}
-                      onChange={(e) => updateSetting('pos', 'default_payment_method', e.target.value)}
-                      className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                    >
-                      <option value="cash">Efectivo</option>
-                      <option value="card">Tarjeta</option>
-                      <option value="transfer">Transferencia</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Texto del pie de recibo</label>
-                    <textarea
-                      value={settings.pos.receipt_footer_text}
-                      onChange={(e) => updateSetting('pos', 'receipt_footer_text', e.target.value)}
-                      placeholder="Gracias por su compra..."
-                      className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                      rows="3"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                    <div>
-                      <div className="font-medium">Escáner de código de barras</div>
-                      <div className="text-sm text-muted">Habilita el uso de escáner en POS</div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={settings.pos.barcode_scanner_enabled}
-                      onChange={(e) => updateSetting('pos', 'barcode_scanner_enabled', e.target.checked)}
-                      className="w-4 h-4"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Inventory Settings */}
-        {activeTab === 'inventory' && (
-          <div className="card">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Configuración de Inventario</h3>
-              <button
-                onClick={() => saveSettings('inventory')}
-                disabled={loading}
-                className="btn"
-              >
-                {loading ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                  <div>
-                    <div className="font-medium">Alertas de stock bajo</div>
-                    <div className="text-sm text-muted">Notifica cuando el stock esté bajo</div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.inventory.low_stock_alert}
-                    onChange={(e) => updateSetting('inventory', 'low_stock_alert', e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                  <div>
-                    <div className="font-medium">Reorden automático</div>
-                    <div className="text-sm text-muted">Genera órdenes de compra automáticamente</div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.inventory.auto_reorder}
-                    onChange={(e) => updateSetting('inventory', 'auto_reorder', e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                  <div>
-                    <div className="font-medium">Rastrear fechas de vencimiento</div>
-                    <div className="text-sm text-muted">Control de productos perecederos</div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.inventory.track_expiration_dates}
-                    onChange={(e) => updateSetting('inventory', 'track_expiration_dates', e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Días para punto de reorden</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="365"
-                    value={settings.inventory.reorder_point_days}
-                    onChange={(e) => updateSetting('inventory', 'reorder_point_days', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Método de cálculo de costo</label>
-                  <select
-                    value={settings.inventory.cost_calculation_method}
-                    onChange={(e) => updateSetting('inventory', 'cost_calculation_method', e.target.value)}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  >
-                    <option value="fifo">FIFO (Primero en entrar, primero en salir)</option>
-                    <option value="lifo">LIFO (Último en entrar, primero en salir)</option>
-                    <option value="average">Costo Promedio</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Notifications Settings */}
-        {activeTab === 'notifications' && (
-          <div className="card">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Configuración de Notificaciones</h3>
-              <button
-                onClick={() => saveSettings('notifications')}
-                disabled={loading}
-                className="btn"
-              >
-                {loading ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                <div>
-                  <div className="font-medium">Notificaciones por email</div>
-                  <div className="text-sm text-muted">Recibe notificaciones importantes por correo</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.notifications.email_notifications}
-                  onChange={(e) => updateSetting('notifications', 'email_notifications', e.target.checked)}
-                  className="w-4 h-4"
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                <div>
-                  <div className="font-medium">Alertas de stock bajo</div>
-                  <div className="text-sm text-muted">Notifica cuando los productos tengan stock bajo</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.notifications.low_stock_notifications}
-                  onChange={(e) => updateSetting('notifications', 'low_stock_notifications', e.target.checked)}
-                  className="w-4 h-4"
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                <div>
-                  <div className="font-medium">Reporte diario de ventas</div>
-                  <div className="text-sm text-muted">Envía un resumen de ventas al final del día</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.notifications.daily_sales_report}
-                  onChange={(e) => updateSetting('notifications', 'daily_sales_report', e.target.checked)}
-                  className="w-4 h-4"
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                <div>
-                  <div className="font-medium">Alertas del sistema</div>
-                  <div className="text-sm text-muted">Notificaciones sobre el estado del sistema</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.notifications.system_alerts}
-                  onChange={(e) => updateSetting('notifications', 'system_alerts', e.target.checked)}
-                  className="w-4 h-4"
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                <div>
-                  <div className="font-medium">Notificaciones de nuevos usuarios</div>
-                  <div className="text-sm text-muted">Alerta cuando se registren nuevos usuarios</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.notifications.new_user_notifications}
-                  onChange={(e) => updateSetting('notifications', 'new_user_notifications', e.target.checked)}
-                  className="w-4 h-4"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Security Settings */}
-        {activeTab === 'security' && (
-          <div className="card">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Configuración de Seguridad</h3>
-              <button
-                onClick={() => saveSettings('security')}
-                disabled={loading}
-                className="btn"
-              >
-                {loading ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Tiempo de sesión (minutos)</label>
-                  <input
-                    type="number"
-                    min="5"
-                    max="480"
-                    value={settings.security.session_timeout}
-                    onChange={(e) => updateSetting('security', 'session_timeout', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Días para cambio de contraseña</label>
-                  <input
-                    type="number"
-                    min="30"
-                    max="365"
-                    value={settings.security.password_expiry_days}
-                    onChange={(e) => updateSetting('security', 'password_expiry_days', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Límite de intentos de login</label>
-                  <input
-                    type="number"
-                    min="3"
-                    max="10"
-                    value={settings.security.login_attempts_limit}
-                    onChange={(e) => updateSetting('security', 'login_attempts_limit', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                  <div>
-                    <div className="font-medium">Requerir cambio de contraseña</div>
-                    <div className="text-sm text-muted">Fuerza cambio de contraseña en primer login</div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.security.require_password_change}
-                    onChange={(e) => updateSetting('security', 'require_password_change', e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                  <div>
-                    <div className="font-medium">Autenticación de dos factores</div>
-                    <div className="text-sm text-muted">Requiere código adicional para login</div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.security.two_factor_auth}
-                    onChange={(e) => updateSetting('security', 'two_factor_auth', e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Backup Settings */}
-        {activeTab === 'backup' && (
-          <div className="card">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Configuración de Respaldos</h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={performBackup}
-                  disabled={loading}
-                  className="btn"
-                >
-                  {loading ? 'Creando...' : '💾 Crear Respaldo'}
-                </button>
-                <button
-                  onClick={() => saveSettings('backup')}
-                  disabled={loading}
-                  className="btn"
-                >
-                  Guardar Configuración
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 border border-slate-600/20 rounded-lg">
-                  <div>
-                    <div className="font-medium">Respaldo automático</div>
-                    <div className="text-sm text-muted">Crea respaldos de forma automática</div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.backup.auto_backup}
-                    onChange={(e) => updateSetting('backup', 'auto_backup', e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Frecuencia de respaldo</label>
-                  <select
-                    value={settings.backup.backup_frequency}
-                    onChange={(e) => updateSetting('backup', 'backup_frequency', e.target.value)}
-                    disabled={!settings.backup.auto_backup}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md disabled:opacity-50"
-                  >
-                    <option value="daily">Diario</option>
-                    <option value="weekly">Semanal</option>
-                    <option value="monthly">Mensual</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Días de retención</label>
-                  <input
-                    type="number"
-                    min="7"
-                    max="365"
-                    value={settings.backup.backup_retention_days}
-                    onChange={(e) => updateSetting('backup', 'backup_retention_days', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-                  />
-                  <div className="text-xs text-muted mt-1">
-                    Los respaldos se eliminarán automáticamente después de este período
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="p-4 bg-surface/50 rounded-lg">
-                  <h5 className="font-medium mb-2">Estado del último respaldo</h5>
-                  {settings.backup.last_backup ? (
-                    <div className="text-sm">
-                      <div className="text-green-400 mb-1">✅ Completado</div>
-                      <div className="text-muted">
-                        {new Date(settings.backup.last_backup).toLocaleString()}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted">
-                      No se han creado respaldos aún
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <span className="text-yellow-400">⚠️</span>
-                    <div className="text-sm">
-                      <div className="font-medium text-yellow-400 mb-1">Importante</div>
-                      <div className="text-muted">
-                        Los respaldos contienen información sensible. Guárdalos en un lugar seguro
-                        y nunca los compartas con terceros no autorizados.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Reset Section */}
-        <div className="card bg-red-500/5 border-red-500/20">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-red-400">Zona de Peligro</h3>
-              <p className="text-muted text-sm">
-                Acciones irreversibles que afectan la configuración del sistema
-              </p>
             </div>
             <button
-              onClick={() => resetToDefaults(activeTab)}
-              className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded-md hover:bg-red-500/30 transition"
+              onClick={toggle}
+              className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                theme === 'dark' ? 'bg-accent' : 'bg-slate-300'
+              }`}
             >
-              🔄 Restaurar Configuración
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform flex items-center justify-center ${
+                  theme === 'dark' ? 'translate-x-7' : 'translate-x-1'
+                }`}
+              >
+                {theme === 'dark' ? '🌙' : '☀️'}
+              </span>
             </button>
           </div>
         </div>
       </div>
+
+      {/* Configuración General */}
+      {hasPermission(['owner', 'admin']) && (
+        <div className="card">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-600/20">
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/30 to-blue-500/10 border-2 border-blue-500/40 flex items-center justify-center text-2xl">
+              🏢
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-white">Información General</h3>
+              <p className="text-xs text-muted mt-0.5">Datos básicos de la empresa</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-white">
+                <span>🏷️</span>
+                Nombre de la Empresa
+              </label>
+              <input
+                type="text"
+                value={settings.company_name}
+                onChange={(e) => updateSetting('company_name', e.target.value)}
+                placeholder="Mi Empresa S.A."
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all placeholder:text-slate-500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-white">
+                <span>📧</span>
+                Email de Contacto
+              </label>
+              <input
+                type="email"
+                value={settings.company_email}
+                onChange={(e) => updateSetting('company_email', e.target.value)}
+                placeholder="contacto@empresa.com"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all placeholder:text-slate-500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-white">
+                <span>📞</span>
+                Teléfono
+              </label>
+              <input
+                type="tel"
+                value={settings.company_phone}
+                onChange={(e) => updateSetting('company_phone', e.target.value)}
+                placeholder="+52 55 1234 5678"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all placeholder:text-slate-500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-white">
+                <span>💰</span>
+                Moneda
+              </label>
+              <select
+                value={settings.currency}
+                onChange={(e) => updateSetting('currency', e.target.value)}
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all"
+              >
+                <option value="MXN">MXN - Peso Mexicano</option>
+                <option value="USD">USD - Dólar Americano</option>
+                <option value="EUR">EUR - Euro</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notificaciones */}
+      {hasPermission(['owner', 'admin']) && (
+        <div className="card">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-600/20">
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-yellow-500/30 to-yellow-500/10 border-2 border-yellow-500/40 flex items-center justify-center text-2xl">
+              🔔
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-white">Notificaciones</h3>
+              <p className="text-xs text-muted mt-0.5">Configura las alertas del sistema</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-slate-800/30 rounded-lg border border-slate-600/20">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">📊</span>
+                <div>
+                  <div className="font-medium text-white">Alertas de Stock Bajo</div>
+                  <div className="text-sm text-muted">Notifica cuando el inventario esté bajo</div>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.low_stock_alert}
+                  onChange={(e) => updateSetting('low_stock_alert', e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-yellow-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-slate-800/30 rounded-lg border border-slate-600/20">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">📧</span>
+                <div>
+                  <div className="font-medium text-white">Notificaciones por Email</div>
+                  <div className="text-sm text-muted">Recibe alertas importantes por correo</div>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.email_notifications}
+                  onChange={(e) => updateSetting('email_notifications', e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-yellow-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Botón Guardar */}
+      {hasPermission(['owner', 'admin']) && (
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="px-6 py-3 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white font-semibold rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <span className="animate-spin">⏳</span>
+                Guardando...
+              </>
+            ) : (
+              <>
+                <span>💾</span>
+                Guardar Configuración
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ isOpen: false, message: '' })}
+        message={successModal.message}
+      />
     </div>
   )
 }
