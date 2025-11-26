@@ -20,6 +20,19 @@ export default function POS() {
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' })
+  const [showCustomerForm, setShowCustomerForm] = useState(false)
+  const [customerFormData, setCustomerFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    address: '',
+    birth_date: '',
+    document_type: 'dni',
+    document_number: '',
+    notes: ''
+  })
+  const [creatingCustomer, setCreatingCustomer] = useState(false)
   const { user } = useAuth()
 
   useEffect(() => {
@@ -80,12 +93,53 @@ export default function POS() {
 
   const fetchCustomers = async () => {
     try {
-      const response = await customerService.getAlll()
+      const response = await customerService.getAll({ page: 1, limit: 1000 })
       if (response.success) {
         setCustomers(response.data)
       }
     } catch (error) {
       console.error('Error fetching customers:', error)
+    }
+  }
+
+  const handleCreateCustomer = async (e) => {
+    e.preventDefault()
+    setCreatingCustomer(true)
+    setError('')
+    
+    try {
+      const response = await customerService.create(customerFormData)
+      if (response.success) {
+        setSuccessModal({ 
+          isOpen: true, 
+          message: 'Cliente creado exitosamente' 
+        })
+        setShowCustomerForm(false)
+        setCustomerFormData({
+          first_name: '',
+          last_name: '',
+          email: '',
+          phone: '',
+          address: '',
+          birth_date: '',
+          document_type: 'dni',
+          document_number: '',
+          notes: ''
+        })
+        // Actualizar lista de clientes y seleccionar el nuevo cliente
+        await fetchCustomers()
+        // Seleccionar el cliente recién creado
+        if (response.data && response.data.id) {
+          setSelectedCustomer(response.data)
+        }
+      } else {
+        setError(response.message || 'Error al crear el cliente')
+      }
+    } catch (error) {
+      console.error('Error creating customer:', error)
+      setError(error.message || 'Error al crear el cliente')
+    } finally {
+      setCreatingCustomer(false)
     }
   }
 
@@ -335,7 +389,17 @@ export default function POS() {
 
             {/* Seleccionar cliente */}
             <div>
-              <label className="block text-sm font-medium mb-2">Cliente (opcional)</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium">Cliente (opcional)</label>
+                <button
+                  onClick={() => setShowCustomerForm(true)}
+                  className="text-xs px-2 py-1 bg-accent/20 hover:bg-accent/30 text-accent rounded transition-colors flex items-center gap-1"
+                  title="Agregar nuevo cliente"
+                >
+                  <span>➕</span>
+                  <span>Nuevo</span>
+                </button>
+              </div>
               <select
                 value={selectedCustomer?.id || ''}
                 onChange={(e) => {
@@ -507,6 +571,161 @@ export default function POS() {
         onClose={() => setSuccessModal({ isOpen: false, message: '' })}
         message={successModal.message}
       />
+
+      {/* Modal para crear nuevo cliente */}
+      {showCustomerForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="card max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold">Nuevo Cliente</h3>
+              <button 
+                onClick={() => {
+                  setShowCustomerForm(false)
+                  setCustomerFormData({
+                    first_name: '',
+                    last_name: '',
+                    email: '',
+                    phone: '',
+                    address: '',
+                    birth_date: '',
+                    document_type: 'dni',
+                    document_number: '',
+                    notes: ''
+                  })
+                  setError('')
+                }}
+                className="text-muted hover:text-text transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateCustomer} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Nombre *</label>
+                  <input
+                    type="text"
+                    value={customerFormData.first_name}
+                    onChange={(e) => setCustomerFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                    required
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md text-sm"
+                    placeholder="Juan"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Apellido *</label>
+                  <input
+                    type="text"
+                    value={customerFormData.last_name}
+                    onChange={(e) => setCustomerFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                    required
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md text-sm"
+                    placeholder="Pérez"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input
+                  type="email"
+                  value={customerFormData.email}
+                  onChange={(e) => setCustomerFormData(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md text-sm"
+                  placeholder="juan@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Teléfono</label>
+                <input
+                  type="tel"
+                  value={customerFormData.phone}
+                  onChange={(e) => setCustomerFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md text-sm"
+                  placeholder="+52 55 1234 5678"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Dirección</label>
+                <input
+                  type="text"
+                  value={customerFormData.address}
+                  onChange={(e) => setCustomerFormData(prev => ({ ...prev, address: e.target.value }))}
+                  className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md text-sm"
+                  placeholder="Calle, número, colonia"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tipo de documento</label>
+                  <select
+                    value={customerFormData.document_type}
+                    onChange={(e) => setCustomerFormData(prev => ({ ...prev, document_type: e.target.value }))}
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md text-sm"
+                  >
+                    <option value="dni">DNI</option>
+                    <option value="passport">Pasaporte</option>
+                    <option value="tax_id">RFC</option>
+                    <option value="other">Otro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Número de documento</label>
+                  <input
+                    type="text"
+                    value={customerFormData.document_number}
+                    onChange={(e) => setCustomerFormData(prev => ({ ...prev, document_number: e.target.value }))}
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md text-sm"
+                    placeholder="12345678"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  disabled={creatingCustomer}
+                  className="btn flex-1 disabled:opacity-50"
+                >
+                  {creatingCustomer ? 'Creando...' : 'Crear Cliente'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCustomerForm(false)
+                    setCustomerFormData({
+                      first_name: '',
+                      last_name: '',
+                      email: '',
+                      phone: '',
+                      address: '',
+                      birth_date: '',
+                      document_type: 'dni',
+                      document_number: '',
+                      notes: ''
+                    })
+                    setError('')
+                  }}
+                  className="px-4 py-2 border border-slate-600/30 rounded-md"
+                  disabled={creatingCustomer}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

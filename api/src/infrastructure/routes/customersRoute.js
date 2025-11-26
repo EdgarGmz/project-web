@@ -249,7 +249,7 @@ router.get('/:id/details', authorize('owner', 'supervisor', 'cashier'), customer
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', authorize('supervisor', 'cashier'), customerController.createCustomer)
+router.post('/', authorize('cashier'), customerController.createCustomer)
 
 /**
  * @swagger

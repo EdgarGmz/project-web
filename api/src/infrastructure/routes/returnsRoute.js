@@ -193,7 +193,7 @@ router.get('/:id', authorize('owner', 'admin', 'supervisor'), returnController.g
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', authorize('admin', 'supervisor'), returnController.createReturn)
+router.post('/', authorize('admin'), returnController.createReturn)
 
 /**
  * @swagger

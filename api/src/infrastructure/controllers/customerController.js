@@ -38,11 +38,11 @@ const getAllCustomers = async (req, res) => {
             }
         ]
 
-        if (currentUser.role === 'cashier' || currentUser.role === 'supervisor') {
-            // Cajeros y supervisores solo ven clientes de su sucursal
+        if (currentUser.role === 'cashier') {
+            // Cajeros solo ven clientes de su sucursal
             includeOptions[0].where = { id: currentUser.branch_id }
         }
-        // Admin y owner pueden ver todos los clientes (sin filtro adicional)
+        // Supervisor, admin y owner pueden ver todos los clientes (sin filtro adicional)
 
         const { count, rows } = await Customer.findAndCountAll({
             where: whereClause,
@@ -138,8 +138,8 @@ const getCustomerDetails = async (req, res) => {
         }
 
         // Verificar permisos por rol
-        if (['cashier', 'supervisor'].includes(currentUser.role)) {
-            // Cajeros y supervisores solo pueden ver clientes de su sucursal
+        if (currentUser.role === 'cashier') {
+            // Cajeros solo pueden ver clientes de su sucursal
             const customerBranchIds = customer.branches.map(b => b.id.toString())
             if (!customerBranchIds.includes(currentUser.branch_id.toString())) {
                 return res.status(403).json({
@@ -148,7 +148,7 @@ const getCustomerDetails = async (req, res) => {
                 })
             }
         }
-        // Admin y owner pueden ver cualquier cliente
+        // Supervisor, admin y owner pueden ver cualquier cliente
 
         res.json({
             success: true,
@@ -180,11 +180,11 @@ const createCustomer = async (req, res) => {
             })
         }
 
-        // Solo cajeros y supervisores pueden crear clientes
-        if (!['cashier', 'supervisor'].includes(currentUser.role)) {
+        // Solo cajeros pueden crear clientes
+        if (currentUser.role !== 'cashier') {
             return res.status(403).json({
                 success: false,
-                message: 'Solo cajeros y supervisores pueden crear clientes'
+                message: 'Solo cajeros pueden crear clientes'
             })
         }
 
@@ -294,13 +294,16 @@ const updateCustomer = async (req, res) => {
             })
         }
 
-        // Verificar que el cliente pertenezca a la sucursal del usuario
-        const customerBranchIds = customer.branches.map(b => b.id.toString())
-        if (!customerBranchIds.includes(currentUser.branch_id.toString())) {
-            return res.status(403).json({
-                success: false,
-                message: 'Solo puedes actualizar clientes de tu sucursal'
-            })
+        // Verificar que el cliente pertenezca a la sucursal del usuario (solo para cajeros)
+        // Los supervisores pueden actualizar cualquier cliente
+        if (currentUser.role === 'cashier') {
+            const customerBranchIds = customer.branches.map(b => b.id.toString())
+            if (!customerBranchIds.includes(currentUser.branch_id.toString())) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Solo puedes actualizar clientes de tu sucursal'
+                })
+            }
         }
 
         // Verificar email duplicado (si se está actualizando)
@@ -389,13 +392,16 @@ const deleteCustomer = async (req, res) => {
             })
         }
 
-        // Verificar que el cliente pertenezca a la sucursal del usuario
-        const customerBranchIds = customer.branches.map(b => b.id.toString())
-        if (!customerBranchIds.includes(currentUser.branch_id.toString())) {
-            return res.status(403).json({
-                success: false,
-                message: 'Solo puedes eliminar clientes de tu sucursal'
-            })
+        // Verificar que el cliente pertenezca a la sucursal del usuario (solo para cajeros)
+        // Los supervisores pueden eliminar cualquier cliente
+        if (currentUser.role === 'cashier') {
+            const customerBranchIds = customer.branches.map(b => b.id.toString())
+            if (!customerBranchIds.includes(currentUser.branch_id.toString())) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Solo puedes eliminar clientes de tu sucursal'
+                })
+            }
         }
 
         await customer.update({ is_active: false })

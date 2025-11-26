@@ -16,6 +16,8 @@ export default function Products() {
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [stockFilter, setStockFilter] = useState('all') // Filtro por estado de stock
+  const [priceRangeFilter, setPriceRangeFilter] = useState('all') // Filtro por rango de precio
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -67,17 +69,40 @@ export default function Products() {
 
   // Filtrar productos localmente (igual que en Users.jsx)
   const filteredProducts = products.filter(product => {
+    // Filtro de búsqueda por texto
     const matchesSearch = searchTerm === '' || 
         product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.barcode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
+    // Filtro por estado (activo/inactivo)
     const matchesStatus = statusFilter === 'all' || 
         (statusFilter === 'active' && product.is_active) ||
         (statusFilter === 'inactive' && !product.is_active)
-    
-    return matchesSearch && matchesStatus
+
+    // Filtro por estado de stock
+    const stock = product.total_stock || 0
+    let matchesStock = true
+    if (stockFilter === 'no_stock') {
+      matchesStock = stock === 0
+    } else if (stockFilter === 'low_stock') {
+      matchesStock = stock > 0 && stock <= product.min_stock
+    } else if (stockFilter === 'in_stock') {
+      matchesStock = stock > product.min_stock
+    }
+
+    // Filtro por rango de precio
+    let matchesPrice = true
+    if (priceRangeFilter === 'low') {
+      matchesPrice = product.unit_price <= 100
+    } else if (priceRangeFilter === 'medium') {
+      matchesPrice = product.unit_price > 100 && product.unit_price <= 500
+    } else if (priceRangeFilter === 'high') {
+      matchesPrice = product.unit_price > 500
+    }
+
+    return matchesSearch && matchesStatus && matchesStock && matchesPrice
   })
 
   // Handlers
@@ -191,6 +216,8 @@ export default function Products() {
   const clearFilters = () => {
     setSearchTerm('')
     setStatusFilter('all')
+    setStockFilter('all')
+    setPriceRangeFilter('all')
   }
 
   const handleViewInventory = async (product) => {
@@ -215,8 +242,40 @@ export default function Products() {
 
   const getStockStatus = (product) => {
     const stock = product.total_stock || 0
-    if(stock <= product.min_stock) return { color: 'text-yellow-400', label: 'Stock Bajo', stock }
-    return { color: 'text-green-400', label: 'En Stock', stock }
+    
+    // Si no hay stock (0 o null/undefined)
+    if (stock === 0 || stock === null || stock === undefined) {
+      return { 
+        color: 'text-red-400', 
+        bgColor: 'bg-red-500/20',
+        borderColor: 'border-red-500/30',
+        label: 'Sin Existencia', 
+        stock: 0,
+        icon: '🔴'
+      }
+    }
+    
+    // Si el stock está por debajo del mínimo
+    if (stock <= product.min_stock) {
+      return { 
+        color: 'text-yellow-400', 
+        bgColor: 'bg-yellow-500/20',
+        borderColor: 'border-yellow-500/30',
+        label: 'Stock Bajo', 
+        stock,
+        icon: '⚠️'
+      }
+    }
+    
+    // Stock normal
+    return { 
+      color: 'text-green-400', 
+      bgColor: 'bg-green-500/20',
+      borderColor: 'border-green-500/30',
+      label: 'En Stock', 
+      stock,
+      icon: '✅'
+    }
   }
 
   if (loading && products.length === 0) {
@@ -230,57 +289,120 @@ export default function Products() {
           <h1 className="text-2xl font-semibold">Productos</h1>
           <p className="text-muted">Gestiona el catálogo de productos</p>
         </div>
-        {hasPermission(['owner', 'supervisor']) && (
+        {hasPermission(['owner']) && (
           <button onClick={() => setShowForm(true)} className="btn">
             + Nuevo Producto
           </button>
         )}
       </div>
       
-      {/* Filtros */}
-      <section className="card">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Filtros</h2>
-          {(searchTerm || statusFilter !== 'all') && (
+      {/* Filtros mejorados */}
+      <section className="card bg-gradient-to-r from-slate-800/50 to-slate-700/30 border border-slate-600/30">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-accent/20 flex items-center justify-center text-xl">
+              🔍
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Filtros de Búsqueda</h2>
+              <p className="text-xs text-muted">Filtra productos por diferentes criterios</p>
+            </div>
+          </div>
+          {(searchTerm || statusFilter !== 'all' || stockFilter !== 'all' || priceRangeFilter !== 'all') && (
             <button
               onClick={clearFilters}
-              className="text-sm text-accent hover:opacity-80 transition flex items-center gap-2"
-              title="Limpiar filtros"
+              className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg transition-all flex items-center gap-2 hover:scale-105"
+              title="Limpiar todos los filtros"
             >
-              🗑️ Limpiar filtros
+              <span>🗑️</span>
+              <span className="text-sm font-medium">Limpiar filtros</span>
             </button>
           )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Búsqueda por nombre/SKU/descripción */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-2">
-              🔍 Buscar producto
+
+        <div className="space-y-4">
+          {/* Búsqueda por texto */}
+          <div>
+            <label className="block text-sm font-semibold mb-2 flex items-center gap-2 text-white">
+              <span>🔎</span>
+              <span>Búsqueda General</span>
             </label>
             <input
               type="text"
               placeholder="Buscar por nombre, SKU, código de barras o descripción..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full px-4 py-3 border border-slate-600/30 rounded-lg bg-slate-800/50 focus:ring-2 focus:ring-accent focus:border-transparent transition-all placeholder:text-slate-500 text-white"
             />
           </div>
 
-          {/* Filtro por estado */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              🚦 Filtrar por estado
-            </label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
-            >
-              <option value="all">Todos</option>
-              <option value="active">🟢 Solo activos</option>
-              <option value="inactive">🔴 Solo inactivos</option>
-            </select>
+          {/* Filtros en grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Filtro por estado */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 flex items-center gap-2 text-white">
+                <span>🚦</span>
+                <span>Estado del Producto</span>
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-4 py-3 border border-slate-600/30 rounded-lg bg-slate-800/50 focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-white"
+              >
+                <option value="all">📦 Todos los productos</option>
+                <option value="active">🟢 Solo activos</option>
+                <option value="inactive">🔴 Solo inactivos</option>
+              </select>
+            </div>
+
+            {/* Filtro por stock */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 flex items-center gap-2 text-white">
+                <span>📊</span>
+                <span>Estado de Stock</span>
+              </label>
+              <select
+                value={stockFilter}
+                onChange={(e) => setStockFilter(e.target.value)}
+                className="w-full px-4 py-3 border border-slate-600/30 rounded-lg bg-slate-800/50 focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-white"
+              >
+                <option value="all">📦 Todos los niveles</option>
+                <option value="no_stock">🔴 Sin existencia</option>
+                <option value="low_stock">⚠️ Stock bajo</option>
+                <option value="in_stock">✅ En stock</option>
+              </select>
+            </div>
+
+            {/* Filtro por rango de precio */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 flex items-center gap-2 text-white">
+                <span>💰</span>
+                <span>Rango de Precio</span>
+              </label>
+              <select
+                value={priceRangeFilter}
+                onChange={(e) => setPriceRangeFilter(e.target.value)}
+                className="w-full px-4 py-3 border border-slate-600/30 rounded-lg bg-slate-800/50 focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-white"
+              >
+                <option value="all">💵 Todos los precios</option>
+                <option value="low">💚 Bajo (≤ $100)</option>
+                <option value="medium">💛 Medio ($101 - $500)</option>
+                <option value="high">❤️ Alto (&gt; $500)</option>
+              </select>
+            </div>
           </div>
+
+          {/* Indicador de resultados filtrados */}
+          {(searchTerm || statusFilter !== 'all' || stockFilter !== 'all' || priceRangeFilter !== 'all') && (
+            <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-blue-400">ℹ️</span>
+                <span className="text-blue-300">
+                  Mostrando <strong>{filteredProducts.length}</strong> de <strong>{products.length}</strong> productos
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -366,7 +488,13 @@ export default function Products() {
                         <div className="text-muted text-xs mt-0.5">IVA: {(product.tax_rate * 100).toFixed(0)}%</div>
                       </td>
                       <td className="py-4 px-6">
-                        <div className={`font-semibold ${stockStatus.color}`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border ${stockStatus.bgColor} ${stockStatus.color} ${stockStatus.borderColor}`}>
+                            <span className="text-base">{stockStatus.icon}</span>
+                            <span>{stockStatus.label}</span>
+                          </span>
+                        </div>
+                        <div className={`font-semibold ${stockStatus.color} text-lg mb-1`}>
                           {stockStatus.stock} unidades
                         </div>
                         <div className="text-muted text-sm mt-0.5">
@@ -391,7 +519,7 @@ export default function Products() {
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-2">
-                          {hasPermission(['owner', 'supervisor']) && (
+                          {hasPermission(['owner']) && (
                             <>
                               <button
                                 onClick={() => handleEdit(product)}
@@ -423,7 +551,11 @@ export default function Products() {
       {/* Resumen de resultados */}
       <div className="text-center mt-4">
         <span className="text-muted text-sm">
-          Mostrando {filteredProducts.length} de {products.length} productos
+          {filteredProducts.length === products.length ? (
+            <span>Total: {products.length} productos</span>
+          ) : (
+            <span>Mostrando {filteredProducts.length} de {products.length} productos</span>
+          )}
         </span>
       </div>
 

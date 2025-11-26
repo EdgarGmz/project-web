@@ -4,19 +4,21 @@ import { useAuth } from '../../contexts/AuthContext'
 import deniedImage from '../../assets/img/denied.png'
 
 // Componente para mostrar acceso denegado con redirección
-function AccessDeniedPage({ navigate }) {
+function AccessDeniedPage({ navigate, userRole }) {
     useEffect(() => {
         const timer = setTimeout(() => {
-            // Intentar redirigir a la página anterior, si no hay, ir al dashboard
+            // Intentar redirigir a la página anterior, si no hay, redirigir según el rol
             if (window.history.length > 1) {
                 navigate(-1)
             } else {
-                navigate('/dashboard', { replace: true })
+                // Cashiers van a POS, otros roles al dashboard
+                const redirectPath = userRole === 'cashier' ? '/pos' : '/dashboard'
+                navigate(redirectPath, { replace: true })
             }
         }, 3000) // 3 segundos
 
         return () => clearTimeout(timer)
-    }, [navigate])
+    }, [navigate, userRole])
 
     return (
         <div className="min-h-screen bg-bg flex items-center justify-center p-4">
@@ -62,7 +64,7 @@ export default function ProtectedRoute({ children, roles = [] }) {
     }
 
     if (roles.length > 0 && !roles.includes(user.role)) {
-        return <AccessDeniedPage navigate={navigate} />
+        return <AccessDeniedPage navigate={navigate} userRole={user.role} />
     }
 
     return children

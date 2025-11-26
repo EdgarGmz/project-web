@@ -9,13 +9,24 @@ const getAllInventory = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10
         const offset = (page - 1) * limit
 
+        // Obtener usuario autenticado
+        const currentUser = req.user
+        
         // Filtros opcionales
         const branch_id = req.query.branch_id
         const product_id = req.query.product_id
         const low_stock = req.query.low_stock === 'true'
 
         let whereClause = {}
-        if (branch_id) whereClause.branch_id = branch_id
+        
+        // Regla de negocio: Supervisor solo ve inventario de su sucursal
+        if (currentUser?.role === 'supervisor' && currentUser?.branch_id) {
+            whereClause.branch_id = currentUser.branch_id
+        } else {
+            // Owner y admin pueden filtrar por sucursal si lo especifican
+            if (branch_id) whereClause.branch_id = branch_id
+        }
+        
         if (product_id) whereClause.product_id = product_id
 
         // Configurar includes

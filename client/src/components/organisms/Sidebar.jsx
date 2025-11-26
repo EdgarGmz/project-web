@@ -8,15 +8,15 @@ export default function Sidebar() {
   const location = useLocation()
 
   const menuItems = [
-    { icon: '🏠', label: 'Dashboard', path: '/dashboard', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
+    { icon: '🏠', label: 'Dashboard', path: '/dashboard', roles: ['owner', 'admin', 'supervisor'] },
     { icon: '🏢', label: 'Sucursales', path: '/branches', roles: ['owner', 'admin'] },
     { icon: '👥', label: 'Usuarios', path: '/users', roles: ['owner'] },
     { icon: '📦', label: 'Productos', path: '/products', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
     { icon: '📊', label: 'Inventario', path: '/inventory', roles: ['owner', 'admin', 'supervisor'] },
     { icon: '👤', label: 'Clientes', path: '/customers', roles: ['owner', 'supervisor', 'cashier'] },
-    { icon: '💰', label: 'Ventas', path: '/sales', roles: ['owner', 'supervisor', 'cashier'] },    
+    { icon: '💰', label: 'Ventas', path: '/sales', roles: ['supervisor'] },    
     { icon: '📋', label: 'Compras', path: '/purchases', roles: ['owner'] },
-    { icon: '🛒', label: 'POS', path: '/pos', roles: ['supervisor', 'cashier'] },
+    { icon: '🛒', label: 'POS', path: '/pos', roles: ['cashier'] },
     { icon: '↩️', label: 'Devoluciones', path: '/returns', roles: ['owner', 'admin', 'supervisor'] },
     { icon: '💳', label: 'Pagos', path: '/payments', roles: ['owner'] },
     { icon: '📈', label: 'Reportes', path: '/reports', roles: ['owner', 'admin'] },
