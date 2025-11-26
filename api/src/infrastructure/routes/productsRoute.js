@@ -175,7 +175,7 @@ router.get('/:id', productController.getProductById)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', authorize('owner', 'supervisor'), productController.createProduct)
+router.post('/', authorize('owner'), productController.createProduct)
 
 /**
  * @swagger

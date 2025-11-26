@@ -50,21 +50,33 @@ const getAllProducts = async (req, res) => {
             ]
         })
 
-        // Calcular stock total para cada producto (suma de todas las sucursales incluyendo CEDIS)
+        // Obtener usuario autenticado
+        const currentUser = req.user
+        
+        // Calcular stock total para cada producto
+        // Regla de negocio: Supervisor solo ve stock de su sucursal
         const productsWithTotalStock = await Promise.all(rows.map(async (product) => {
             const productData = product.toJSON()
             
-            // Obtener todos los inventarios activos del producto en todas las sucursales
+            // Construir filtro de inventario según el rol
+            const inventoryWhere = {
+                product_id: product.id,
+                is_active: true
+            }
+            
+            // Si es supervisor, filtrar por su sucursal
+            if (currentUser?.role === 'supervisor' && currentUser?.branch_id) {
+                inventoryWhere.branch_id = currentUser.branch_id
+            }
+            
+            // Obtener inventarios del producto según el filtro
             const allInventories = await db.Inventory.findAll({
-                where: {
-                    product_id: product.id,
-                    is_active: true
-                },
+                where: inventoryWhere,
                 attributes: ['stock_current'],
                 raw: true
             })
             
-            // Sumar el stock de todas las sucursales
+            // Sumar el stock (de todas las sucursales para owner/admin, solo de su sucursal para supervisor)
             const totalStock = allInventories.reduce((sum, inv) => {
                 return sum + (parseFloat(inv.stock_current) || 0)
             }, 0)

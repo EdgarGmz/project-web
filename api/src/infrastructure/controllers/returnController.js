@@ -9,6 +9,9 @@ const getAllReturns = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10
         const offset = (page - 1) * limit
 
+        // Obtener usuario autenticado
+        const currentUser = req.user
+        
         // Filtros
         const search = req.query.search || ''
         const status = req.query.status || ''
@@ -16,6 +19,10 @@ const getAllReturns = async (req, res) => {
         const endDate = req.query.endDate
 
         const whereClause = {}
+        
+        // Regla de negocio: Supervisores y admins ven todas las devoluciones
+        // (sin filtro por sucursal para facilitar devoluciones desde cualquier sucursal)
+        let saleWhereClause = {}
 
         // Filtro por estado
         if (status) {
@@ -48,6 +55,20 @@ const getAllReturns = async (req, res) => {
                 as: 'product',
                 attributes: ['id', 'name', 'sku'],
                 required: false
+            },
+            {
+                model: Sale,
+                as: 'sale',
+                attributes: ['id', 'branch_id', 'transaction_reference'],
+                where: saleWhereClause,
+                required: false, // No requerido para mostrar todas las devoluciones
+                include: [
+                    {
+                        model: Branch,
+                        as: 'branch',
+                        attributes: ['id', 'name', 'code']
+                    }
+                ]
             },
             {
                 model: db.User,
@@ -198,6 +219,7 @@ const getAllReturns = async (req, res) => {
 const getReturnById = async (req, res) => {
     try {
         const { id } = req.params
+        const currentUser = req.user
 
         const returnItem = await Return.findByPk(id, {
             include: [
@@ -210,6 +232,18 @@ const getReturnById = async (req, res) => {
                     model: Product,
                     as: 'product',
                     attributes: ['id', 'name', 'sku']
+                },
+                {
+                    model: Sale,
+                    as: 'sale',
+                    attributes: ['id', 'branch_id'],
+                    include: [
+                        {
+                            model: Branch,
+                            as: 'branch',
+                            attributes: ['id', 'name', 'code']
+                        }
+                    ]
                 },
                 {
                     model: db.User,
@@ -230,6 +264,9 @@ const getReturnById = async (req, res) => {
                 message: 'Devolución no encontrada'
             })
         }
+
+        // Regla de negocio: Supervisores y admins pueden ver todas las devoluciones
+        // (sin restricción por sucursal para facilitar devoluciones desde cualquier sucursal)
 
         res.json({
             success: true,

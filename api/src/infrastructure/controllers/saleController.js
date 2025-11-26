@@ -9,6 +9,9 @@ const getAllSales = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10
         const offset = (page - 1) * limit
 
+        // Obtener usuario autenticado
+        const currentUser = req.user
+        
         // Filtros opcionales
         const branch_id = req.query.branch_id
         const user_id = req.query.user_id
@@ -18,7 +21,15 @@ const getAllSales = async (req, res) => {
         const date_to = req.query.date_to
 
         let whereClause = {}
-        if (branch_id) whereClause.branch_id = branch_id
+        
+        // Regla de negocio: Supervisor solo ve ventas de su sucursal
+        if (currentUser?.role === 'supervisor' && currentUser?.branch_id) {
+            whereClause.branch_id = currentUser.branch_id
+        } else {
+            // Owner y cashier pueden filtrar por sucursal si lo especifican
+            if (branch_id) whereClause.branch_id = branch_id
+        }
+        
         if (user_id) whereClause.user_id = user_id
         if (customer_id) whereClause.customer_id = customer_id
         if (payment_method) whereClause.payment_method = payment_method
@@ -90,6 +101,7 @@ const getAllSales = async (req, res) => {
 const getSaleById = async (req, res) => {
     try {
         const { id } = req.params
+        const currentUser = req.user
 
         const sale = await Sale.findByPk(id, {
             include: [
@@ -127,6 +139,16 @@ const getSaleById = async (req, res) => {
                 success: false,
                 message: 'Venta no encontrada'
             })
+        }
+
+        // Regla de negocio: Supervisor solo puede ver ventas de su sucursal
+        if (currentUser?.role === 'supervisor' && currentUser?.branch_id) {
+            if (sale.branch_id !== currentUser.branch_id) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'No tienes permisos para ver esta venta'
+                })
+            }
         }
 
         res.json({

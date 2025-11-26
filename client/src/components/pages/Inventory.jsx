@@ -105,10 +105,11 @@ export default function Inventory() {
   const fetchInventory = async () => {
     try {
       setError('')
+      // Para supervisores, no enviar filterBranch ya que el backend filtra automáticamente por su sucursal
       const response = await inventoryService.getAll({
         page: currentPage,
         limit: 10,
-        branch_id: filterBranch || undefined,
+        branch_id: (user?.role !== 'supervisor' && filterBranch) ? filterBranch : undefined,
         product_id: filterProduct || undefined,
         low_stock: filterLowStock || undefined
       })
@@ -372,7 +373,7 @@ export default function Inventory() {
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Filtros</h2>
-          {(filterSearch || filterProduct || filterBranch || filterLowStock) && (
+          {(filterSearch || filterProduct || (user?.role !== 'supervisor' && filterBranch) || filterLowStock) && (
             <button
               onClick={() => {
                 setFilterSearch('')
@@ -388,7 +389,7 @@ export default function Inventory() {
             </button>
           )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${user?.role === 'supervisor' ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-4`}>
           {/* Filtro de búsqueda por texto */}
           <div>
             <label className="block text-sm font-medium mb-2">Buscar</label>
@@ -421,25 +422,27 @@ export default function Inventory() {
             </select>
           </div>
 
-          {/* Filtro por sucursal */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Sucursal</label>
-            <select
-              value={filterBranch}
-              onChange={(e) => {
-                setFilterBranch(e.target.value)
-                setCurrentPage(1)
-              }}
-              className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-            >
-              <option value="">Todas las sucursales</option>
-              {branches.map(branch => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Filtro por sucursal - Oculto para supervisores */}
+          {user?.role !== 'supervisor' && (
+            <div>
+              <label className="block text-sm font-medium mb-2">Sucursal</label>
+              <select
+                value={filterBranch}
+                onChange={(e) => {
+                  setFilterBranch(e.target.value)
+                  setCurrentPage(1)
+                }}
+                className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+              >
+                <option value="">Todas las sucursales</option>
+                {branches.map(branch => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Filtro de stock bajo */}
           <div className="flex items-end">
@@ -473,12 +476,15 @@ export default function Inventory() {
                   <span>Producto</span>
                 </div>
               </th>
-              <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
-                <div className="flex items-center gap-2">
-                  <span>🏢</span>
-                  <span>Sucursal</span>
-                </div>
-              </th>
+              {/* Columna de sucursal - Oculto para supervisores */}
+              {user?.role !== 'supervisor' && (
+                <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <span>🏢</span>
+                    <span>Sucursal</span>
+                  </div>
+                </th>
+              )}
               <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
                 <div className="flex items-center gap-2">
                   <span>📊</span>
@@ -516,11 +522,15 @@ export default function Inventory() {
           <tbody className="divide-y divide-slate-600/20">
             {filteredInventory.length === 0 ? (
               <tr>
-                <td colSpan={hasPermission(['owner', 'admin']) ? 7 : 6} className="py-12 text-center">
+                <td colSpan={
+                  (hasPermission(['owner', 'admin']) ? 1 : 0) + // Acciones
+                  (user?.role !== 'supervisor' ? 1 : 0) + // Sucursal
+                  5 // Producto, Stock Actual, Stock Mínimo, Reservado, Estado
+                } className="py-12 text-center">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <span className="text-4xl">📭</span>
                     <span className="text-muted font-medium">
-                      {filterSearch || filterProduct || filterBranch || filterLowStock 
+                      {filterSearch || filterProduct || (user?.role !== 'supervisor' && filterBranch) || filterLowStock 
                         ? 'No se encontraron resultados con los filtros aplicados' 
                         : 'No hay registros de inventario'}
                     </span>
@@ -536,12 +546,15 @@ export default function Inventory() {
                       <div className="font-semibold text-white group-hover:text-accent transition-colors">{item.product?.name || 'N/A'}</div>
                       <div className="text-xs text-muted mt-0.5">{item.product?.sku || ''}</div>
                     </td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2 bg-slate-800/30 rounded-lg px-2 py-1 border border-slate-600/20">
-                        <span className="text-blue-400">🏢</span>
-                        <span className="text-sm text-white">{item.branch?.name || 'N/A'}</span>
-                      </div>
-                    </td>
+                    {/* Celda de sucursal - Oculto para supervisores */}
+                    {user?.role !== 'supervisor' && (
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-2 bg-slate-800/30 rounded-lg px-2 py-1 border border-slate-600/20">
+                          <span className="text-blue-400">🏢</span>
+                          <span className="text-sm text-white">{item.branch?.name || 'N/A'}</span>
+                        </div>
+                      </td>
+                    )}
                     <td className="py-4 px-6">
                       <div className="font-bold text-lg text-green-400">{item.stock_current || 0}</div>
                     </td>

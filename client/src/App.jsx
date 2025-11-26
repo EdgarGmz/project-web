@@ -62,7 +62,7 @@ export default function App() {
 
           {/* Dashboard principal */}
           <Route path="/dashboard" element={
-            <ProtectedRoute>
+            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
               <DashboardLayout>
                 <Dashboard />
               </DashboardLayout>
@@ -127,7 +127,7 @@ export default function App() {
             </ProtectedRoute>
           } />
           <Route path="/products/new" element={
-            <ProtectedRoute roles={['owner', 'supervisor']}>
+            <ProtectedRoute roles={['owner']}>
               <DashboardLayout>
                 <ProductForm />
               </DashboardLayout>
@@ -193,21 +193,21 @@ export default function App() {
 
           {/* Sistema de ventas */}
           <Route path="/sales" element={
-            <ProtectedRoute roles={['owner', 'supervisor', 'cashier']}>
+            <ProtectedRoute roles={['supervisor']}>
               <DashboardLayout>
                 <Sales />
               </DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/sales/new" element={
-            <ProtectedRoute roles={['supervisor', 'cashier']}>
+            <ProtectedRoute roles={['cashier']}>
               <DashboardLayout>
                 <SaleForm />
               </DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/sales/:id/edit" element={
-            <ProtectedRoute roles={['supervisor', 'cashier']}>
+            <ProtectedRoute roles={['cashier']}>
               <DashboardLayout>
                 <SaleForm />
               </DashboardLayout>
@@ -216,7 +216,7 @@ export default function App() {
 
           {/* Punto de venta */}
           <Route path="/pos" element={
-            <ProtectedRoute roles={['supervisor', 'cashier']}>
+            <ProtectedRoute roles={['cashier']}>
               <DashboardLayout>
                 <POS />
               </DashboardLayout>
