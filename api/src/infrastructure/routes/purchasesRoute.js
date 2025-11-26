@@ -96,7 +96,7 @@ router.use(authenticate)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/', authorize('owner', 'admin'), purchaseController.getAllPurchases)
+router.get('/', authorize('owner'), purchaseController.getAllPurchases)
 
 /**
  * @swagger
@@ -129,7 +129,7 @@ router.get('/', authorize('owner', 'admin'), purchaseController.getAllPurchases)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/:id', authorize('owner', 'admin'), purchaseController.getPurchaseById)
+router.get('/:id', authorize('owner'), purchaseController.getPurchaseById)
 
 /**
  * @swagger
@@ -199,7 +199,7 @@ router.post('/', authorize('owner'), purchaseController.createPurchase)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.put('/:id', authorize('owner', 'admin'), purchaseController.updatePurchase)
+router.put('/:id', authorize('owner'), purchaseController.updatePurchase)
 
 /**
  * @swagger

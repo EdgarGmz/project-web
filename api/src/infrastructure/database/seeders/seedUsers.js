@@ -18,6 +18,18 @@ async function seedUsers(branches) {
             hire_date: new Date(),
             branch_id: cedis.id,
             is_active: true
+        },
+        {
+            first_name: 'Alexis',
+            last_name: 'Garcia',
+            email: 'alexis@apexstore.com',
+            password: 'alexis1234', // Cambiar en producción
+            role: 'admin',
+            employee_id: "EMP002",
+            phone: '555-1111-0000',
+            hire_date: new Date(),
+            branch_id: cedis.id,
+            is_active: true
         }
     ], { individualHooks: true });
 }

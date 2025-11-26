@@ -125,7 +125,7 @@ router.use(authenticate)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/', customerController.getAllCustomers)
+router.get('/', authorize('owner', 'supervisor', 'cashier'), customerController.getAllCustomers)
 
 /**
  * @swagger
@@ -161,7 +161,7 @@ router.get('/', customerController.getAllCustomers)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/:id', customerController.getCustomerById)
+router.get('/:id', authorize('owner', 'supervisor', 'cashier'), customerController.getCustomerById)
 
 /**
  * @swagger
@@ -203,7 +203,7 @@ router.get('/:id', customerController.getCustomerById)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/:id/details', customerController.getCustomerDetails)
+router.get('/:id/details', authorize('owner', 'supervisor', 'cashier'), customerController.getCustomerDetails)
 
 /**
  * @swagger
@@ -249,7 +249,7 @@ router.get('/:id/details', customerController.getCustomerDetails)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', authorize('admin', 'supervisor', 'cashier'), customerController.createCustomer)
+router.post('/', authorize('supervisor', 'cashier'), customerController.createCustomer)
 
 /**
  * @swagger
@@ -295,7 +295,7 @@ router.post('/', authorize('admin', 'supervisor', 'cashier'), customerController
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.put('/:id', authorize('admin', 'supervisor', 'cashier'), customerController.updateCustomer)
+router.put('/:id', authorize('supervisor', 'cashier'), customerController.updateCustomer)
 
 /**
  * @swagger
@@ -339,6 +339,6 @@ router.put('/:id', authorize('admin', 'supervisor', 'cashier'), customerControll
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.delete('/:id', authorize('admin', 'supervisor'), customerController.deleteCustomer)
+router.delete('/:id', authorize('supervisor'), customerController.deleteCustomer)
 
 module.exports = router

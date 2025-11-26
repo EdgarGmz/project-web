@@ -403,7 +403,7 @@ export default function Returns() {
       </div>
 
       {/* Tabla */}
-      <div className="card">
+      <div className="card border border-slate-600/20 shadow-xl">
         {loading ? (
           <div className="text-center py-8 text-muted">Cargando devoluciones...</div>
         ) : returns.length === 0 ? (
@@ -413,55 +413,109 @@ export default function Returns() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-600/20">
-                    <th className="py-2 px-3 text-left">Fecha</th>
-                    <th className="py-2 px-3 text-left">Cliente</th>
-                    <th className="py-2 px-3 text-left">Producto</th>
-                    <th className="py-2 px-3 text-left">Cantidad</th>
-                    <th className="py-2 px-3 text-left">Motivo</th>
-                    <th className="py-2 px-3 text-left">Estado</th>
-                    <th className="py-2 px-3 text-left">Aprobada por</th>
+                  <tr className="bg-gradient-to-r from-slate-800/80 via-slate-700/80 to-slate-800/80 border-b border-slate-600/30">
+                    <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>📅</span>
+                        <span>Fecha</span>
+                      </div>
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>👥</span>
+                        <span>Cliente</span>
+                      </div>
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>📦</span>
+                        <span>Producto</span>
+                      </div>
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>🔢</span>
+                        <span>Cantidad</span>
+                      </div>
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>💬</span>
+                        <span>Motivo</span>
+                      </div>
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>🚦</span>
+                        <span>Estado</span>
+                      </div>
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>✅</span>
+                        <span>Aprobada por</span>
+                      </div>
+                    </th>
                     {hasPermission(['owner', 'admin', 'supervisor', 'cashier']) && (
-                      <th className="py-2 px-3 text-left">Acciones</th>
+                      <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <span>⚙️</span>
+                          <span>Acciones</span>
+                        </div>
+                      </th>
                     )}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-600/20">
                   {returns.map((returnItem) => (
-                    <tr key={returnItem.id} className="border-b border-slate-600/10 last:border-0">
-                      <td className="py-2 px-3">
-                        {new Date(returnItem.created_at).toLocaleDateString()}
+                    <tr key={returnItem.id} className="group hover:bg-gradient-to-r hover:from-slate-800/40 hover:to-slate-700/20 transition-all duration-200 border-b border-slate-600/10">
+                      <td className="py-4 px-6">
+                        <div className="text-sm text-white">{new Date(returnItem.created_at).toLocaleDateString('es-MX', { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}</div>
                       </td>
-                      <td className="py-2 px-3">
-                        {returnItem.customer ? 
-                          `${returnItem.customer.first_name} ${returnItem.customer.last_name}` : 
-                          'N/A'}
+                      <td className="py-4 px-6">
+                        <div className="text-sm text-white">
+                          {returnItem.customer ? 
+                            `${returnItem.customer.first_name} ${returnItem.customer.last_name}` : 
+                            'N/A'}
+                        </div>
                       </td>
-                      <td className="py-2 px-3">
-                        {returnItem.product?.name || 'N/A'}
+                      <td className="py-4 px-6">
+                        <div className="font-semibold text-white group-hover:text-accent transition-colors">{returnItem.product?.name || 'N/A'}</div>
                       </td>
-                      <td className="py-2 px-3">{returnItem.quantity}</td>
-                      <td className="py-2 px-3">{returnItem.reason}</td>
-                      <td className="py-2 px-3">{getStatusBadge(returnItem.status)}</td>
-                      <td className="py-2 px-3">
-                        {returnItem.approvedBy ? 
-                          `${returnItem.approvedBy.first_name} ${returnItem.approvedBy.last_name}` : 
-                          '-'}
+                      <td className="py-4 px-6">
+                        <div className="font-bold text-lg text-yellow-400">{returnItem.quantity}</div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="bg-slate-800/30 rounded-lg p-2 border border-slate-600/20">
+                          <p className="text-sm text-white/90">{returnItem.reason}</p>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">{getStatusBadge(returnItem.status)}</td>
+                      <td className="py-4 px-6">
+                        <div className="text-sm text-white">
+                          {returnItem.approvedBy ? 
+                            `${returnItem.approvedBy.first_name} ${returnItem.approvedBy.last_name}` : 
+                            '-'}
+                        </div>
                       </td>
                       {hasPermission(['owner', 'admin', 'supervisor']) && (
-                        <td className="py-2 px-3">
+                        <td className="py-4 px-6">
                           <div className="flex gap-2">
                             {returnItem.status === 'approved' ? (
                               <button
                                 onClick={() => handleOpenModal(returnItem)}
-                                className="text-blue-400 hover:text-blue-300"
+                                className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-all hover:scale-110"
                               >
                                 Ver detalles
                               </button>
                             ) : (
                               <button
                                 onClick={() => handleOpenModal(returnItem)}
-                                className="text-blue-400 hover:text-blue-300"
+                                className="p-2 rounded-lg bg-accent/10 hover:bg-accent/20 text-accent hover:text-accent/80 transition-all hover:scale-110"
                               >
                                 Editar
                               </button>

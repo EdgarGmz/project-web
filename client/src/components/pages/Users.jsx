@@ -396,99 +396,144 @@ return (
     </div>
 
     {/* Tabla de usuarios */}
-    <div className="card overflow-hidden">
+    <div className="card overflow-hidden border border-slate-600/20 shadow-xl">
         {filteredUsers.length === 0 && users.length > 0 ? (
-        <div className="text-center py-8">
-            <div className="text-4xl mb-4">🔍</div>
-            <h3 className="font-semibold mb-2">No se encontraron usuarios</h3>
-            <p className="text-muted">Intenta ajustar los filtros de búsqueda</p>
+        <div className="text-center py-12">
+            <div className="flex flex-col items-center justify-center gap-2">
+                <span className="text-4xl">🔍</span>
+                <h3 className="font-semibold mb-2">No se encontraron usuarios</h3>
+                <p className="text-muted">Intenta ajustar los filtros de búsqueda</p>
+            </div>
         </div>
         ) : users.length === 0 ? (
-        <div className="text-center py-8">
-            <div className="text-4xl mb-4">👤</div>
-            <h3 className="font-semibold mb-2">No hay usuarios</h3>
-            <p className="text-muted">Crea el primer usuario del sistema</p>
+        <div className="text-center py-12">
+            <div className="flex flex-col items-center justify-center gap-2">
+                <span className="text-4xl">👤</span>
+                <h3 className="font-semibold mb-2">No hay usuarios</h3>
+                <p className="text-muted">Crea el primer usuario del sistema</p>
+            </div>
         </div>
         ) : (
         <div className="overflow-x-auto">
             <table className="w-full">
             <thead>
-                <tr className="border-b border-slate-600/20">
-                <th className="text-left py-3 px-4">Usuario</th>
-                <th className="text-left py-3 px-4">Email</th>
-                <th className="text-left py-3 px-4">Rol</th>
-                <th className="text-left py-3 px-4">Sucursal</th>
-                <th className="text-left py-3 px-4">Estado</th>
-                <th className="text-left py-3 px-4">Registrado</th>
-                <th className="text-left py-3 px-4">Acciones</th>
+                <tr className="bg-gradient-to-r from-slate-800/80 via-slate-700/80 to-slate-800/80 border-b border-slate-600/30">
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                        <span>👤</span>
+                        <span>Usuario</span>
+                    </div>
+                </th>
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                        <span>📧</span>
+                        <span>Email</span>
+                    </div>
+                </th>
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                        <span>🎭</span>
+                        <span>Rol</span>
+                    </div>
+                </th>
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                        <span>🏢</span>
+                        <span>Sucursal</span>
+                    </div>
+                </th>
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                        <span>🚦</span>
+                        <span>Estado</span>
+                    </div>
+                </th>
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                        <span>📅</span>
+                        <span>Registrado</span>
+                    </div>
+                </th>
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                        <span>⚙️</span>
+                        <span>Acciones</span>
+                    </div>
+                </th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-600/20">
                 {filteredUsers.map((userItem) => (
-                <tr key={userItem.id} className="border-b border-slate-600/10 last:border-0 hover:bg-surface/50 transition">
-                    <td className="py-3 px-4">
+                <tr key={userItem.id} className="group hover:bg-gradient-to-r hover:from-slate-800/40 hover:to-slate-700/20 transition-all duration-200 border-b border-slate-600/10">
+                    <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
                         <div className="relative">
-                            <div className="h-10 w-10 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center">
-                            <span className="text-sm font-semibold">
+                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-cyan-500/30 to-cyan-500/10 border-2 border-cyan-500/40 flex items-center justify-center shadow-sm">
+                            <span className="text-sm font-bold text-white">
                                 {userItem.first_name?.[0]}{userItem.last_name?.[0]}
                             </span>
                             </div>
                             {/* Indicador de estado en el avatar */}
-                            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${
+                            <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-slate-800 ${
                                 userItem.is_active ? 'bg-green-500' : 'bg-red-500'
                             }`}></div>
                         </div>
                         <div>
-                        <div className="font-medium">
+                        <div className="font-semibold text-white group-hover:text-accent transition-colors">
                             {userItem.first_name} {userItem.last_name}
                         </div>
                         {userItem.id === user.id && (
-                            <span className="text-xs text-accent">(Tú)</span>
+                            <span className="text-xs text-accent font-medium">(Tú)</span>
                         )}
                         </div>
                     </div>
                     </td>
-                    <td className="py-3 px-4 text-muted">{userItem.email}</td>
-                    <td className="py-3 px-4">
-                        <span className={`${roles.find(r => r.value === userItem.role)?.color || 'text-text'} font-medium`}>
+                    <td className="py-4 px-6">
+                        <div className="text-sm text-white flex items-center gap-1">
+                            <span>📧</span>
+                            <span className="truncate max-w-[200px]" title={userItem.email}>{userItem.email}</span>
+                        </div>
+                    </td>
+                    <td className="py-4 px-6">
+                        <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold border shadow-sm ${roles.find(r => r.value === userItem.role)?.color || 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
                         {roles.find(r => r.value === userItem.role)?.label || userItem.role}
                         </span>
                     </td>
-                    <td className="py-3 px-4 text-muted text-sm">
+                    <td className="py-4 px-6">
                         {userItem.branch ? (
-                            <div className="flex items-center gap-2">
-                                <span className="text-blue-500">🏢</span>
-                                <span>{userItem.branch.name}</span>
+                            <div className="flex items-center gap-2 bg-slate-800/30 rounded-lg px-2 py-1 border border-slate-600/20">
+                                <span className="text-blue-400">🏢</span>
+                                <span className="text-sm text-white">{userItem.branch.name}</span>
                             </div>
                         ) : (
-                            <span className="text-gray-400">Sin asignar</span>
+                            <span className="text-muted text-sm italic">Sin asignar</span>
                         )}
                     </td>
-                    <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${
-                                userItem.is_active ? 'bg-green-500' : 'bg-red-500'
-                            }`}></div>
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                userItem.is_active
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                            }`}>
-                            {userItem.is_active ? 'Activo' : 'Inactivo'}
+                    <td className="py-4 px-6">
+                        <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold border shadow-sm ${
+                            userItem.is_active
+                            ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                            : 'bg-red-500/20 text-red-400 border-red-500/30'
+                        }`}>
+                            {userItem.is_active ? '✓ Activo' : '✗ Inactivo'}
                             </span>
+                    </td>
+                    <td className="py-4 px-6">
+                        <div className="text-sm text-white">
+                            {userItem.created_at ? new Date(userItem.created_at).toLocaleDateString('es-MX', { 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric' 
+                            }) : 'N/A'}
                         </div>
                     </td>
-                    <td className="py-3 px-4 text-muted text-sm">
-                    {userItem.created_at ? new Date(userItem.created_at).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="py-3 px-4">
+                    <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                         {(canEditRole(userItem) || canEditStatus(userItem)) && (
                         <>
                             <button
                             onClick={() => handleEditUser(userItem)}
-                            className="text-accent hover:opacity-80 transition text-sm"
+                            className="p-2 rounded-lg bg-accent/10 hover:bg-accent/20 text-accent hover:text-accent/80 transition-all hover:scale-110"
                             title="Editar usuario"
                             >
                             ✏️
@@ -496,7 +541,7 @@ return (
                             {userItem.id !== user.id && (
                             <button
                             onClick={() => handleDeleteUser(userItem)}
-                            className="text-red-400 hover:opacity-80 transition text-sm"
+                            className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all hover:scale-110"
                             title="Eliminar usuario"
                             >
                             🗑️
@@ -505,7 +550,7 @@ return (
                         </>
                         )}
                         {!canEditRole(userItem) && !canEditStatus(userItem) && (
-                            <span className="text-gray-400 text-sm">Sin permisos</span>
+                            <span className="text-muted text-sm italic">Sin permisos</span>
                         )}
                     </div>
                     </td>

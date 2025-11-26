@@ -130,7 +130,7 @@ router.get('/:id', checkBranchAccess, inventoryController.getInventoryById)
  *       500:
  *         description: Error interno
  */
-router.post('/', authorize('owner', 'admin'), checkBranchAccess, inventoryController.createInventory)
+router.post('/', authorize('admin'), checkBranchAccess, inventoryController.createInventory)
 
 /**
  * @swagger

@@ -116,7 +116,7 @@ router.use(authenticate)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/', saleController.getAllSales)
+router.get('/', authorize('owner', 'supervisor', 'cashier'), saleController.getAllSales)
 
 /**
  * @swagger
@@ -147,7 +147,7 @@ router.get('/', saleController.getAllSales)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/:id', saleController.getSaleById)
+router.get('/:id', authorize('owner', 'supervisor', 'cashier'), saleController.getSaleById)
 
 /**
  * @swagger
@@ -179,7 +179,7 @@ router.get('/:id', saleController.getSaleById)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', authorize('admin', 'supervisor', 'cashier'), saleController.createSale)
+router.post('/', authorize('supervisor', 'cashier'), saleController.createSale)
 
 /**
  * @swagger
@@ -221,7 +221,7 @@ router.post('/', authorize('admin', 'supervisor', 'cashier'), saleController.cre
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.put('/:id', authorize('admin', 'supervisor', 'cashier'), saleController.updateSale)
+router.put('/:id', authorize('supervisor', 'cashier'), saleController.updateSale)
 
 /**
  * @swagger
@@ -257,6 +257,6 @@ router.put('/:id', authorize('admin', 'supervisor', 'cashier'), saleController.u
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.delete('/:id', authorize('admin', 'supervisor', 'cashier'), saleController.cancelSale)
+router.delete('/:id', authorize('supervisor', 'cashier'), saleController.cancelSale)
 
 module.exports = router

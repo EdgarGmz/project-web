@@ -39,6 +39,7 @@ export default function Products() {
     unit_measure: 'pza',
     min_stock: '5', 
     max_stock: '1000',
+    stock_inicial: '',
     is_active: true
   })
 
@@ -115,6 +116,16 @@ export default function Products() {
       if (editingProduct) {
         response = await productService.update(editingProduct.id, productData)
       } else {
+        // Al crear, incluir stock inicial para asignarlo a CEDIS (obligatorio)
+        if (!formData.stock_inicial || formData.stock_inicial === '' || formData.stock_inicial === '0') {
+          alert('El stock inicial en CEDIS es obligatorio y debe ser mayor a 0')
+          return
+        }
+        productData.stock_inicial = parseFloat(formData.stock_inicial)
+        if (productData.stock_inicial <= 0 || isNaN(productData.stock_inicial)) {
+          alert('El stock inicial debe ser un número mayor a 0')
+          return
+        }
         response = await productService.create(productData)
       }
       
@@ -172,6 +183,7 @@ export default function Products() {
       name: '', description: '', sku: '', barcode: '',
       unit_price: '', cost_price: '', tax_rate: '0.16',
       unit_measure: 'pza', min_stock: '5', max_stock: '1000',
+      stock_inicial: '',
       is_active: true
     })
   }
@@ -273,94 +285,127 @@ export default function Products() {
       </section>
 
       {/* Lista de productos */}
-      <div className="card overflow-hidden">
+      <div className="card overflow-hidden border border-slate-600/20 shadow-xl">
         {products.length === 0 ? (
-          <div className="text-center py-8 text-muted">
-            No se encontraron productos con los filtros aplicados
+          <div className="text-center py-12">
+            <div className="flex flex-col items-center justify-center gap-2">
+              <span className="text-4xl">📦</span>
+              <span className="text-muted font-medium">No se encontraron productos con los filtros aplicados</span>
+            </div>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-600/20">
-                  <th className="text-left py-3 px-4">Producto</th>
-                  <th className="text-left py-3 px-4">SKU</th>
-                  <th className="text-left py-3 px-4">Precio</th>
-                  <th className="text-left py-3 px-4">Stock</th>
-                  <th className="text-left py-3 px-4">Estado</th>
-                  <th className="text-left py-3 px-4">Acciones</th>
+                <tr className="bg-gradient-to-r from-slate-800/80 via-slate-700/80 to-slate-800/80 border-b border-slate-600/30">
+                  <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                      <span>📦</span>
+                      <span>Producto</span>
+                    </div>
+                  </th>
+                  <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                      <span>🔖</span>
+                      <span>SKU</span>
+                    </div>
+                  </th>
+                  <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                      <span>💰</span>
+                      <span>Precio</span>
+                    </div>
+                  </th>
+                  <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                      <span>📊</span>
+                      <span>Stock</span>
+                    </div>
+                  </th>
+                  <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                      <span>🚦</span>
+                      <span>Estado</span>
+                    </div>
+                  </th>
+                  <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2">
+                      <span>⚙️</span>
+                      <span>Acciones</span>
+                    </div>
+                  </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-600/20">
                 {filteredProducts.map((product) => {
                   const stockStatus = getStockStatus(product)
                   
                   return (
-                    <tr key={product.id} className="border-b border-slate-600/10 last:border-0 hover:bg-surface/50 transition">
-                      <td className="py-3 px-4">
+                    <tr key={product.id} className="group hover:bg-gradient-to-r hover:from-slate-800/40 hover:to-slate-700/20 transition-all duration-200 border-b border-slate-600/10">
+                      <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="h-12 w-12 rounded bg-surface border border-slate-600/20 flex items-center justify-center overflow-hidden">
-                            <span className="text-xs">📦</span>
+                          <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-500/10 border-2 border-orange-500/30 flex items-center justify-center overflow-hidden shadow-sm">
+                            <span className="text-xl">📦</span>
                           </div>
                           <div>
-                            <div className="font-medium">{product.name}</div>
-                            <div className="text-muted text-sm">{product.description?.substring(0, 30)}...</div>
+                            <div className="font-semibold text-white group-hover:text-accent transition-colors">{product.name}</div>
+                            <div className="text-muted text-sm mt-0.5">{product.description?.substring(0, 30)}...</div>
                             {product.barcode && (
-                              <div className="text-muted text-xs">Código: {product.barcode}</div>
+                              <div className="text-muted text-xs mt-0.5">Código: {product.barcode}</div>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="font-medium">{product.sku}</div>
-                        <div className="text-muted text-xs">{product.unit_measure}</div>
+                      <td className="py-4 px-6">
+                        <div className="font-semibold text-white">{product.sku}</div>
+                        <div className="text-muted text-xs mt-0.5">{product.unit_measure}</div>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="font-medium">${product.unit_price}</div>
-                        <div className="text-muted text-sm">Costo: ${product.cost_price}</div>
-                        <div className="text-muted text-xs">IVA: {(product.tax_rate * 100).toFixed(0)}%</div>
+                      <td className="py-4 px-6">
+                        <div className="font-semibold text-green-400">${product.unit_price}</div>
+                        <div className="text-muted text-sm mt-0.5">Costo: ${product.cost_price}</div>
+                        <div className="text-muted text-xs mt-0.5">IVA: {(product.tax_rate * 100).toFixed(0)}%</div>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className={`font-medium ${stockStatus.color}`}>
+                      <td className="py-4 px-6">
+                        <div className={`font-semibold ${stockStatus.color}`}>
                           {stockStatus.stock} unidades
                         </div>
-                        <div className="text-muted text-sm">
+                        <div className="text-muted text-sm mt-0.5">
                           Mín: {product.min_stock} / Máx: {product.max_stock}
                         </div>
                         <button
                           onClick={() => handleViewInventory(product)}
-                          className="text-muted text-xs hover:text-accent transition cursor-pointer underline"
+                          className="text-accent text-xs hover:text-accent/80 transition cursor-pointer underline mt-1"
                           title="Ver detalles de inventario por sucursal"
                         >
                           Ver detalle en Inventario
                         </button>
                       </td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded text-xs ${
+                      <td className="py-4 px-6">
+                        <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold border shadow-sm ${
                           product.is_active 
-                            ? 'bg-green-500/20 text-green-400' 
-                            : 'bg-red-500/20 text-red-400'
+                            ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                            : 'bg-red-500/20 text-red-400 border-red-500/30'
                         }`}>
-                          {product.is_active ? 'Activo' : 'Inactivo'}
+                          {product.is_active ? '✓ Activo' : '✗ Inactivo'}
                         </span>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-6">
                         <div className="flex items-center gap-2">
                           {hasPermission(['owner', 'supervisor']) && (
                             <>
                               <button
                                 onClick={() => handleEdit(product)}
-                                className="text-accent hover:opacity-80 transition"
+                                className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-all hover:scale-110"
                                 title="Editar producto"
                               >
                                 ✏️
                               </button>
                               <button
                                 onClick={() => handleDelete(product)}
-                                className="text-red-400 hover:opacity-80 transition"
+                                className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all hover:scale-110"
                                 title="Eliminar producto"
                               >
-                                🗑
+                                🗑️
                               </button>
                             </>
                           )}
@@ -523,6 +568,27 @@ export default function Products() {
                 </div>
               </div>
 
+              {!editingProduct && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    📦 Stock Inicial en CEDIS *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={formData.stock_inicial}
+                    onChange={(e) => setFormData(prev => ({ ...prev, stock_inicial: e.target.value }))}
+                    required
+                    placeholder="Cantidad inicial en el centro de distribución"
+                    className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+                  />
+                  <p className="text-xs text-muted mt-1">
+                    Este stock se asignará automáticamente al CEDIS al crear el producto. El valor debe ser mayor a 0.
+                  </p>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Código de Barras</label>
@@ -592,121 +658,237 @@ export default function Products() {
       />
 
       {/* Modal de detalles de inventario */}
-      <Modal
-        isOpen={inventoryModal.isOpen}
-        onClose={() => setInventoryModal({ isOpen: false, product: null, inventory: [] })}
-        size="lg"
-      >
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">
-              Detalles de Inventario - {inventoryModal.product?.name}
-            </h2>
-            <button
-              onClick={() => setInventoryModal({ isOpen: false, product: null, inventory: [] })}
-              className="text-muted hover:text-white transition"
-            >
-              ✕
-            </button>
+      {inventoryModal.isOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="card max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slide-up border border-slate-600/30 shadow-2xl">
+            {/* Header con gradiente */}
+            <div className="relative p-6 bg-gradient-to-r from-blue-500/20 via-purple-500/10 to-transparent border-b border-slate-600/30">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 border-2 border-blue-500/40 flex items-center justify-center text-3xl shadow-lg">
+                  📦
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-white mb-1">
+                    Detalles de Inventario
+                  </h2>
+                  <p className="text-sm text-muted">
+                    {inventoryModal.product?.name || 'Producto'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setInventoryModal({ isOpen: false, product: null, inventory: [] })}
+                  className="text-2xl text-muted hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg"
+                  title="Cerrar"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Contenido */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {loadingInventory ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <div className="relative">
+                    <div className="animate-spin w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-2xl">📦</span>
+                    </div>
+                  </div>
+                  <p className="mt-4 text-muted text-lg">Cargando inventario...</p>
+                </div>
+              ) : inventoryModal.inventory.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <div className="text-6xl mb-4">📭</div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Sin Inventario</h3>
+                  <p className="text-muted text-center max-w-md">
+                    No hay inventario registrado para este producto en ninguna sucursal.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Información del producto */}
+                  <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/30 rounded-xl p-5 border border-slate-600/30">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-xl">
+                          🏷️
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted uppercase tracking-wide mb-1">SKU</p>
+                          <p className="font-bold text-white">{inventoryModal.product?.sku || 'N/A'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-xl">
+                          📏
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted uppercase tracking-wide mb-1">Unidad de Medida</p>
+                          <p className="font-bold text-white">{inventoryModal.product?.unit_measure || 'N/A'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-green-500/20 flex items-center justify-center text-xl">
+                          📊
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted uppercase tracking-wide mb-1">Stock Total</p>
+                          <p className="font-bold text-green-400 text-xl">
+                            {inventoryModal.inventory.reduce((sum, item) => sum + (item.stock_current || 0), 0)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tabla de inventario */}
+                  <div className="bg-surface/30 rounded-xl overflow-hidden border border-slate-600/30">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="bg-gradient-to-r from-slate-800/50 to-slate-700/30 border-b border-slate-600/30">
+                            <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                              <div className="flex items-center gap-2">
+                                <span>🏢</span>
+                                <span>Sucursal</span>
+                              </div>
+                            </th>
+                            <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                              <div className="flex items-center gap-2">
+                                <span>📦</span>
+                                <span>Stock Actual</span>
+                              </div>
+                            </th>
+                            <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                              <div className="flex items-center gap-2">
+                                <span>⚠️</span>
+                                <span>Stock Mínimo</span>
+                              </div>
+                            </th>
+                            <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                              <div className="flex items-center gap-2">
+                                <span>✅</span>
+                                <span>Estado</span>
+                              </div>
+                            </th>
+                            <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                              <div className="flex items-center gap-2">
+                                <span>📝</span>
+                                <span>Notas</span>
+                              </div>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {inventoryModal.inventory.map((item) => {
+                            const stockStatus = item.stock_current <= item.stock_minimum
+                              ? { 
+                                  color: 'text-yellow-400', 
+                                  bgColor: 'bg-yellow-500/20',
+                                  borderColor: 'border-yellow-500/30',
+                                  label: 'Stock Bajo',
+                                  icon: '⚠️'
+                                }
+                              : item.stock_current === 0
+                              ? { 
+                                  color: 'text-red-400', 
+                                  bgColor: 'bg-red-500/20',
+                                  borderColor: 'border-red-500/30',
+                                  label: 'Agotado',
+                                  icon: '🔴'
+                                }
+                              : { 
+                                  color: 'text-green-400', 
+                                  bgColor: 'bg-green-500/20',
+                                  borderColor: 'border-green-500/30',
+                                  label: 'En Stock',
+                                  icon: '✅'
+                                }
+                            
+                            return (
+                              <tr 
+                                key={item.id} 
+                                className="border-b border-slate-600/10 last:border-0 hover:bg-slate-700/30 transition-colors"
+                              >
+                                <td className="py-4 px-6">
+                                  <div className="flex items-center gap-3">
+                                    <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-sm">
+                                      🏢
+                                    </div>
+                                    <div>
+                                      <div className="font-semibold text-white">{item.branch?.name || 'N/A'}</div>
+                                      <div className="text-muted text-xs font-mono">{item.branch?.code || ''}</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-4 px-6">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-2xl font-bold text-white">{item.stock_current || 0}</span>
+                                    <span className="text-muted text-sm">{inventoryModal.product?.unit_measure || 'unidades'}</span>
+                                  </div>
+                                </td>
+                                <td className="py-4 px-6">
+                                  <div className="text-muted font-medium">{item.stock_minimum || 0}</div>
+                                </td>
+                                <td className="py-4 px-6">
+                                  <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border ${stockStatus.bgColor} ${stockStatus.color} ${stockStatus.borderColor}`}>
+                                    <span>{stockStatus.icon}</span>
+                                    <span>{stockStatus.label}</span>
+                                  </span>
+                                </td>
+                                <td className="py-4 px-6">
+                                  <div 
+                                    className="text-muted text-sm max-w-xs truncate" 
+                                    title={item.notes || 'Sin notas'}
+                                  >
+                                    {item.notes || <span className="text-slate-500 italic">Sin notas</span>}
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Estadísticas */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-xl p-5 border border-blue-500/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-2xl">🏢</span>
+                        <span className="text-3xl font-bold text-blue-400">
+                          {inventoryModal.inventory.length}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted uppercase tracking-wide">Total Sucursales</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-xl p-5 border border-green-500/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-2xl">📦</span>
+                        <span className="text-3xl font-bold text-green-400">
+                          {inventoryModal.inventory.reduce((sum, item) => sum + (item.stock_current || 0), 0)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted uppercase tracking-wide">Stock Total</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 rounded-xl p-5 border border-yellow-500/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-2xl">⚠️</span>
+                        <span className="text-3xl font-bold text-yellow-400">
+                          {inventoryModal.inventory.filter(item => item.stock_current <= item.stock_minimum).length}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted uppercase tracking-wide">Con Stock Bajo</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-
-          {loadingInventory ? (
-            <div className="text-center py-8">
-              <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full mx-auto mb-4"></div>
-              <div className="text-muted">Cargando inventario...</div>
-            </div>
-          ) : inventoryModal.inventory.length === 0 ? (
-            <div className="text-center py-8 text-muted">
-              <p className="mb-2">No hay inventario registrado para este producto.</p>
-              <p className="text-sm">El producto no está disponible en ninguna sucursal.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="bg-surface/50 rounded-lg p-4 mb-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted">SKU:</span>
-                    <span className="ml-2 font-medium">{inventoryModal.product?.sku}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted">Unidad:</span>
-                    <span className="ml-2 font-medium">{inventoryModal.product?.unit_measure}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-600/20">
-                      <th className="text-left py-3 px-4">Sucursal</th>
-                      <th className="text-left py-3 px-4">Stock Actual</th>
-                      <th className="text-left py-3 px-4">Stock Mínimo</th>
-                      <th className="text-left py-3 px-4">Estado</th>
-                      <th className="text-left py-3 px-4">Notas</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {inventoryModal.inventory.map((item) => {
-                      const stockStatus = item.stock_current <= item.stock_minimum
-                        ? { color: 'text-yellow-400', label: 'Stock Bajo' }
-                        : item.stock_current === 0
-                        ? { color: 'text-red-400', label: 'Agotado' }
-                        : { color: 'text-green-400', label: 'En Stock' }
-                      
-                      return (
-                        <tr key={item.id} className="border-b border-slate-600/10 last:border-0 hover:bg-surface/50 transition">
-                          <td className="py-3 px-4">
-                            <div className="font-medium">{item.branch?.name || 'N/A'}</div>
-                            <div className="text-muted text-xs">{item.branch?.code || ''}</div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="font-semibold">{item.stock_current || 0}</div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="text-muted">{item.stock_minimum || 0}</div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`px-2 py-1 rounded text-xs ${stockStatus.color.includes('yellow') ? 'bg-yellow-500/20 text-yellow-400' : stockStatus.color.includes('red') ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
-                              {stockStatus.label}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="text-muted text-sm max-w-xs truncate" title={item.notes || ''}>
-                              {item.notes || '-'}
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-slate-600/20">
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted">Total Sucursales:</span>
-                    <span className="ml-2 font-semibold">{inventoryModal.inventory.length}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted">Stock Total:</span>
-                    <span className="ml-2 font-semibold">
-                      {inventoryModal.inventory.reduce((sum, item) => sum + (item.stock_current || 0), 0)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-muted">Con Stock Bajo:</span>
-                    <span className="ml-2 font-semibold text-yellow-400">
-                      {inventoryModal.inventory.filter(item => item.stock_current <= item.stock_minimum).length}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
-      </Modal>
+      )}
     </div>
   )
 }

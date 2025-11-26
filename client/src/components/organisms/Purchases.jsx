@@ -349,7 +349,7 @@ export default function Purchases() {
       </div>
 
       {/* Lista de compras */}
-      <div className="card overflow-hidden">
+      <div className="card overflow-hidden border border-slate-600/20 shadow-xl">
         {loading ? (
           <div className="text-center py-8 text-muted">Cargando compras...</div>
         ) : filteredPurchases.length === 0 ? (
@@ -361,65 +361,124 @@ export default function Purchases() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-600/20">
-                    <th className="text-left py-3 px-4">Fecha</th>
-                    <th className="text-left py-3 px-4">Proveedor</th>
-                    <th className="text-left py-3 px-4">Contacto</th>
-                    <th className="text-left py-3 px-4">Factura</th>
-                    <th className="text-left py-3 px-4">Sucursal</th>
-                    <th className="text-left py-3 px-4">Usuario</th>
-                    <th className="text-left py-3 px-4">Total</th>
-                    <th className="text-left py-3 px-4">Estado</th>
+                  <tr className="bg-gradient-to-r from-slate-800/80 via-slate-700/80 to-slate-800/80 border-b border-slate-600/30">
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>📅</span>
+                        <span>Fecha</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>🏢</span>
+                        <span>Proveedor</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>📞</span>
+                        <span>Contacto</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>🧾</span>
+                        <span>Factura</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>🏪</span>
+                        <span>Sucursal</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>👤</span>
+                        <span>Usuario</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>💰</span>
+                        <span>Total</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>🚦</span>
+                        <span>Estado</span>
+                      </div>
+                    </th>
                     {hasPermission(['owner', 'admin']) && (
-                      <th className="text-left py-3 px-4">Acciones</th>
+                      <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <span>⚙️</span>
+                          <span>Acciones</span>
+                        </div>
+                      </th>
                     )}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-600/20">
                   {filteredPurchases.map((purchase) => (
-                    <tr key={purchase.id} className="border-b border-slate-600/10 last:border-0 hover:bg-surface/50 transition">
-                      <td className="py-3 px-4">
-                        <div className="text-sm">{new Date(purchase.purchase_date || purchase.created_at).toLocaleDateString()}</div>
+                    <tr key={purchase.id} className="group hover:bg-gradient-to-r hover:from-slate-800/40 hover:to-slate-700/20 transition-all duration-200 border-b border-slate-600/10">
+                      <td className="py-4 px-6">
+                        <div className="text-sm text-white">{new Date(purchase.purchase_date || purchase.created_at).toLocaleDateString('es-MX', { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}</div>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="font-medium">{purchase.supplier_name}</div>
+                      <td className="py-4 px-6">
+                        <div className="font-semibold text-white group-hover:text-accent transition-colors">{purchase.supplier_name}</div>
                         {purchase.supplier_phone && (
-                          <div className="text-muted text-xs">{purchase.supplier_phone}</div>
+                          <div className="text-muted text-xs mt-0.5 flex items-center gap-1">
+                            <span>📞</span>
+                            <span>{purchase.supplier_phone}</span>
+                          </div>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-sm text-muted">
-                        {purchase.supplier_contact || 'N/A'}
+                      <td className="py-4 px-6">
+                        <div className="text-sm text-muted">{purchase.supplier_contact || 'N/A'}</div>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="font-mono text-sm">{purchase.invoice_number || 'Sin factura'}</div>
+                      <td className="py-4 px-6">
+                        <div className="font-mono text-sm bg-slate-800/30 rounded-lg px-2 py-1 border border-slate-600/20 text-white">{purchase.invoice_number || 'Sin factura'}</div>
                       </td>
-                      <td className="py-3 px-4 text-sm">{purchase.Branch?.name || 'N/A'}</td>
-                      <td className="py-3 px-4 text-muted text-sm">
-                        {purchase.User ? `${purchase.User.first_name} ${purchase.User.last_name}` : 'N/A'}
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-2 bg-slate-800/30 rounded-lg px-2 py-1 border border-slate-600/20">
+                          <span className="text-blue-400">🏪</span>
+                          <span className="text-sm text-white">{purchase.Branch?.name || 'N/A'}</span>
+                        </div>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="font-semibold">
+                      <td className="py-4 px-6">
+                        <div className="text-sm text-white">
+                          {purchase.User ? `${purchase.User.first_name} ${purchase.User.last_name}` : 'N/A'}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="font-bold text-lg text-green-400">
                           ${Number(purchase.total_amount || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                         </div>
                       </td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded text-xs ${getStatusBadge(purchase.status).color}`}>
+                      <td className="py-4 px-6">
+                        <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold border shadow-sm ${getStatusBadge(purchase.status).color}`}>
                           {getStatusBadge(purchase.status).label}
                         </span>
                       </td>
                       {hasPermission(['owner', 'admin']) && (
-                        <td className="py-3 px-4">
+                        <td className="py-4 px-6">
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleOpenForm(purchase)}
-                              className="text-blue-400 hover:text-blue-300 text-sm"
+                              className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-all hover:scale-110"
                               title="Editar"
                             >
                               ✏️
                             </button>
                             <button
                               onClick={() => setConfirmModal({ isOpen: true, purchase })}
-                              className="text-red-400 hover:text-red-300 text-sm"
+                              className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all hover:scale-110"
                               title="Eliminar"
                             >
                               🗑️

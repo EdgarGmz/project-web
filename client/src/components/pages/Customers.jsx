@@ -214,86 +214,142 @@ export default function Customers() {
       </div>
 
       {/* Lista de clientes */}
-      <div className="card overflow-hidden">
+      <div className="card overflow-hidden border border-slate-600/20 shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-600/20">
-                <th className="text-left py-3 px-4">Cliente</th>
-                <th className="text-left py-3 px-4">Contacto</th>
-                <th className="text-left py-3 px-4">Documento</th>
-                <th className="text-left py-3 px-4">Sucursal</th>
-                <th className="text-left py-3 px-4">Registrado</th>
-                <th className="text-left py-3 px-4">Compras</th>
-                <th className="text-left py-3 px-4">Acciones</th>
+              <tr className="bg-gradient-to-r from-slate-800/80 via-slate-700/80 to-slate-800/80 border-b border-slate-600/30">
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <span>👥</span>
+                    <span>Cliente</span>
+                  </div>
+                </th>
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <span>📞</span>
+                    <span>Contacto</span>
+                  </div>
+                </th>
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <span>🆔</span>
+                    <span>Documento</span>
+                  </div>
+                </th>
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <span>🏢</span>
+                    <span>Sucursal</span>
+                  </div>
+                </th>
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <span>📅</span>
+                    <span>Registrado</span>
+                  </div>
+                </th>
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <span>💰</span>
+                    <span>Compras</span>
+                  </div>
+                </th>
+                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <span>⚙️</span>
+                    <span>Acciones</span>
+                  </div>
+                </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-600/20">
               {filteredCustomers.map((customer) => (
-                <tr key={customer.id} className="border-b border-slate-600/10 last:border-0 hover:bg-surface/50 transition">
-                  <td className="py-3 px-4">
+                <tr key={customer.id} className="group hover:bg-gradient-to-r hover:from-slate-800/40 hover:to-slate-700/20 transition-all duration-200 border-b border-slate-600/10">
+                  <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center">
-                        <span className="text-sm font-semibold">
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500/30 to-blue-500/10 border-2 border-blue-500/40 flex items-center justify-center shadow-sm">
+                        <span className="text-sm font-bold text-white">
                           {customer.first_name?.[0]}{customer.last_name?.[0]}
                         </span>
                       </div>
                       <div>
-                        <div className="font-medium">
+                        <div className="font-semibold text-white group-hover:text-accent transition-colors">
                           {customer.first_name} {customer.last_name}
                         </div>
                         {customer.birth_date && (
-                          <div className="text-muted text-sm">
+                          <div className="text-muted text-sm mt-0.5">
                             {new Date().getFullYear() - new Date(customer.birth_date).getFullYear()} años
                           </div>
                         )}
                       </div>
                     </div>
                   </td>
-                  <td className="py-3 px-4">
-                    <div>
+                  <td className="py-4 px-6">
+                    <div className="space-y-1">
                       {customer.email && (
-                        <div className="text-sm">{customer.email}</div>
+                        <div className="text-sm text-white flex items-center gap-1">
+                          <span>📧</span>
+                          <span className="truncate max-w-[200px]" title={customer.email}>{customer.email}</span>
+                        </div>
                       )}
                       {customer.phone && (
-                        <div className="text-muted text-sm">{customer.phone}</div>
+                        <div className="text-muted text-sm flex items-center gap-1">
+                          <span>📞</span>
+                          <span>{customer.phone}</span>
+                        </div>
                       )}
                     </div>
                   </td>
-                  <td className="py-3 px-4">
-                    {customer.document_number && (
-                      <div>
-                        <div className="text-sm">{customer.document_type?.toUpperCase()}</div>
-                        <div className="text-muted text-sm">{customer.document_number}</div>
-                      </div>
-                    )}
-                  </td>
-                  <td className="py-3 px-4">
-                    {customer.Branch ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-blue-500">🏢</span>
-                        <div>
-                          <div className="text-sm font-medium">{customer.Branch.name}</div>
-                          <div className="text-muted text-xs">{customer.Branch.code}</div>
-                        </div>
+                  <td className="py-4 px-6">
+                    {customer.document_number ? (
+                      <div className="bg-slate-800/30 rounded-lg p-2 border border-slate-600/20">
+                        <div className="text-xs font-semibold text-blue-400">{customer.document_type?.toUpperCase()}</div>
+                        <div className="text-sm text-white font-mono">{customer.document_number}</div>
                       </div>
                     ) : (
-                      <span className="text-gray-400 text-sm">Sin asignar</span>
+                      <span className="text-muted text-sm italic">Sin documento</span>
                     )}
                   </td>
-                  <td className="py-3 px-4 text-muted text-sm">
-                    {customer.created_at ? new Date(customer.created_at).toLocaleDateString() : 'N/A'}
+                  <td className="py-4 px-6">
+                    {customer.branches && customer.branches.length > 0 ? (
+                      <div className="space-y-1">
+                        {customer.branches.slice(0, 2).map((branch) => (
+                          <div key={branch.id} className="flex items-center gap-2 bg-slate-800/30 rounded px-2 py-1">
+                            <span className="text-blue-400">🏢</span>
+                            <div>
+                              <div className="text-xs font-medium text-white">{branch.name}</div>
+                              <div className="text-muted text-xs">{branch.code}</div>
+                            </div>
+                          </div>
+                        ))}
+                        {customer.branches.length > 2 && (
+                          <div className="text-xs text-muted">+{customer.branches.length - 2} más</div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted text-sm italic">Sin asignar</span>
+                    )}
                   </td>
-                  <td className="py-3 px-4">
-                    <span className="bg-accent/20 text-accent px-2 py-1 rounded text-xs">
+                  <td className="py-4 px-6">
+                    <div className="text-sm text-white">
+                      {customer.created_at ? new Date(customer.created_at).toLocaleDateString('es-MX', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      }) : 'N/A'}
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <span className="px-3 py-1.5 bg-green-500/20 text-green-400 border border-green-500/30 rounded-lg text-xs font-semibold shadow-sm">
                       {customer.total_purchases || 0} compras
                     </span>
                   </td>
-                  <td className="py-3 px-4">
+                  <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => viewCustomerDetails(customer.id)}
-                        className="text-blue-400 hover:opacity-80 transition"
+                        className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-all hover:scale-110"
                         title="Ver detalles"
                       >
                         👁️
@@ -302,14 +358,14 @@ export default function Customers() {
                         <>
                           <button
                             onClick={() => handleEdit(customer)}
-                            className="text-accent hover:opacity-80 transition"
+                            className="p-2 rounded-lg bg-accent/10 hover:bg-accent/20 text-accent hover:text-accent/80 transition-all hover:scale-110"
                             title="Editar cliente"
                           >
                             ✏️
                           </button>
                           <button
                             onClick={() => handleDelete(customer.id)}
-                            className="text-red-400 hover:opacity-80 transition"
+                            className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all hover:scale-110"
                             title="Eliminar cliente"
                           >
                             🗑️
