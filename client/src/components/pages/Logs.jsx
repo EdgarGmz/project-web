@@ -85,6 +85,25 @@ export default function Logs() {
         return labelMap[service] || service
     }
 
+    // Función para obtener el color según el módulo
+    const getServiceColor = (service) => {
+        const serviceColors = {
+            'auth': 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+            'user': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+            'product': 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+            'customer': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+            'sale': 'bg-green-500/20 text-green-400 border-green-500/30',
+            'inventory': 'bg-teal-500/20 text-teal-400 border-teal-500/30',
+            'purchase': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+            'return': 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+            'payment': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+            'report': 'bg-violet-500/20 text-violet-400 border-violet-500/30',
+            'branch': 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+            'settings': 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+        }
+        return serviceColors[service] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+    }
+
     // Servicios/Módulos (todos en singular para consistencia)
     const services = [
         { value: '', label: 'Todos los módulos', icon: '📋' },
@@ -162,6 +181,28 @@ export default function Logs() {
     const getActionColor = (action) => {
         const actionObj = actions.find(a => a.value === action)
         return actionObj?.color || 'bg-gray-500/20 text-gray-400'
+    }
+
+    // Función para obtener el color según el rol del usuario
+    const getRoleColor = (role) => {
+        const roleColors = {
+            'owner': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+            'admin': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+            'supervisor': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+            'cashier': 'bg-green-500/20 text-green-400 border-green-500/30'
+        }
+        return roleColors[role] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+    }
+
+    // Función para obtener el icono según el rol
+    const getRoleIcon = (role) => {
+        const roleIcons = {
+            'owner': '👑',
+            'admin': '🛡️',
+            'supervisor': '👔',
+            'cashier': '💰'
+        }
+        return roleIcons[role] || '👤'
     }
 
     const formatDate = (dateString) => {
@@ -306,76 +347,122 @@ export default function Logs() {
             </div>
 
             {/* Tabla de logs */}
-            <div className="card overflow-hidden">
+            <div className="card overflow-hidden border border-slate-600/20 shadow-xl">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-surface/50">
-                            <tr>
-                                <th className="text-left py-3 px-4">Fecha</th>
-                                <th className="text-left py-3 px-4">Usuario</th>
-                                <th className="text-left py-3 px-4">Acción</th>
-                                <th className="text-left py-3 px-4">Módulo</th>
-                                <th className="text-left py-3 px-4">Mensaje</th>
+                        <thead>
+                            <tr className="bg-gradient-to-r from-slate-800/80 via-slate-700/80 to-slate-800/80 border-b border-slate-600/30">
+                                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                                    <div className="flex items-center gap-2">
+                                        <span>📅</span>
+                                        <span>Fecha</span>
+                                    </div>
+                                </th>
+                                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                                    <div className="flex items-center gap-2">
+                                        <span>👤</span>
+                                        <span>Usuario</span>
+                                    </div>
+                                </th>
+                                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                                    <div className="flex items-center gap-2">
+                                        <span>⚡</span>
+                                        <span>Acción</span>
+                                    </div>
+                                </th>
+                                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                                    <div className="flex items-center gap-2">
+                                        <span>📋</span>
+                                        <span>Módulo</span>
+                                    </div>
+                                </th>
+                                <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                                    <div className="flex items-center gap-2">
+                                        <span>💬</span>
+                                        <span>Mensaje</span>
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-border">
+                        <tbody className="divide-y divide-slate-600/20">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="5" className="text-center py-8">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div>
-                                            <span>Cargando logs...</span>
+                                    <td colSpan="5" className="text-center py-12">
+                                        <div className="flex flex-col items-center justify-center gap-3">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+                                            <span className="text-muted">Cargando logs...</span>
                                         </div>
                                     </td>
                                 </tr>
                             ) : logs.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="text-center py-8 text-muted">
-                                        No se encontraron logs con los filtros aplicados
+                                    <td colSpan="5" className="text-center py-12">
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            <span className="text-4xl">📭</span>
+                                            <span className="text-muted font-medium">No se encontraron logs con los filtros aplicados</span>
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
-                                logs.map((log) => (
-                                    <tr key={log.id} className="hover:bg-surface/30 transition">
-                                        <td className="py-3 px-4 whitespace-nowrap text-sm">
-                                            {formatDate(log.created_at)}
+                                logs.map((log, index) => (
+                                    <tr 
+                                        key={log.id} 
+                                        className="group hover:bg-gradient-to-r hover:from-slate-800/40 hover:to-slate-700/20 transition-all duration-200 border-b border-slate-600/10"
+                                    >
+                                        <td className="py-4 px-6 whitespace-nowrap">
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium text-white">
+                                                    {formatDate(log.created_at).split(',')[0]}
+                                                </span>
+                                                <span className="text-xs text-muted mt-0.5">
+                                                    {formatDate(log.created_at).split(',')[1]?.trim()}
+                                                </span>
+                                            </div>
                                         </td>
-                                        <td className="py-3 px-4">
+                                        <td className="py-4 px-6">
                                             {log.user ? (
-                                                <div>
-                                                    <div className="font-medium">
+                                                <div className="space-y-2 min-w-[200px]">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-lg">{getRoleIcon(log.user.role)}</span>
+                                                        <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${getRoleColor(log.user.role)}`}>
+                                                            {log.user.role?.toUpperCase() || 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="font-semibold text-white group-hover:text-accent transition-colors">
                                                         {log.user.first_name} {log.user.last_name}
                                                     </div>
-                                                    <div className="text-sm text-muted">
+                                                    <div className="text-xs text-muted truncate max-w-[200px]" title={log.user.email}>
                                                         {log.user.email}
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <span className="text-muted">Usuario desconocido</span>
+                                                <span className="text-muted italic">Usuario desconocido</span>
                                             )}
                                         </td>
-                                        <td className="py-3 px-4">
+                                        <td className="py-4 px-6">
                                             {(() => {
                                                 const actionKey = log.action?.toUpperCase();
                                                 const actionObj = actions.find(a => a.value === actionKey);
                                                 return (
-                                                    <span className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 w-fit ${getActionColor(actionKey)}`}>
+                                                    <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 w-fit border shadow-sm ${getActionColor(actionKey)}`}>
                                                         <span className="text-base">{getActionIcon(actionKey)}</span>
                                                         <span>{actionObj ? actionObj.label : log.action}</span>
                                                     </span>
                                                 );
                                             })()}
                                         </td>
-                                        <td className="py-3 px-4">
-                                            <span className="px-3 py-1.5 bg-surface/50 rounded-lg text-xs font-medium flex items-center gap-2 w-fit">
+                                        <td className="py-4 px-6">
+                                            <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 w-fit border shadow-sm ${getServiceColor(log.service)}`}>
                                                 <span className="text-base">{getServiceIcon(log.service)}</span>
                                                 <span>{getServiceLabel(log.service)}</span>
                                             </span>
                                         </td>
-                                        <td className="py-3 px-4 max-w-md">
-                                            <p className="text-sm line-clamp-2" title={log.message}>
-                                                {log.message}
-                                            </p>
+                                        <td className="py-4 px-6 max-w-md">
+                                            <div className="bg-slate-800/30 rounded-lg p-3 border border-slate-600/20 group-hover:border-slate-600/40 transition-colors">
+                                                <p className="text-sm text-white/90 line-clamp-2 leading-relaxed" title={log.message}>
+                                                    {log.message}
+                                                </p>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

@@ -275,7 +275,7 @@ export default function Sales() {
       </div>
 
       {/* Lista de ventas */}
-      <div className="card overflow-hidden">
+      <div className="card overflow-hidden border border-slate-600/20 shadow-xl">
         {loading ? (
           <div className="text-center py-8 text-muted">Cargando ventas...</div>
         ) : sales.length === 0 ? (
@@ -287,27 +287,77 @@ export default function Sales() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-600/20">
-                    <th className="text-left py-3 px-4">Referencia</th>
-                    <th className="text-left py-3 px-4">Fecha</th>
-                    <th className="text-left py-3 px-4">Cliente</th>
-                    <th className="text-left py-3 px-4">Sucursal</th>
-                    <th className="text-left py-3 px-4">Cajero</th>
-                    <th className="text-left py-3 px-4">Items</th>
-                    <th className="text-left py-3 px-4">Total</th>
-                    <th className="text-left py-3 px-4">Pago</th>
-                    <th className="text-left py-3 px-4">Estado</th>
-                    <th className="text-left py-3 px-4">Acciones</th>
+                  <tr className="bg-gradient-to-r from-slate-800/80 via-slate-700/80 to-slate-800/80 border-b border-slate-600/30">
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>🔖</span>
+                        <span>Referencia</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>📅</span>
+                        <span>Fecha</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>👥</span>
+                        <span>Cliente</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>🏢</span>
+                        <span>Sucursal</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>👤</span>
+                        <span>Cajero</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>📦</span>
+                        <span>Items</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>💰</span>
+                        <span>Total</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>💳</span>
+                        <span>Pago</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>🚦</span>
+                        <span>Estado</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-4 px-6 text-sm font-bold text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
+                        <span>⚙️</span>
+                        <span>Acciones</span>
+                      </div>
+                    </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-600/20">
                   {sales.map((sale) => {
                     console.log('Renderizando venta:', sale)
                     return (
-                    <tr key={sale.id} className="border-b border-slate-600/10 last:border-0 hover:bg-surface/50 transition">
-                      <td className="py-3 px-4">
+                    <tr key={sale.id} className="group hover:bg-gradient-to-r hover:from-slate-800/40 hover:to-slate-700/20 transition-all duration-200 border-b border-slate-600/10">
+                      <td className="py-4 px-6">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm">{sale.transaction_reference || 'N/A'}</span>
+                          <span className="font-mono text-sm bg-slate-800/30 rounded-lg px-2 py-1 border border-slate-600/20 text-white">{sale.transaction_reference || 'N/A'}</span>
                           {sale.transaction_reference && (
                             <button
                               onClick={() => {
@@ -315,7 +365,7 @@ export default function Sales() {
                                 setSuccess('Número de ticket copiado al portapapeles')
                                 setTimeout(() => setSuccess(''), 2000)
                               }}
-                              className="text-blue-400 hover:text-blue-300 transition p-1 hover:bg-blue-400/10 rounded"
+                              className="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-all hover:scale-110"
                               title="Copiar número de ticket"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -325,44 +375,55 @@ export default function Sales() {
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="text-sm">{new Date(sale.sale_date || sale.created_at).toLocaleDateString()}</div>
-                        <div className="text-muted text-xs">{new Date(sale.sale_date || sale.created_at).toLocaleTimeString()}</div>
+                      <td className="py-4 px-6">
+                        <div className="text-sm text-white">{new Date(sale.sale_date || sale.created_at).toLocaleDateString('es-MX', { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}</div>
+                        <div className="text-muted text-xs mt-0.5">{new Date(sale.sale_date || sale.created_at).toLocaleTimeString()}</div>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="text-sm">
+                      <td className="py-4 px-6">
+                        <div className="text-sm text-white">
                           {sale.customer ? `${sale.customer.first_name} ${sale.customer.last_name}` : 'Cliente general'}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-sm">{sale.branch?.name || 'N/A'}</td>
-                      <td className="py-3 px-4 text-muted text-sm">
-                        {sale.user ? `${sale.user.first_name} ${sale.user.last_name}` : 'N/A'}
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-2 bg-slate-800/30 rounded-lg px-2 py-1 border border-slate-600/20">
+                          <span className="text-blue-400">🏢</span>
+                          <span className="text-sm text-white">{sale.branch?.name || 'N/A'}</span>
+                        </div>
                       </td>
-                      <td className="py-3 px-4">
-                        <span className="bg-accent/20 text-accent px-2 py-1 rounded text-xs">
+                      <td className="py-4 px-6">
+                        <div className="text-sm text-white">
+                          {sale.user ? `${sale.user.first_name} ${sale.user.last_name}` : 'N/A'}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className="px-3 py-1.5 bg-accent/20 text-accent border border-accent/30 rounded-lg text-xs font-semibold shadow-sm">
                           {sale.items?.length || 0} items
                         </span>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="font-semibold">
+                      <td className="py-4 px-6">
+                        <div className="font-bold text-lg text-green-400">
                           ${Number(sale.total_amount || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                         </div>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <span>{getPaymentMethodIcon(sale.payment_method)}</span>
-                          <span className="text-sm">{getPaymentMethodLabel(sale.payment_method)}</span>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-2 bg-slate-800/30 rounded-lg px-2 py-1 border border-slate-600/20">
+                          <span className="text-lg">{getPaymentMethodIcon(sale.payment_method)}</span>
+                          <span className="text-sm text-white">{getPaymentMethodLabel(sale.payment_method)}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded text-xs ${getStatusBadge(sale.status).color}`}>
+                      <td className="py-4 px-6">
+                        <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold border shadow-sm ${getStatusBadge(sale.status).color}`}>
                           {getStatusBadge(sale.status).label}
                         </span>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-6">
                         <button
                           onClick={() => viewSaleDetails(sale.id)}
-                          className="text-accent hover:opacity-80 transition"
+                          className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-all hover:scale-110"
                           title="Ver detalles"
                         >
                           👁️

@@ -223,11 +223,11 @@ const createSale = async (req, res) => {
                 where: { product_id, branch_id }
             })
 
-            if (!inventory || inventory.quantity < quantity) {
+            if (!inventory || inventory.stock_current < quantity) {
                 await transaction.rollback()
                 return res.status(400).json({
                     success: false,
-                    message: `Stock insuficiente para el producto ${product.name}. Disponible: ${inventory?.quantity || 0}`
+                    message: `Stock insuficiente para el producto ${product.name}. Disponible: ${inventory?.stock_current || 0}`
                 })
             }
 

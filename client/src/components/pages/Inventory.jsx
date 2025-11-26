@@ -6,6 +6,7 @@ import { branchService } from '../../services/branchService'
 import ConfirmModal from '../molecules/ConfirmModal'
 import SuccessModal from '../molecules/SuccessModal'
 import CancelledModal from '../molecules/CancelledModal'
+import ErrorModal from '../molecules/ErrorModal'
 
 export default function Inventory() {
   const [inventory, setInventory] = useState([])
@@ -19,7 +20,9 @@ export default function Inventory() {
   const [success, setSuccess] = useState('')
   const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' })
   const [cancelledModal, setCancelledModal] = useState({ isOpen: false, message: '' })
-  const { hasPermission } = useAuth()
+  const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' })
+  const [cedisStock, setCedisStock] = useState(null) // Stock disponible en CEDIS
+  const { hasPermission, user } = useAuth()
 
   // Estados para paginación y filtros
   const [currentPage, setCurrentPage] = useState(1)
@@ -45,6 +48,37 @@ export default function Inventory() {
     fetchProducts()
     fetchBranches()
   }, [currentPage, filterBranch, filterProduct, filterLowStock])
+
+  // Efecto para obtener stock de CEDIS cuando se selecciona un producto (solo para admin)
+  useEffect(() => {
+    const fetchCedisStock = async () => {
+      if (!formData.product_id || user?.role !== 'admin' || editingItem) {
+        setCedisStock(null)
+        return
+      }
+
+      try {
+        // Buscar CEDIS
+        const cedisBranch = branches.find(b => b.code === 'CEDIS-000')
+        if (!cedisBranch) {
+          setCedisStock(0)
+          return
+        }
+
+        // Buscar inventario del producto en CEDIS
+        const cedisInventory = inventory.find(
+          item => item.product_id === formData.product_id && item.branch_id === cedisBranch.id
+        )
+
+        setCedisStock(cedisInventory ? parseFloat(cedisInventory.stock_current) : 0)
+      } catch (error) {
+        console.error('Error fetching CEDIS stock:', error)
+        setCedisStock(null)
+      }
+    }
+
+    fetchCedisStock()
+  }, [formData.product_id, inventory, branches, user?.role, editingItem])
 
   const fetchProducts = async () => {
     try {
@@ -116,6 +150,25 @@ export default function Inventory() {
           setSaving(false)
           return
         }
+
+        // Validación para admin: no puede asignar más de lo disponible en CEDIS
+        if (user?.role === 'admin') {
+          const selectedBranch = branches.find(b => b.id === formData.branch_id)
+          const isCedis = selectedBranch?.code === 'CEDIS-000'
+          
+          // Si no es CEDIS, validar que no se asigne más de lo disponible en CEDIS
+          if (!isCedis && cedisStock !== null) {
+            const requestedQuantity = parseFloat(formData.quantity) || 0
+            if (requestedQuantity > cedisStock) {
+              setErrorModal({
+                isOpen: true,
+                message: `No puedes asignar más de lo disponible en CEDIS. Stock disponible en CEDIS: ${cedisStock} unidades. Intentaste asignar: ${requestedQuantity} unidades.`
+              })
+              setSaving(false)
+              return
+            }
+          }
+        }
       }
       
       let response
@@ -156,6 +209,8 @@ export default function Inventory() {
           min_stock: '',
           notes: ''
         })
+        setCedisStock(null) // Reset CEDIS stock
+        setCedisStock(null) // Reset CEDIS stock
       }
     } catch (error) {
       console.error('Error saving inventory:', error)
@@ -166,6 +221,15 @@ export default function Inventory() {
       }
       if (error.response && error.response.data && error.response.data.message) {
         errorMessage = error.response.data.message
+        // Si es un error de stock insuficiente, mostrar modal de error
+        if (errorMessage.includes('No puedes asignar más de lo disponible en CEDIS')) {
+          setErrorModal({
+            isOpen: true,
+            message: errorMessage
+          })
+          setSaving(false)
+          return
+        }
       }
       
       // Si es un error de duplicado, recargar el inventario para actualizar la lista
@@ -189,6 +253,7 @@ export default function Inventory() {
       min_stock: item.stock_minimum || '',
       notes: item.notes || ''
     })
+    setCedisStock(null) // Reset CEDIS stock al editar
     setShowForm(true)
   }
 
@@ -270,7 +335,7 @@ export default function Inventory() {
           <h1 className="text-2xl font-semibold">Inventario</h1>
           <p className="text-muted">Control de stock por sucursal</p>
         </div>
-        {hasPermission(['owner', 'admin']) && (
+        {hasPermission(['admin']) && (
           <button onClick={() => {
             setEditingItem(null)
             setFormData({
@@ -398,69 +463,112 @@ export default function Inventory() {
       </div>
 
       {/* Tabla de inventario */}
-      <div className="card overflow-x-auto">
+      <div className="card overflow-x-auto border border-slate-600/20 shadow-xl">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-slate-600/20">
-              <th className="py-3 px-4 text-left text-sm font-medium">Producto</th>
-              <th className="py-3 px-4 text-left text-sm font-medium">Sucursal</th>
-              <th className="py-3 px-4 text-left text-sm font-medium">Stock Actual</th>
-              <th className="py-3 px-4 text-left text-sm font-medium">Stock Mínimo</th>
-              <th className="py-3 px-4 text-left text-sm font-medium">Reservado</th>
-              <th className="py-3 px-4 text-left text-sm font-medium">Estado</th>
+            <tr className="bg-gradient-to-r from-slate-800/80 via-slate-700/80 to-slate-800/80 border-b border-slate-600/30">
+              <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <span>📦</span>
+                  <span>Producto</span>
+                </div>
+              </th>
+              <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <span>🏢</span>
+                  <span>Sucursal</span>
+                </div>
+              </th>
+              <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <span>📊</span>
+                  <span>Stock Actual</span>
+                </div>
+              </th>
+              <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <span>⚠️</span>
+                  <span>Stock Mínimo</span>
+                </div>
+              </th>
+              <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <span>🔒</span>
+                  <span>Reservado</span>
+                </div>
+              </th>
+              <th className="py-4 px-6 text-left text-sm font-bold text-white uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <span>🚦</span>
+                  <span>Estado</span>
+                </div>
+              </th>
               {hasPermission(['owner', 'admin']) && (
-                <th className="py-3 px-4 text-right text-sm font-medium">Acciones</th>
+                <th className="py-4 px-6 text-right text-sm font-bold text-white uppercase tracking-wider">
+                  <div className="flex items-center gap-2 justify-end">
+                    <span>⚙️</span>
+                    <span>Acciones</span>
+                  </div>
+                </th>
               )}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-600/20">
             {filteredInventory.length === 0 ? (
               <tr>
-                <td colSpan="7" className="py-8 text-center text-muted">
-                  {filterSearch || filterProduct || filterBranch || filterLowStock 
-                    ? 'No se encontraron resultados con los filtros aplicados' 
-                    : 'No hay registros de inventario'}
+                <td colSpan={hasPermission(['owner', 'admin']) ? 7 : 6} className="py-12 text-center">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <span className="text-4xl">📭</span>
+                    <span className="text-muted font-medium">
+                      {filterSearch || filterProduct || filterBranch || filterLowStock 
+                        ? 'No se encontraron resultados con los filtros aplicados' 
+                        : 'No hay registros de inventario'}
+                    </span>
+                  </div>
                 </td>
               </tr>
             ) : (
               filteredInventory.map((item) => {
                 const status = getStockStatus(item)
                 return (
-                  <tr key={item.id} className="border-b border-slate-600/10 hover:bg-surface/50">
-                    <td className="py-3 px-4">
-                      <div className="font-medium">{item.product?.name || 'N/A'}</div>
-                      <div className="text-xs text-muted">{item.product?.sku || ''}</div>
+                  <tr key={item.id} className="group hover:bg-gradient-to-r hover:from-slate-800/40 hover:to-slate-700/20 transition-all duration-200 border-b border-slate-600/10">
+                    <td className="py-4 px-6">
+                      <div className="font-semibold text-white group-hover:text-accent transition-colors">{item.product?.name || 'N/A'}</div>
+                      <div className="text-xs text-muted mt-0.5">{item.product?.sku || ''}</div>
                     </td>
-                    <td className="py-3 px-4">
-                      <div className="text-sm">{item.branch?.name || 'N/A'}</div>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-2 bg-slate-800/30 rounded-lg px-2 py-1 border border-slate-600/20">
+                        <span className="text-blue-400">🏢</span>
+                        <span className="text-sm text-white">{item.branch?.name || 'N/A'}</span>
+                      </div>
                     </td>
-                    <td className="py-3 px-4">
-                      <div className="font-semibold">{item.stock_current || 0}</div>
+                    <td className="py-4 px-6">
+                      <div className="font-bold text-lg text-green-400">{item.stock_current || 0}</div>
                     </td>
-                    <td className="py-3 px-4">
-                      <div className="text-sm">{item.stock_minimum || 0}</div>
+                    <td className="py-4 px-6">
+                      <div className="text-sm text-white">{item.stock_minimum || 0}</div>
                     </td>
-                    <td className="py-3 px-4">
-                      <div className="text-sm">{item.reserved_stock || 0}</div>
+                    <td className="py-4 px-6">
+                      <div className="text-sm text-yellow-400">{item.reserved_stock || 0}</div>
                     </td>
-                    <td className="py-3 px-4">
-                      <span className={`text-xs px-2 py-1 rounded ${status.color}`}>
+                    <td className="py-4 px-6">
+                      <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold border shadow-sm ${status.color}`}>
                         {status.label}
                       </span>
                     </td>
                     {hasPermission(['owner', 'admin']) && (
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-6">
                         <div className="flex gap-2 justify-end">
                           <button
                             onClick={() => handleEdit(item)}
-                            className="text-blue-400 hover:opacity-80"
+                            className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-all hover:scale-110"
                             title="Editar"
                           >
                             ✏️
                           </button>
                           <button
                             onClick={() => handleDelete(item)}
-                            className="text-red-400 hover:opacity-80"
+                            className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all hover:scale-110"
                             title="Eliminar"
                           >
                             🗑️
@@ -507,7 +615,23 @@ export default function Inventory() {
               <h3 className="text-lg font-semibold">
                 {editingItem ? 'Editar Inventario' : 'Nuevo Item de Inventario'}
               </h3>
-              <button onClick={() => setShowForm(false)} className="text-2xl hover:opacity-70">✕</button>
+              <button 
+                onClick={() => {
+                  setShowForm(false)
+                  setEditingItem(null)
+                  setFormData({
+                    product_id: '',
+                    branch_id: '',
+                    quantity: '',
+                    min_stock: '',
+                    notes: ''
+                  })
+                  setCedisStock(null)
+                }} 
+                className="text-2xl hover:opacity-70"
+              >
+                ✕
+              </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -605,6 +729,23 @@ export default function Inventory() {
                 )}
               </div>
 
+              {/* Mostrar stock disponible en CEDIS para admin */}
+              {!editingItem && user?.role === 'admin' && formData.product_id && cedisStock !== null && (
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-blue-400 text-lg">📦</span>
+                    <div>
+                      <p className="text-sm font-medium text-blue-300">
+                        Stock disponible en CEDIS: <span className="font-bold text-lg">{cedisStock}</span> unidades
+                      </p>
+                      <p className="text-xs text-blue-400/80 mt-1">
+                        No puedes asignar más de esta cantidad a otras sucursales
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium mb-2">Cantidad en Stock *</label>
                 <input
@@ -615,8 +756,14 @@ export default function Inventory() {
                   min="0"
                   step="1"
                   placeholder="0"
+                  max={user?.role === 'admin' && cedisStock !== null && !editingItem ? cedisStock : undefined}
                   className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
                 />
+                {!editingItem && user?.role === 'admin' && cedisStock !== null && (
+                  <p className="text-xs text-muted mt-1">
+                    Máximo disponible: {cedisStock} unidades (desde CEDIS)
+                  </p>
+                )}
               </div>
 
               <div>
@@ -655,8 +802,20 @@ export default function Inventory() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="px-4 py-2 border border-slate-600/30 rounded-md hover:bg-surface"
+                  className="px-4 py-2 border border-slate-600/30 rounded-md hover:bg-surface/50"
                   disabled={saving}
+                  onClick={() => {
+                    setShowForm(false)
+                    setEditingItem(null)
+                    setFormData({
+                      product_id: '',
+                      branch_id: '',
+                      quantity: '',
+                      min_stock: '',
+                      notes: ''
+                    })
+                    setCedisStock(null)
+                  }}
                 >
                   Cancelar
                 </button>
@@ -690,6 +849,13 @@ export default function Inventory() {
         isOpen={cancelledModal.isOpen}
         onClose={() => setCancelledModal({ isOpen: false, message: '' })}
         message={cancelledModal.message}
+      />
+
+      {/* Modal de error */}
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ isOpen: false, message: '' })}
+        message={errorModal.message}
       />
     </div>
   )
