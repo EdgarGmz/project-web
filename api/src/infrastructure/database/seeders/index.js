@@ -3,6 +3,9 @@ const { Branch } = db
 
 const seedBranches = require('./seedBranches');
 const seedUsers = require('./seedUsers');
+const seedCustomers = require('./seedCustomers');
+const seedProducts = require('./seedProducts');
+const seedInventory = require('./seedInventory');
 
 // Función para limpiar base de datos usando SQL directo
 const cleanDatabase = async () => {
@@ -41,31 +44,38 @@ const seedDatabase = async (force = false) => {
             return
         }  
 
-    // Ejecutar seeds en orden correcto - Solo datos mínimos para deploy
+    // Ejecutar seeds en orden correcto
     const branches = await seedBranches()
     const users = await seedUsers(branches)
+    const customers = await seedCustomers(branches)
+    const products = await seedProducts()
+    const inventory = await seedInventory(products, branches)
     
-    // No crear datos de prueba (cero productos, clientes, ventas, compras, etc.)
-    const products = []
-    const customers = []
+    // No crear datos de prueba para ventas, compras, etc.
     const purchases = []
     const sales = []
     const payments = []
     const saleItems = []
-    const inventory = []
     const reports = []
 
     console.log('✅ Seeders completados exitosamente!')
     console.log('')
-    console.log('📊 Datos creados para deploy:')
+    console.log('📊 Datos creados:')
     console.log(`   - ${branches.length} sucursal(es) (CEDIS)`)
-    console.log(`   - ${users.length} usuario(s) (owner)`)
+    console.log(`   - ${users.length} usuario(s)`)
+    console.log(`   - ${customers.length} cliente(s)`)
     console.log(`   - ${products.length} productos`)
-    console.log(`   - ${customers.length} clientes`)
+    console.log(`   - ${inventory.length} items de inventario en CEDIS`)
     console.log(`   - ${purchases.length} compras`)
     console.log(`   - ${sales.length} ventas`)
     console.log(`   - ${payments.length} pagos`)
-    console.log(`   - ${inventory.length} items de inventario`)
+    console.log('')
+    console.log('👤 Usuarios creados:')
+    users.forEach(user => {
+        console.log(`   - ${user.email} (${user.role}) - Password: admin123`)
+    })
+    console.log('')
+    console.log('⚠️  IMPORTANTE: Cambia las contraseñas por defecto (admin123) en producción.')
     console.log('')
     console.log('')
     console.log('📡 Endpoints disponibles:')

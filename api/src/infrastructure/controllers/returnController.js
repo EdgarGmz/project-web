@@ -1,6 +1,7 @@
 const db = require('../database/models')
 const { Return, Customer, Product, Sale, SaleItem, Inventory, Branch } = db
 const { Op } = require('sequelize')
+const { logReturn } = require('../../services/logService')
 
 // Obtener todas las devoluciones con filtros, paginación y estadísticas
 const getAllReturns = async (req, res) => {
@@ -192,6 +193,18 @@ const getAllReturns = async (req, res) => {
             totalItems: allReturns.reduce((sum, r) => sum + (r.quantity || 0), 0)
         }
 
+        // Registrar en logs (opcional, solo si hay usuario autenticado)
+        if (currentUser?.id) {
+            try {
+                await logReturn.view(
+                    currentUser.id,
+                    `Visualización de lista de devoluciones (${count} registros)`
+                )
+            } catch (logError) {
+                console.error('Error al registrar log de visualización de devoluciones:', logError)
+            }
+        }
+
         res.json({
             success: true,
             message: 'Devoluciones obtenidas exitosamente',
@@ -267,6 +280,18 @@ const getReturnById = async (req, res) => {
 
         // Regla de negocio: Supervisores y admins pueden ver todas las devoluciones
         // (sin restricción por sucursal para facilitar devoluciones desde cualquier sucursal)
+
+        // Registrar en logs
+        if (currentUser?.id) {
+            try {
+                await logReturn.view(
+                    currentUser.id,
+                    `Visualización de devolución: ID ${id} - Producto ${returnItem.product?.name || returnItem.product_id} - Estado: ${returnItem.status}`
+                )
+            } catch (logError) {
+                console.error('Error al registrar log de visualización de devolución:', logError)
+            }
+        }
 
         res.json({
             success: true,
@@ -422,6 +447,18 @@ const createReturn = async (req, res) => {
             status: status || 'pending'
         })
 
+        // Registrar en logs
+        try {
+            const product = await Product.findByPk(product_id)
+            const customer = await Customer.findByPk(customer_id)
+            await logReturn.create(
+                req.user?.id || null,
+                `Devolución creada: Producto ${product?.name || product_id} - Cliente ${customer ? `${customer.first_name} ${customer.last_name}` : customer_id} - Cantidad: ${quantity} - Estado: ${status || 'pending'}`
+            )
+        } catch (logError) {
+            console.error('Error al registrar log de creación de devolución:', logError)
+        }
+
         res.status(201).json({
             success: true,
             message: 'Devolución creada exitosamente',
@@ -527,6 +564,34 @@ const updateReturn = async (req, res) => {
 
         await transaction.commit()
 
+        // Registrar en logs
+        try {
+            const product = await Product.findByPk(returnItem.product_id)
+            const customer = await Customer.findByPk(returnItem.customer_id)
+            
+            if (previousStatus !== 'approved' && newStatus === 'approved') {
+                // Log de aprobación
+                await logReturn.approve(
+                    req.user?.id || null,
+                    `Devolución aprobada: Producto ${product?.name || returnItem.product_id} - Cliente ${customer ? `${customer.first_name} ${customer.last_name}` : returnItem.customer_id} - Cantidad: ${returnItem.quantity} - Inventario actualizado`
+                )
+            } else if (previousStatus !== 'rejected' && newStatus === 'rejected') {
+                // Log de rechazo
+                await logReturn.reject(
+                    req.user?.id || null,
+                    `Devolución rechazada: Producto ${product?.name || returnItem.product_id} - Cliente ${customer ? `${customer.first_name} ${customer.last_name}` : returnItem.customer_id} - Motivo: ${updateData.rejection_reason || 'No especificado'}`
+                )
+            } else {
+                // Log de actualización general
+                await logReturn.update(
+                    req.user?.id || null,
+                    `Devolución actualizada: Producto ${product?.name || returnItem.product_id} - Cliente ${customer ? `${customer.first_name} ${customer.last_name}` : returnItem.customer_id} - Estado: ${previousStatus} → ${newStatus}`
+                )
+            }
+        } catch (logError) {
+            console.error('Error al registrar log de actualización de devolución:', logError)
+        }
+
         res.json({
             success: true,
             message: 'Devolución actualizada exitosamente' + 
@@ -558,7 +623,21 @@ const deleteReturn = async (req, res) => {
             })
         }
 
+        // Obtener información antes de eliminar para el log
+        const product = await Product.findByPk(returnItem.product_id)
+        const customer = await Customer.findByPk(returnItem.customer_id)
+
         await returnItem.destroy()
+
+        // Registrar en logs
+        try {
+            await logReturn.delete(
+                req.user?.id || null,
+                `Devolución eliminada: Producto ${product?.name || returnItem.product_id} - Cliente ${customer ? `${customer.first_name} ${customer.last_name}` : returnItem.customer_id} - Cantidad: ${returnItem.quantity}`
+            )
+        } catch (logError) {
+            console.error('Error al registrar log de eliminación de devolución:', logError)
+        }
 
         res.json({
             success: true,

@@ -483,8 +483,8 @@ export default function Products() {
                         <div className="text-muted text-xs mt-0.5">{product.unit_measure}</div>
                       </td>
                       <td className="py-4 px-6">
-                        <div className="font-semibold text-green-400">${product.unit_price}</div>
-                        <div className="text-muted text-sm mt-0.5">Costo: ${product.cost_price}</div>
+                        <div className="font-semibold text-green-400">${parseFloat(product.unit_price || 0).toFixed(2)}</div>
+                        <div className="text-muted text-sm mt-0.5">Costo: ${parseFloat(product.cost_price || 0).toFixed(2)}</div>
                         <div className="text-muted text-xs mt-0.5">IVA: {(product.tax_rate * 100).toFixed(0)}%</div>
                       </td>
                       <td className="py-4 px-6">

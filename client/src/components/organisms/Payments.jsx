@@ -71,6 +71,7 @@ export default function Payments() {
                 <tr className="border-b border-slate-600/20">
                   <th className="py-2 px-3 text-left">Fecha</th>
                   <th className="py-2 px-3 text-left">Cliente</th>
+                  <th className="py-2 px-3 text-left">Sucursal</th>
                   <th className="py-2 px-3 text-left">Monto</th>
                   <th className="py-2 px-3 text-left">Método</th>
                   <th className="py-2 px-3 text-left">Referencia</th>
@@ -85,6 +86,19 @@ export default function Payments() {
                     </td>
                     <td className="py-2 px-3">
                       {p.customer ? `${p.customer.first_name} ${p.customer.last_name}` : 'N/A'}
+                    </td>
+                    <td className="py-2 px-3">
+                      {p.branch ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-400">🏢</span>
+                          <div>
+                            <div className="text-sm font-medium text-white">{p.branch.name}</div>
+                            <div className="text-xs text-muted">{p.branch.code}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-muted text-sm italic">N/A</span>
+                      )}
                     </td>
                     <td className="py-2 px-3">${Number(p.amount).toFixed(2)}</td>
                     <td className="py-2 px-3">{p.method}</td>

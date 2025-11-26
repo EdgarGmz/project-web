@@ -209,8 +209,14 @@ const logReturn = {
     delete: async (userId, message) => {
         return createLog(userId, ACTIONS.DELETE, SERVICES.RETURN, message)
     },
+    view: async (userId, message) => {
+        return createLog(userId, ACTIONS.VIEW, SERVICES.RETURN, message)
+    },
     approve: async (userId, message) => {
         return createLog(userId, ACTIONS.APPROVE, SERVICES.RETURN, message)
+    },
+    reject: async (userId, message) => {
+        return createLog(userId, ACTIONS.REJECT, SERVICES.RETURN, message)
     }
 }
 

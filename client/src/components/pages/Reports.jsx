@@ -205,13 +205,13 @@ export default function Reports() {
                 </div>
                 <div className="card text-center">
                   <div className="text-2xl font-semibold text-green-400">
-                    ${reportData.totalRevenue}
+                    ${parseFloat(reportData.totalRevenue || 0).toFixed(2)}
                   </div>
                   <div className="text-muted">Ingresos</div>
                 </div>
                 <div className="card text-center">
                   <div className="text-2xl font-semibold text-blue-400">
-                    ${reportData.averageTicket}
+                    ${parseFloat(reportData.averageTicket || 0).toFixed(2)}
                   </div>
                   <div className="text-muted">Ticket Promedio</div>
                 </div>
@@ -231,7 +231,7 @@ export default function Reports() {
                     {reportData.dailySales?.map((day, index) => (
                       <div key={index} className="flex items-center justify-between py-2 border-b border-slate-600/10 last:border-0">
                         <span className="text-sm">{new Date(day.date).toLocaleDateString()}</span>
-                        <span className="font-medium">${day.total}</span>
+                        <span className="font-medium">${parseFloat(day.total || 0).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
@@ -246,7 +246,7 @@ export default function Reports() {
                           <div className="text-sm font-medium">{product.name}</div>
                           <div className="text-xs text-muted">{product.quantity} unidades</div>
                         </div>
-                        <span className="font-medium text-accent">${product.revenue}</span>
+                        <span className="font-medium text-accent">${parseFloat(product.revenue || 0).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
@@ -261,7 +261,7 @@ export default function Reports() {
                       <div className="text-xl mb-2">
                         {method.method === 'cash' ? '💵' : method.method === 'card' ? '💳' : '🏦'}
                       </div>
-                      <div className="font-semibold">${method.total}</div>
+                      <div className="font-semibold">${parseFloat(method.total || 0).toFixed(2)}</div>
                       <div className="text-muted text-sm">
                         {method.method === 'cash' ? 'Efectivo' : 
                          method.method === 'card' ? 'Tarjeta' : 'Transferencia'}
@@ -331,7 +331,7 @@ export default function Reports() {
                 </div>
                 <div className="card text-center">
                   <div className="text-2xl font-semibold text-green-400">
-                    ${reportData.inventoryValue}
+                    ${parseFloat(reportData.inventoryValue || 0).toFixed(2)}
                   </div>
                   <div className="text-muted">Valor Inventario</div>
                 </div>
@@ -424,7 +424,7 @@ export default function Reports() {
                 </div>
                 <div className="card text-center">
                   <div className="text-2xl font-semibold text-accent">
-                    ${reportData.averageSpent}
+                    ${parseFloat(reportData.averageSpent || 0).toFixed(2)}
                   </div>
                   <div className="text-muted">Gasto Promedio</div>
                 </div>
@@ -448,7 +448,7 @@ export default function Reports() {
                           <td className="py-2 px-3">{customer.name}</td>
                           <td className="py-2 px-3">{customer.email}</td>
                           <td className="py-2 px-3">{customer.totalPurchases}</td>
-                          <td className="py-2 px-3">${customer.totalSpent}</td>
+                          <td className="py-2 px-3">${parseFloat(customer.totalSpent || 0).toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>

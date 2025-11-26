@@ -46,8 +46,8 @@ const apiRequest = async (endpoint, options = {}) =>{
             console.log(`❌ Error en petición: ${method} ${endpoint} - Status: ${response.status}`)
             console.log('Response data:', data)
             
-            // Si el token es invalido, mostrar el modal y cerrar sesion (excepto durante login y change-password)
-            if (response.status === 401 && !sessionExpiredShown && endpoint !== '/auth/login' && endpoint !== '/auth/change-password') {
+            // Si el token es invalido, mostrar el modal y cerrar sesion (excepto durante login, change-password y verify-password)
+            if (response.status === 401 && !sessionExpiredShown && endpoint !== '/auth/login' && endpoint !== '/auth/change-password' && endpoint !== '/auth/verify-password') {
                 console.log('🔐 Token expirado detectado, mostrando modal de sesión expirada')
                 sessionExpiredShown = true
 

@@ -68,6 +68,24 @@ module.exports = (sequelize, DataTypes) => {
                 isAlphanumeric: true
             }
         },
+        document_type: {
+            type: DataTypes.STRING(20),
+            allowNull: true,
+            defaultValue: 'dni'
+        },
+        document_number: {
+            type: DataTypes.STRING(50),
+            allowNull: true,
+            unique: true
+        },
+        birth_date: {
+            type: DataTypes.DATE,
+            allowNull: true
+        },
+        notes: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        },
         is_active: {
             type: DataTypes.BOOLEAN,
             allowNull: false,

@@ -96,7 +96,7 @@ router.use(authenticate)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/', authorize('owner', 'admin', 'supervisor'), returnController.getAllReturns)
+router.get('/', authorize('owner', 'admin', 'supervisor', 'cashier'), returnController.getAllReturns)
 
 /**
  * @swagger
@@ -119,7 +119,7 @@ router.get('/', authorize('owner', 'admin', 'supervisor'), returnController.getA
  *       500:
  *         description: Error interno
  */
-router.get('/sale', authorize('owner', 'admin', 'supervisor'), returnController.getSaleByReference)
+router.get('/sale', authorize('owner', 'admin', 'supervisor', 'cashier'), returnController.getSaleByReference)
 
 /**
  * @swagger
@@ -156,7 +156,7 @@ router.get('/sale', authorize('owner', 'admin', 'supervisor'), returnController.
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/:id', authorize('owner', 'admin', 'supervisor'), returnController.getReturnById)
+router.get('/:id', authorize('owner', 'admin', 'supervisor', 'cashier'), returnController.getReturnById)
 
 /**
  * @swagger
@@ -193,7 +193,7 @@ router.get('/:id', authorize('owner', 'admin', 'supervisor'), returnController.g
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', authorize('admin'), returnController.createReturn)
+router.post('/', authorize('admin', 'cashier'), returnController.createReturn)
 
 /**
  * @swagger

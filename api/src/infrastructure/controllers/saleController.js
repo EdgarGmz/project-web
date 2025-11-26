@@ -22,11 +22,11 @@ const getAllSales = async (req, res) => {
 
         let whereClause = {}
         
-        // Regla de negocio: Supervisor solo ve ventas de su sucursal
-        if (currentUser?.role === 'supervisor' && currentUser?.branch_id) {
+        // Regla de negocio: Supervisor y cashier solo ven ventas de su sucursal
+        if ((currentUser?.role === 'supervisor' || currentUser?.role === 'cashier') && currentUser?.branch_id) {
             whereClause.branch_id = currentUser.branch_id
         } else {
-            // Owner y cashier pueden filtrar por sucursal si lo especifican
+            // Owner y admin pueden filtrar por sucursal si lo especifican
             if (branch_id) whereClause.branch_id = branch_id
         }
         
