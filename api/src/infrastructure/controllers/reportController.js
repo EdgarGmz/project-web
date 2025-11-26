@@ -55,7 +55,11 @@ const generateSalesReport = async (whereClause) => {
 
   const totalSales = sales.length;
   const totalRevenue = sales.reduce((sum, sale) => sum + parseFloat(sale.total_amount || 0), 0);
-  const totalItems = sales.reduce((sum, sale) => sum + (sale.SaleItems?.length || 0), 0);
+  // Sumar las cantidades de todos los items vendidos, no solo contar las líneas
+  const totalItems = sales.reduce((sum, sale) => {
+    const itemsQuantity = (sale.items || []).reduce((itemSum, item) => itemSum + (parseInt(item.quantity) || 0), 0);
+    return sum + itemsQuantity;
+  }, 0);
   const averageTicket = totalSales > 0 ? totalRevenue / totalSales : 0;
 
   // Ventas por día
@@ -84,7 +88,7 @@ const generateSalesReport = async (whereClause) => {
   // Productos más vendidos
   const productSales = {};
   sales.forEach(sale => {
-    sale.SaleItems?.forEach(item => {
+    sale.items?.forEach(item => {
       const productId = item.product_id;
       if (!productSales[productId]) {
         productSales[productId] = {
@@ -93,8 +97,8 @@ const generateSalesReport = async (whereClause) => {
           revenue: 0
         };
       }
-      productSales[productId].quantity += item.quantity;
-      productSales[productId].revenue += parseFloat(item.unit_price) * item.quantity;
+      productSales[productId].quantity += parseInt(item.quantity) || 0;
+      productSales[productId].revenue += parseFloat(item.unit_price || 0) * (parseInt(item.quantity) || 0);
     });
   });
   
@@ -197,19 +201,19 @@ const generateProductsReport = async (whereClause) => {
   // Calcular ventas por producto
   const productSales = {};
   sales.forEach(sale => {
-    sale.SaleItems?.forEach(item => {
+    sale.items?.forEach(item => {
       const productId = item.product_id;
       if (!productSales[productId]) {
         productSales[productId] = {
           product_id: productId,
-          name: item.Product?.name || 'Sin nombre',
-          sku: item.Product?.sku || '',
+          name: item.product?.name || item.Product?.name || 'Sin nombre',
+          sku: item.product?.sku || item.Product?.sku || '',
           quantitySold: 0,
           revenue: 0
         };
       }
       productSales[productId].quantitySold += parseInt(item.quantity || 0);
-      productSales[productId].revenue += parseFloat(item.subtotal || 0);
+      productSales[productId].revenue += parseFloat(item.subtotal || (item.unit_price || 0) * (item.quantity || 0));
     });
   });
 

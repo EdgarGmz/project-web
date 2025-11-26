@@ -268,7 +268,7 @@ export default function App() {
 
           {/* Devoluciones */}
           <Route path="/returns" element={
-            <ProtectedRoute roles={['owner', 'admin', 'supervisor']}>
+            <ProtectedRoute roles={['owner', 'admin', 'supervisor', 'cashier']}>
               <DashboardLayout>
                 <Returns />
               </DashboardLayout>

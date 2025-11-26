@@ -582,7 +582,7 @@ export default function Customers() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted">Monto total:</span>
-                      <span className="font-medium text-accent">${selectedCustomer.total_spent || 0}</span>
+                      <span className="font-medium text-accent">${parseFloat(selectedCustomer.total_spent || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted">Última compra:</span>
@@ -619,7 +619,7 @@ export default function Customers() {
                                 {purchase.total_items} productos
                               </td>
                               <td className="py-2 px-3 text-sm font-medium">
-                                ${purchase.total}
+                                ${parseFloat(purchase.total || 0).toFixed(2)}
                               </td>
                               <td className="py-2 px-3 text-sm text-muted">
                                 {purchase.payment_method}

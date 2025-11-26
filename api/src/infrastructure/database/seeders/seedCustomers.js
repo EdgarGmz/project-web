@@ -2,152 +2,77 @@ const db = require('../models');
 const { Customer } = db;
 
 async function seedCustomers(branches) {
+	// Crear clientes básicos
 	const customers = await Customer.bulkCreate([
-		// Clientes de Sucursal Norte
 		{
-            first_name: 'Juan',
-            last_name: 'Perez Garcia',
-            email: 'juan.perez@example.com',
-            phone: '555-0001-001',
-            address: 'Calle Falsa 123, Ciudad de Mexico',
-            city: 'Ciudad de Mexico',
-            postal_code: '01000',
-            company_name: 'Empresa S.A. de C.V.',
-            tax_id: 'RFC123456789',
+            first_name: 'Publico',
+            last_name: 'en General',
+            email: null,
+            phone: null,
+            address: null,
+            city: null,
+            postal_code: null,
+            company_name: null,
+            tax_id: null,
+            document_type: null,
+            document_number: null,
             is_active: true
         },
         {
-            first_name: 'Maria',
-            last_name: 'Lopez Martinez',
-            email: 'maria.lopez@example.com',
-            phone: '555-0002-002',
-            address: 'Av. Reforma 456, Ciudad de Mexico',
-            city: 'Ciudad de Mexico',
-            postal_code: '01100',
-            company_name: 'Comercializadora Lopez',
-            tax_id: 'RFC987654321',
+            first_name: 'Juan',
+            last_name: 'Pérez García',
+            email: 'juan.perez@example.com',
+            phone: '555-1234-5678',
+            address: 'Av. Principal #123, Col. Centro',
+            city: 'Monterrey',
+            state: 'Nuevo León',
+            postal_code: '64000',
+            company_name: null,
+            tax_id: null,
+            document_type: 'dni',
+            document_number: '12345678',
+            is_active: true
+        },
+        {
+            first_name: 'María',
+            last_name: 'González López',
+            email: 'maria.gonzalez@example.com',
+            phone: '555-2345-6789',
+            address: 'Calle Reforma #456, Col. Del Valle',
+            city: 'Monterrey',
+            state: 'Nuevo León',
+            postal_code: '64010',
+            company_name: null,
+            tax_id: null,
+            document_type: 'dni',
+            document_number: '87654321',
             is_active: true
         },
         {
             first_name: 'Carlos',
-            last_name: 'Ramirez Torres',
-            email: 'carlos.ramirez@example.com',
-            phone: '555-0003-003',
-            address: 'Calle Hidalgo 789, Monterrey',
+            last_name: 'Rodríguez Martínez',
+            email: 'carlos.rodriguez@example.com',
+            phone: '555-3456-7890',
+            address: 'Blvd. Constitución #789',
             city: 'Monterrey',
-            postal_code: '64000',
-            company_name: 'Ramirez y Asociados',
-            tax_id: 'RFC112233445',
-            is_active: true
-        },
-        {
-            first_name: 'Ana',
-            last_name: 'Gonzalez Ruiz',
-            email: 'ana.gonzalez@example.com',
-            phone: '555-0004-004',
-            address: 'Av. Juarez 321, Guadalajara',
-            city: 'Guadalajara',
-            postal_code: '44100',
-            company_name: 'Gonzalez Consultores',
-            tax_id: 'RFC556677889',
-            is_active: true
-        },
-        {
-            first_name: 'Luis',
-            last_name: 'Fernandez Soto',
-            email: 'luis.fernandez@example.com',
-            phone: '555-0005-005',
-            address: 'Calle Morelos 654, Puebla',
-            city: 'Puebla',
-            postal_code: '72000',
-            company_name: 'Fernandez Servicios',
-            tax_id: 'RFC998877665',
-            is_active: true
-        },
-        // Clientes de Sucursal Sur
-        {
-            first_name: 'Sofia',
-            last_name: 'Diaz Castro',
-            email: 'sofia.diaz@example.com',
-            phone: '555-0006-006',
-            address: 'Av. Universidad 987, Toluca',
-            city: 'Toluca',
-            postal_code: '50000',
-            company_name: 'Diaz y Cia',
-            tax_id: 'RFC223344556',
-            is_active: true
-        },
-        {
-            first_name: 'Miguel',
-            last_name: 'Hernandez Vargas',
-            email: 'miguel.hernandez@example.com',
-            phone: '555-0007-007',
-            address: 'Calle Independencia 111, Leon',
-            city: 'Leon',
-            postal_code: '37000',
-            company_name: 'Hernandez Distribuciones',
-            tax_id: 'RFC334455667',
-            is_active: true
-        },
-        {
-            first_name: 'Laura',
-            last_name: 'Martinez Flores',
-            email: 'laura.martinez@example.com',
-            phone: '555-0008-008',
-            address: 'Av. Insurgentes 222, Queretaro',
-            city: 'Queretaro',
-            postal_code: '76000',
-            company_name: 'Martinez Flores S.A.',
-            tax_id: 'RFC445566778',
-            is_active: true
-        },
-        {
-            first_name: 'Jorge',
-            last_name: 'Castillo Morales',
-            email: 'jorge.castillo@example.com',
-            phone: '555-0009-009',
-            address: 'Calle Zaragoza 333, Cancun',
-            city: 'Cancun',
-            postal_code: '77500',
-            company_name: 'Castillo Morales',
-            tax_id: 'RFC556677880',
-            is_active: true
-        },
-        {
-            first_name: 'Patricia',
-            last_name: 'Sanchez Gomez',
-            email: 'patricia.sanchez@example.com',
-            phone: '555-0010-010',
-            address: 'Av. Constituyentes 444, Merida',
-            city: 'Merida',
-            postal_code: '97000',
-            company_name: 'Sanchez Gomez S.A.',
-            tax_id: 'RFC667788990',
-            is_active: true
-        },
-        {
-            first_name: 'Ricardo',
-            last_name: 'Vega Luna',
-            email: 'ricardo.vega@example.com',
-            phone: '555-0011-020',
-            address: 'Calle 5 de Mayo 555, Tijuana',
-            city: 'Tijuana',
-            postal_code: '22000',
-            company_name: 'Vega Luna',
-            tax_id: 'RFC778899001',
+            state: 'Nuevo León',
+            postal_code: '64020',
+            company_name: null,
+            tax_id: null,
+            document_type: 'dni',
+            document_number: '11223344',
             is_active: true
         }
 	]);
 
-	// Asociar clientes con sucursales usando la relación N:N
-	// Primeros 5 clientes a Sucursal Norte (branches[1])
-	for (let i = 0; i < 5 && i < customers.length; i++) {
-		await customers[i].addBranch(branches[1].id);
-	}
-
-	// Últimos 6 clientes a Sucursal Sur (branches[2])
-	for (let i = 5; i < customers.length; i++) {
-		await customers[i].addBranch(branches[2].id);
+	// Asociar todos los clientes con CEDIS
+	if (branches && branches.length > 0) {
+		const cedis = branches.find(b => b.code === 'CEDIS-000') || branches[0];
+		if (cedis) {
+			for (const customer of customers) {
+				await customer.addBranch(cedis.id);
+			}
+		}
 	}
 
 	return customers;

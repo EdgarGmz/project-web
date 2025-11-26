@@ -1,5 +1,5 @@
 const db = require('../database/models')
-const { Payment, Customer } = db
+const { Payment, Customer, Sale, Branch } = db
 
 // Obtener todos los pagos
 const getAllPayments = async (req, res) => {
@@ -32,10 +32,58 @@ const getAllPayments = async (req, res) => {
             ]
         })
 
+        // Obtener las referencias de los pagos para buscar las ventas relacionadas
+        const paymentReferences = rows
+            .map(p => p.reference)
+            .filter(ref => ref) // Filtrar referencias nulas
+
+        // Buscar las ventas relacionadas por transaction_reference
+        let salesMap = {}
+        if (paymentReferences.length > 0) {
+            const sales = await Sale.findAll({
+                where: {
+                    transaction_reference: { [db.Sequelize.Op.in]: paymentReferences }
+                },
+                include: [
+                    {
+                        model: Branch,
+                        as: 'branch',
+                        attributes: ['id', 'name', 'code']
+                    }
+                ],
+                attributes: ['id', 'transaction_reference', 'branch_id']
+            })
+
+            // Crear un mapa de reference -> sale (con branch)
+            sales.forEach(sale => {
+                if (sale.transaction_reference) {
+                    salesMap[sale.transaction_reference] = sale
+                }
+            })
+        }
+
+        // Agregar la información de la sucursal a cada pago
+        const paymentsWithBranch = rows.map(payment => {
+            const paymentData = payment.toJSON()
+            const relatedSale = payment.reference ? salesMap[payment.reference] : null
+            
+            if (relatedSale && relatedSale.branch) {
+                paymentData.branch = {
+                    id: relatedSale.branch.id,
+                    name: relatedSale.branch.name,
+                    code: relatedSale.branch.code
+                }
+            } else {
+                paymentData.branch = null
+            }
+            
+            return paymentData
+        })
+
         res.json({
             success: true,
             message: 'Pagos obtenidos exitosamente',
-            data: rows,
+            data: paymentsWithBranch,
             pagination: {
                 total: count,
                 page,
@@ -76,10 +124,37 @@ const getPaymentById = async (req, res) => {
             })
         }
 
+        // Buscar la venta relacionada por referencia
+        let branchData = null
+        if (payment.reference) {
+            const relatedSale = await Sale.findOne({
+                where: { transaction_reference: payment.reference },
+                include: [
+                    {
+                        model: Branch,
+                        as: 'branch',
+                        attributes: ['id', 'name', 'code']
+                    }
+                ],
+                attributes: ['id', 'transaction_reference', 'branch_id']
+            })
+
+            if (relatedSale && relatedSale.branch) {
+                branchData = {
+                    id: relatedSale.branch.id,
+                    name: relatedSale.branch.name,
+                    code: relatedSale.branch.code
+                }
+            }
+        }
+
+        const paymentData = payment.toJSON()
+        paymentData.branch = branchData
+
         res.json({
             success: true,
             message: 'Pago obtenido exitosamente',
-            data: payment
+            data: paymentData
         })
 
     } catch (error) {

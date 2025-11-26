@@ -26,18 +26,35 @@ export default function PromptModal({
   confirmText = 'Confirmar',
   cancelText = 'Cancelar',
   isPassword = false,
-  inputType = 'text'
+  inputType = 'text',
+  errorMessage = null,
+  onClearError = null
 }) {
   const [value, setValue] = useState('')
 
   const handleConfirm = () => {
     onConfirm(value)
-    setValue('')
+    // No limpiar el valor si hay error, para que el usuario pueda corregir
+    if (!errorMessage) {
+      setValue('')
+    }
   }
 
   const handleCancel = () => {
     onCancel()
     setValue('')
+  }
+
+  // Limpiar error cuando el usuario empiece a escribir
+  const handleChange = (e) => {
+    setValue(e.target.value)
+    // Si hay error y el usuario empieza a escribir, limpiar el error
+    if (errorMessage && e.target.value.length > 0) {
+      // Si hay una función onClearError, llamarla
+      if (onClearError) {
+        onClearError()
+      }
+    }
   }
 
   const handleKeyPress = (e) => {
@@ -68,26 +85,41 @@ export default function PromptModal({
           </p>
         )}
 
+        {/* Mensaje de error */}
+        {errorMessage && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <p className="text-red-400 text-sm text-center flex items-center justify-center gap-2">
+              <span>⚠️</span>
+              <span>{errorMessage}</span>
+            </p>
+          </div>
+        )}
+
         {/* Input */}
         <div className="mb-6">
           {isPassword ? (
             <PasswordInput
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={handleChange}
               placeholder={placeholder}
               autoComplete="current-password"
               onKeyPress={handleKeyPress}
-              className="bg-surface border-slate-600/30"
+              className={`bg-surface border-slate-600/30 ${errorMessage ? 'border-red-500/50 focus:ring-red-500' : ''}`}
+              autoFocus
             />
           ) : (
             <input
               type={inputType}
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={handleChange}
               onKeyPress={handleKeyPress}
               placeholder={placeholder}
               autoFocus
-              className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface focus:outline-none focus:ring-2 focus:ring-accent"
+              className={`w-full px-3 py-2 border rounded-md bg-surface focus:outline-none focus:ring-2 ${
+                errorMessage 
+                  ? 'border-red-500/50 focus:ring-red-500' 
+                  : 'border-slate-600/30 focus:ring-accent'
+              }`}
             />
           )}
         </div>

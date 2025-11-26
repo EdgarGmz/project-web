@@ -53,10 +53,42 @@ const getAllCustomers = async (req, res) => {
             distinct: true // Importante para contar correctamente con relaciones N:N
         })
 
+        // Obtener los IDs de los clientes
+        const customerIds = rows.map(c => c.id)
+
+        // Contar ventas por cliente (solo si hay clientes)
+        let salesCounts = []
+        if (customerIds.length > 0) {
+            salesCounts = await db.Sale.findAll({
+                where: {
+                    customer_id: { [db.Sequelize.Op.in]: customerIds }
+                },
+                attributes: [
+                    'customer_id',
+                    [db.Sequelize.fn('COUNT', db.Sequelize.col('Sale.id')), 'count']
+                ],
+                group: ['Sale.customer_id'],
+                raw: true
+            })
+        }
+
+        // Crear un mapa de customer_id -> count
+        const purchasesMap = {}
+        salesCounts.forEach(item => {
+            purchasesMap[item.customer_id] = parseInt(item.count) || 0
+        })
+
+        // Mapear los resultados para incluir total_purchases
+        const customersWithPurchases = rows.map(customer => {
+            const customerData = customer.toJSON()
+            customerData.total_purchases = purchasesMap[customer.id] || 0
+            return customerData
+        })
+
         res.json({
             success: true,
             message: 'Clientes obtenidos exitosamente',
-            data: rows,
+            data: customersWithPurchases,
             pagination: {
                 total: count,
                 page,
@@ -126,6 +158,26 @@ const getCustomerDetails = async (req, res) => {
                     as: 'branches',
                     attributes: ['id', 'name', 'code', 'city'],
                     through: { attributes: [] } // No incluir campos de la tabla intermedia
+                },
+                {
+                    model: db.Sale,
+                    as: 'sales',
+                    attributes: ['id', 'total_amount', 'created_at', 'payment_method'],
+                    include: [
+                        {
+                            model: db.SaleItem,
+                            as: 'items',
+                            attributes: ['id', 'quantity', 'unit_price'],
+                            include: [
+                                {
+                                    model: db.Product,
+                                    as: 'product',
+                                    attributes: ['id', 'name', 'sku']
+                                }
+                            ]
+                        }
+                    ],
+                    order: [['created_at', 'DESC']]
                 }
             ]
         })
@@ -150,10 +202,29 @@ const getCustomerDetails = async (req, res) => {
         }
         // Supervisor, admin y owner pueden ver cualquier cliente
 
+        // Calcular estadísticas del cliente
+        const customerData = customer.toJSON()
+        const sales = customerData.sales || []
+        const totalPurchases = sales.length
+        const totalSpent = sales.reduce((sum, sale) => sum + parseFloat(sale.total_amount || 0), 0)
+        const lastPurchase = sales.length > 0 ? sales[0].created_at : null
+
+        // Agregar estadísticas al objeto del cliente
+        customerData.total_purchases = totalPurchases
+        customerData.total_spent = totalSpent.toFixed(2)
+        customerData.last_purchase = lastPurchase
+        customerData.purchases = sales.map(sale => ({
+            id: sale.id,
+            total: parseFloat(sale.total_amount || 0).toFixed(2),
+            total_items: sale.items?.length || 0,
+            payment_method: sale.payment_method,
+            created_at: sale.created_at
+        }))
+
         res.json({
             success: true,
             message: 'Detalles del cliente obtenidos exitosamente',
-            data: customer
+            data: customerData
         })
 
     } catch (error) {
@@ -189,20 +260,22 @@ const createCustomer = async (req, res) => {
         }
 
         // Validaciones básicas
-        if (!first_name || !last_name || !email) {
+        if (!first_name || !last_name) {
             return res.status(400).json({
                 success: false,
-                message: 'Nombre, apellido y email son obligatorios'
+                message: 'Nombre y apellido son obligatorios'
             })
         }
 
-        // Verificar si el email ya existe
-        const existingEmail = await Customer.findOne({ where: { email } })
-        if (existingEmail) {
-            return res.status(400).json({
-                success: false,
-                message: 'El email ya está registrado'
-            })
+        // Verificar si el email ya existe (solo si se proporciona)
+        if (email) {
+            const existingEmail = await Customer.findOne({ where: { email } })
+            if (existingEmail) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'El email ya está registrado'
+                })
+            }
         }
 
         // Verificar si el documento ya existe
