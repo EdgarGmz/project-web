@@ -526,75 +526,84 @@ export default function Reports() {
             </>
           )}
 
-          {reportType === 'returns' && reportData && reportData.summary && (
+          {reportType === 'returns' && reportData && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="card bg-blue-500/10 border-blue-500/20 text-center">
-                  <div className="text-2xl font-semibold">{reportData.summary.totalReturns}</div>
-                  <div className="text-muted text-sm">Total Devoluciones</div>
-                </div>
-                <div className="card bg-green-500/10 border-green-500/20 text-center">
-                  <div className="text-2xl font-semibold text-green-400">{reportData.summary.approvedReturns}</div>
-                  <div className="text-muted text-sm">Aprobadas</div>
-                  <div className="text-xs text-muted">{reportData.summary.approvalRate}%</div>
-                </div>
-                <div className="card bg-red-500/10 border-red-500/20 text-center">
-                  <div className="text-2xl font-semibold text-red-400">{reportData.summary.rejectedReturns}</div>
-                  <div className="text-muted text-sm">Rechazadas</div>
-                  <div className="text-xs text-muted">{reportData.summary.rejectionRate}%</div>
-                </div>
-                <div className="card bg-yellow-500/10 border-yellow-500/20 text-center">
-                  <div className="text-2xl font-semibold text-yellow-400">{reportData.summary.pendingReturns}</div>
-                  <div className="text-muted text-sm">Pendientes</div>
-                </div>
-              </div>
+              {reportData.summary ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="card bg-blue-500/10 border-blue-500/20 text-center">
+                      <div className="text-2xl font-semibold">{reportData.summary.totalReturns || 0}</div>
+                      <div className="text-muted text-sm">Total Devoluciones</div>
+                    </div>
+                    <div className="card bg-green-500/10 border-green-500/20 text-center">
+                      <div className="text-2xl font-semibold text-green-400">{reportData.summary.approvedReturns || 0}</div>
+                      <div className="text-muted text-sm">Aprobadas</div>
+                      <div className="text-xs text-muted">{reportData.summary.approvalRate || '0.00'}%</div>
+                    </div>
+                    <div className="card bg-red-500/10 border-red-500/20 text-center">
+                      <div className="text-2xl font-semibold text-red-400">{reportData.summary.rejectedReturns || 0}</div>
+                      <div className="text-muted text-sm">Rechazadas</div>
+                      <div className="text-xs text-muted">{reportData.summary.rejectionRate || '0.00'}%</div>
+                    </div>
+                    <div className="card bg-yellow-500/10 border-yellow-500/20 text-center">
+                      <div className="text-2xl font-semibold text-yellow-400">{reportData.summary.pendingReturns || 0}</div>
+                      <div className="text-muted text-sm">Pendientes</div>
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="card text-center">
-                  <div className="text-2xl font-semibold text-red-400">
-                    ${parseFloat(reportData.summary.totalReturnValue).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="card text-center">
+                      <div className="text-2xl font-semibold text-red-400">
+                        ${parseFloat(reportData.summary.totalReturnValue || 0).toFixed(2)}
+                      </div>
+                      <div className="text-muted">Valor Total Devuelto</div>
+                    </div>
+                    <div className="card text-center">
+                      <div className="text-2xl font-semibold text-blue-400">
+                        {reportData.summary.totalReturnedQuantity || 0}
+                      </div>
+                      <div className="text-muted">Items Devueltos</div>
+                    </div>
+                    <div className="card text-center">
+                      <div className="text-2xl font-semibold text-purple-400">
+                        ${parseFloat(reportData.summary.averageReturnValue || 0).toFixed(2)}
+                      </div>
+                      <div className="text-muted">Valor Promedio</div>
+                    </div>
                   </div>
-                  <div className="text-muted">Valor Total Devuelto</div>
-                </div>
-                <div className="card text-center">
-                  <div className="text-2xl font-semibold text-blue-400">
-                    {reportData.summary.totalReturnedQuantity}
-                  </div>
-                  <div className="text-muted">Items Devueltos</div>
-                </div>
-                <div className="card text-center">
-                  <div className="text-2xl font-semibold text-purple-400">
-                    ${parseFloat(reportData.summary.averageReturnValue).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                  </div>
-                  <div className="text-muted">Valor Promedio</div>
-                </div>
-              </div>
 
-              {reportData.topReturnedProducts && reportData.topReturnedProducts.length > 0 && (
-                <div className="card">
-                  <h3 className="font-semibold mb-4">Productos Más Devueltos</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-slate-600/20">
-                          <th className="py-2 px-3 text-left">Producto</th>
-                          <th className="py-2 px-3 text-left">Total</th>
-                          <th className="py-2 px-3 text-left">Aprobadas</th>
-                          <th className="py-2 px-3 text-left">Rechazadas</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reportData.topReturnedProducts.slice(0, 5).map((product, idx) => (
-                          <tr key={idx} className="border-b border-slate-600/10">
-                            <td className="py-2 px-3">{product.productName}</td>
-                            <td className="py-2 px-3 font-semibold">{product.quantity}</td>
-                            <td className="py-2 px-3 text-green-400">{product.approved}</td>
-                            <td className="py-2 px-3 text-red-400">{product.rejected}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  {reportData.topReturnedProducts && reportData.topReturnedProducts.length > 0 && (
+                    <div className="card">
+                      <h3 className="font-semibold mb-4">Productos Más Devueltos</h3>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-slate-600/20">
+                              <th className="py-2 px-3 text-left">Producto</th>
+                              <th className="py-2 px-3 text-left">Total</th>
+                              <th className="py-2 px-3 text-left">Aprobadas</th>
+                              <th className="py-2 px-3 text-left">Rechazadas</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {reportData.topReturnedProducts.slice(0, 5).map((product, idx) => (
+                              <tr key={idx} className="border-b border-slate-600/10">
+                                <td className="py-2 px-3">{product.productName}</td>
+                                <td className="py-2 px-3 font-semibold">{product.quantity}</td>
+                                <td className="py-2 px-3 text-green-400">{product.approved}</td>
+                                <td className="py-2 px-3 text-red-400">{product.rejected}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="card text-center py-8">
+                  <div className="text-4xl mb-4">↩️</div>
+                  <p className="text-muted">No hay devoluciones en el período seleccionado</p>
                 </div>
               )}
             </>

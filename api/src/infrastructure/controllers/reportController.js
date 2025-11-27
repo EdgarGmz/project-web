@@ -419,37 +419,37 @@ const generateReturnsReport = async (whereClause) => {
       { model: Product, as: 'product', attributes: ['id', 'name', 'sku'] },
       { model: Customer, as: 'customer', attributes: ['id', 'first_name', 'last_name', 'email'] },
       { model: db.User, as: 'approvedBy', attributes: ['id', 'first_name', 'last_name'] },
-      { model: db.User, as: 'rejectedBy', attributes: ['id', 'first_name', 'last_name'] }
+      { model: db.User, as: 'rejectedBy', attributes: ['id', 'first_name', 'last_name'] },
+      { 
+        model: Sale, 
+        as: 'sale', 
+        include: [{ 
+          model: SaleItem, 
+          as: 'items',
+          attributes: ['id', 'unit_price', 'quantity']
+        }]
+      }
     ],
     order: [['created_at', 'DESC']]
   });
 
-  // Procesar y devolver todas las devoluciones del periodo
-  return {
-    total: returns.length,
-    devoluciones: returns.map(r => ({
-      id: r.id,
-      status: r.status,
-      quantity: r.quantity,
-      reason: r.reason,
-      rejection_reason: r.rejection_reason,
-      product: r.product?.name,
-      customer: r.customer ? `${r.customer.first_name} ${r.customer.last_name}` : 'N/A',
-      approvedBy: r.ApprovedBy ? `${r.ApprovedBy.first_name} ${r.ApprovedBy.last_name}` : null,
-      rejectedBy: r.RejectedBy ? `${r.RejectedBy.first_name} ${r.RejectedBy.last_name}` : null,
-      created_at: r.created_at
-    }))
-  };
+  // Calcular estadísticas básicas
+  const totalReturns = returns.length;
+  const approvedReturns = returns.filter(r => r.status === 'approved').length;
+  const rejectedReturns = returns.filter(r => r.status === 'rejected').length;
+  const pendingReturns = returns.filter(r => r.status === 'pending').length;
+
+  // Calcular valor total de devoluciones aprobadas
   let totalReturnValue = 0;
   let totalReturnedQuantity = 0;
   
   returns.filter(r => r.status === 'approved').forEach(returnItem => {
-    if (returnItem.Sale && returnItem.Sale.SaleItems) {
-      const saleItem = returnItem.Sale.SaleItems.find(item => item.id === returnItem.sale_item_id);
+    if (returnItem.sale && returnItem.sale.items) {
+      const saleItem = returnItem.sale.items.find(item => item.id === returnItem.sale_item_id);
       if (saleItem) {
-        const itemValue = parseFloat(saleItem.unit_price) * returnItem.quantity;
+        const itemValue = parseFloat(saleItem.unit_price || 0) * (parseInt(returnItem.quantity) || 0);
         totalReturnValue += itemValue;
-        totalReturnedQuantity += returnItem.quantity;
+        totalReturnedQuantity += parseInt(returnItem.quantity) || 0;
       }
     }
   });
@@ -458,7 +458,7 @@ const generateReturnsReport = async (whereClause) => {
   const productReturns = {};
   returns.forEach(returnItem => {
     const productId = returnItem.product_id;
-    const productName = returnItem.Product?.name || 'Desconocido';
+    const productName = returnItem.product?.name || 'Desconocido';
     
     if (!productReturns[productId]) {
       productReturns[productId] = {
@@ -471,11 +471,11 @@ const generateReturnsReport = async (whereClause) => {
       };
     }
     
-    productReturns[productId].quantity += returnItem.quantity;
+    productReturns[productId].quantity += parseInt(returnItem.quantity) || 0;
     
-    if (returnItem.status === 'approved') productReturns[productId].approved += returnItem.quantity;
-    if (returnItem.status === 'rejected') productReturns[productId].rejected += returnItem.quantity;
-    if (returnItem.status === 'pending') productReturns[productId].pending += returnItem.quantity;
+    if (returnItem.status === 'approved') productReturns[productId].approved += parseInt(returnItem.quantity) || 0;
+    if (returnItem.status === 'rejected') productReturns[productId].rejected += parseInt(returnItem.quantity) || 0;
+    if (returnItem.status === 'pending') productReturns[productId].pending += parseInt(returnItem.quantity) || 0;
   });
 
   const topReturnedProducts = Object.values(productReturns)
@@ -532,10 +532,10 @@ const generateReturnsReport = async (whereClause) => {
       quantity: r.quantity,
       reason: r.reason,
       rejection_reason: r.rejection_reason,
-      product: r.Product?.name,
-      customer: r.Customer ? `${r.Customer.first_name} ${r.Customer.last_name}` : 'N/A',
-      approvedBy: r.ApprovedBy ? `${r.ApprovedBy.first_name} ${r.ApprovedBy.last_name}` : null,
-      rejectedBy: r.RejectedBy ? `${r.RejectedBy.first_name} ${r.RejectedBy.last_name}` : null,
+      product: r.product?.name,
+      customer: r.customer ? `${r.customer.first_name} ${r.customer.last_name}` : 'N/A',
+      approvedBy: r.approvedBy ? `${r.approvedBy.first_name} ${r.approvedBy.last_name}` : null,
+      rejectedBy: r.rejectedBy ? `${r.rejectedBy.first_name} ${r.rejectedBy.last_name}` : null,
       created_at: r.created_at
     }))
   };
