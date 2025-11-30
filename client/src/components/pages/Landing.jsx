@@ -3,6 +3,7 @@ import ThemeToggle from '../atoms/ThemeToggle'
 
 // Logo image
 import aStoreImg from '../../assets/img/a_store.png'
+import logo from '../../assets/img/logo.png'
 
 // Technology Icons
 import { 
@@ -19,74 +20,109 @@ import {
 
 export default function Landing() {
 return (
-    <div className="min-h-screen bg-bg text-text">
-    <header className="border-b border-slate-600/20 bg-surface/80 backdrop-blur sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-to-br from-bg via-surface/50 to-bg text-text relative overflow-hidden">
+    {/* Background Effects - Mario Bros Yellow Theme */}
+    <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-400/15 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-400/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-400/8 rounded-full blur-3xl"></div>
+    </div>
+
+    <header className="border-b border-slate-600/30 dark:border-slate-600/30 bg-surface/80 backdrop-blur-xl sticky top-0 z-50 shadow-lg shadow-black/20">
         <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-            <figure className="h-14 w-14 rounded-xl bg-gradient-to-br from-accent/30 to-accent/10 border-2 border-accent/40 flex items-center justify-center shadow-lg shadow-accent/20 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-accent/30">
-                <img src={aStoreImg} alt="Apex Store Logo" className="h-10 w-10 object-contain drop-shadow-lg" />
+        <div className="flex items-center gap-3 group">
+            <figure className="h-14 w-14 rounded-xl bg-gradient-to-br from-yellow-400/50 via-yellow-500/40 to-amber-500/30 border-2 border-yellow-400/60 flex items-center justify-center shadow-lg shadow-yellow-400/40 transition-all duration-500 hover:scale-110 hover:shadow-xl hover:shadow-yellow-400/60 hover:rotate-3 group-hover:border-yellow-400">
+                <img src={aStoreImg} alt="Apex Store Logo" className="h-10 w-10 object-contain drop-shadow-lg transition-transform duration-500 group-hover:scale-110" />
             </figure>
-            <span className="text-xl font-bold text-accent hidden sm:block">Apex Store</span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-400 bg-clip-text text-transparent hidden sm:block animate-gradient">Apex Store</span>
         </div>
         <ThemeToggle />
         </nav>
     </header>
 
-    <main className="max-w-7xl mx-auto px-6">
+    <main className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Hero Section */}
-        <section className="text-center py-12 md:py-20 space-y-12">
+        <section className="text-center py-16 md:py-24 lg:py-32 space-y-16 relative">
             {/* Hero Image Section */}
             <div className="relative flex justify-center items-center">
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-64 h-64 md:w-80 md:h-80 bg-accent/10 rounded-full blur-3xl animate-pulse"></div>
-                </div>
-                <figure className="relative z-10 group">
-                    <div className="relative inline-block p-6 rounded-2xl bg-gradient-to-br from-surface via-surface/80 to-surface/60 backdrop-blur-xl border-2 border-accent/30 shadow-2xl shadow-accent/20 transition-all duration-500 hover:scale-105 hover:shadow-accent/30 hover:border-accent/50">
-                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-accent/20 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div className="relative">
-                            <img 
-                                src={aStoreImg} 
-                                alt="Apex Store - Sistema de Gestión" 
-                                className="w-48 h-48 md:w-64 md:h-64 object-contain drop-shadow-2xl filter brightness-110 contrast-110 transition-all duration-500 group-hover:brightness-120 group-hover:scale-105" 
-                            />
-                        </div>
-                        <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-3/4 h-2 bg-accent/30 rounded-full blur-xl"></div>
+                <figure className="relative z-10 group mx-auto">
+                    {/* Multiple glow effects - Mario Bros Yellow */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/60 via-amber-400/50 to-orange-400/40 rounded-full blur-3xl opacity-70 group-hover:opacity-90 transition-opacity duration-700 animate-pulse"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-300/40 via-amber-300/30 to-yellow-400/30 rounded-full blur-2xl opacity-50 group-hover:opacity-70 transition-opacity duration-700"></div>
+                    
+                    {/* Outer decorative rings */}
+                    <div className="absolute -inset-4 md:-inset-6 rounded-full border-4 border-yellow-400/30 group-hover:border-yellow-400/50 transition-all duration-500"></div>
+                    <div className="absolute -inset-8 md:-inset-12 rounded-full border-2 border-yellow-400/20 group-hover:border-yellow-400/30 transition-all duration-700"></div>
+                    
+                    {/* Logo container - Perfectly round Mario Bros style */}
+                    <div className="relative h-64 w-64 md:h-80 md:w-80 lg:h-96 lg:w-96 rounded-full bg-gradient-to-br from-yellow-400 via-yellow-500 via-amber-500 to-orange-400 border-4 border-yellow-300 flex items-center justify-center mx-auto shadow-2xl shadow-yellow-400/60 transition-all duration-700 hover:scale-110 hover:rotate-12 hover:shadow-yellow-400/80 overflow-hidden">
+                        {/* Inner shine effect */}
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-yellow-200/20 to-transparent"></div>
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-t from-yellow-600/20 via-transparent to-transparent"></div>
+                        
+                        {/* Pattern overlay for Mario Bros feel */}
+                        <div className="absolute inset-0 rounded-full opacity-10" style={{
+                            backgroundImage: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3) 2px, transparent 2px)',
+                            backgroundSize: '20px 20px'
+                        }}></div>
+                        
+                        {/* Logo image - larger and centered */}
+                        <img 
+                            src={logo} 
+                            alt="Apex Store - Sistema de Gestión" 
+                            className="relative h-40 w-40 md:h-52 md:w-52 lg:h-64 lg:w-64 object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-6 z-10" 
+                        />
+                        
+                        {/* Inner border for depth */}
+                        <div className="absolute inset-2 md:inset-3 lg:inset-4 rounded-full border-2 border-yellow-200/40"></div>
                     </div>
                 </figure>
             </div>
 
-            <header className="space-y-6 relative z-10">
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                    Bienvenidos a <span className="text-accent bg-gradient-to-r from-accent to-accent/70 bg-clip-text text-transparent">Apex Store</span>
+            <header className="space-y-8 relative z-10">
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-tight">
+                    <span className="block mb-2">Bienvenidos a</span>
+                    <span className="block bg-gradient-to-r from-yellow-400 via-amber-400 via-yellow-500 to-yellow-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
+                        Apex Store
+                    </span>
                 </h1>
-                <p className="text-lg md:text-xl text-muted max-w-3xl mx-auto leading-relaxed">
+                <p className="text-xl md:text-2xl text-muted max-w-4xl mx-auto leading-relaxed font-light">
                     Plataforma integral para la gestión de venta al por mayor de productos relacionados con el mundo de los videojuegos. 
-                    Control total de inventario, ventas y operaciones con seguridad de nivel empresarial.
+                    <span className="block mt-2 text-yellow-400 font-medium">Control total de inventario, ventas y operaciones con seguridad de nivel empresarial.</span>
                 </p>
             </header>
 
-            <nav className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
+            <nav className="flex flex-col sm:flex-row gap-6 justify-center relative z-10">
                 <Link 
                     to="/login" 
-                    className="btn text-lg px-8 py-3 inline-block text-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-accent/30"
+                    className="group relative inline-flex items-center justify-center px-10 py-4 text-lg font-bold text-gray-900 bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-400 rounded-xl shadow-lg shadow-yellow-400/40 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-yellow-400/60 hover:-translate-y-1 overflow-hidden"
                 >
-                    Iniciar Sesión
+                    <span className="absolute inset-0 bg-gradient-to-r from-yellow-500/90 via-amber-500/90 to-orange-500/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                    <span className="relative z-10 flex items-center gap-2">
+                        <span>⭐</span>
+                        <span>Iniciar Sesión</span>
+                    </span>
                 </Link>
             </nav>
         </section>
 
         {/* Funcionalidades Section */}
-        <section className="py-16 md:py-24 border-t border-slate-600/20">
-            <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                    ✨ <span className="text-accent">Funcionalidades Principales</span>
+        <section className="py-20 md:py-28 border-t border-slate-600/30 relative">
+            <div className="text-center mb-16">
+                <div className="inline-block mb-4">
+                    <span className="text-5xl animate-bounce">✨</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6">
+                    <span className="bg-gradient-to-r from-yellow-400 via-amber-400 via-yellow-500 to-yellow-400 bg-clip-text text-transparent">
+                        Funcionalidades Principales
+                    </span>
                 </h2>
-                <p className="text-muted text-lg max-w-2xl mx-auto">
+                <p className="text-muted text-xl max-w-3xl mx-auto font-light">
                     Un sistema completo diseñado para optimizar todas las operaciones de tu negocio
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
                 {/* Feature Cards */}
                 {[
                     {
@@ -142,32 +178,41 @@ return (
                 ].map((feature, index) => (
                     <div 
                         key={index}
-                        className="p-6 rounded-xl bg-surface/50 border border-slate-600/20 hover:border-accent/40 transition-all duration-300 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-1"
+                        className="group relative p-8 rounded-2xl bg-surface/60 backdrop-blur-sm border border-slate-600/30 dark:border-slate-600/30 hover:border-accent/50 transition-all duration-500 hover:shadow-2xl hover:shadow-accent/20 hover:-translate-y-2 overflow-hidden"
                     >
-                        <div className="text-4xl mb-4">{feature.icon}</div>
-                        <h3 className="text-xl font-bold mb-2 text-accent">{feature.title}</h3>
-                        <p className="text-muted leading-relaxed">{feature.description}</p>
+                        <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="relative z-10">
+                            <div className="text-5xl mb-6 transform transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12">{feature.icon}</div>
+                            <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">{feature.title}</h3>
+                            <p className="text-muted leading-relaxed text-base">{feature.description}</p>
+                        </div>
                     </div>
                 ))}
             </div>
         </section>
 
         {/* Arquitectura y Metodologías Section */}
-        <section className="py-16 md:py-24 border-t border-slate-600/20">
-            <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                    🏗️ <span className="text-accent">Arquitectura y Metodologías</span>
+        <section className="py-20 md:py-28 border-t border-slate-600/30 relative">
+            <div className="text-center mb-16">
+                <div className="inline-block mb-4">
+                    <span className="text-5xl">🏗️</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6">
+                    <span className="bg-gradient-to-r from-yellow-400 via-amber-400 via-yellow-500 to-yellow-400 bg-clip-text text-transparent">
+                        Arquitectura y Metodologías
+                    </span>
                 </h2>
-                <p className="text-muted text-lg max-w-2xl mx-auto">
+                <p className="text-muted text-xl max-w-3xl mx-auto font-light">
                     Construido con las mejores prácticas y metodologías de desarrollo seguro
                 </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
                 {/* Arquitectura Frontend */}
-                <div className="p-8 rounded-xl bg-surface/50 border border-slate-600/20">
-                    <h3 className="text-2xl font-bold mb-6 text-accent flex items-center gap-2">
-                        🖥️ Frontend
+                <div className="group p-8 rounded-2xl bg-surface/60 backdrop-blur-sm border border-slate-600/30 dark:border-slate-600/30 hover:border-accent/50 transition-all duration-500 hover:shadow-2xl hover:shadow-accent/20 hover:-translate-y-1">
+                    <h3 className="text-3xl font-bold mb-8 bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent flex items-center gap-3">
+                        <span className="text-4xl">🖥️</span>
+                        <span>Frontend</span>
                     </h3>
                     <ul className="space-y-4 text-muted">
                         <li className="flex items-start gap-3">
@@ -209,9 +254,10 @@ return (
                 </div>
 
                 {/* Arquitectura Backend */}
-                <div className="p-8 rounded-xl bg-surface/50 border border-slate-600/20">
-                    <h3 className="text-2xl font-bold mb-6 text-accent flex items-center gap-2">
-                        🖲️ Backend
+                <div className="group p-8 rounded-2xl bg-surface/60 backdrop-blur-sm border border-slate-600/30 dark:border-slate-600/30 hover:border-accent/50 transition-all duration-500 hover:shadow-2xl hover:shadow-accent/20 hover:-translate-y-1">
+                    <h3 className="text-3xl font-bold mb-8 bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent flex items-center gap-3">
+                        <span className="text-4xl">🖲️</span>
+                        <span>Backend</span>
                     </h3>
                     <ul className="space-y-4 text-muted">
                         <li className="flex items-start gap-3">
@@ -258,11 +304,12 @@ return (
                 </div>
 
                 {/* Metodología S-SDLC */}
-                <div className="p-8 rounded-xl bg-surface/50 border border-slate-600/20 lg:col-span-2">
-                    <h3 className="text-2xl font-bold mb-6 text-accent flex items-center gap-2">
-                        🛡️ Metodología: S-SDLC (Secure Software Development Life Cycle)
+                <div className="group p-10 rounded-2xl bg-surface/60 backdrop-blur-sm border border-slate-600/30 dark:border-slate-600/30 hover:border-accent/50 transition-all duration-500 hover:shadow-2xl hover:shadow-accent/20 lg:col-span-2">
+                    <h3 className="text-3xl font-bold mb-8 bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent flex items-center gap-3">
+                        <span className="text-4xl">🛡️</span>
+                        <span>Metodología: S-SDLC (Secure Software Development Life Cycle)</span>
                     </h3>
-                    <p className="text-muted mb-6">
+                    <p className="text-muted mb-8 text-lg leading-relaxed">
                         El proyecto sigue el ciclo de vida de desarrollo de software seguro, garantizando la protección de la información en cada etapa:
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -292,9 +339,9 @@ return (
                                 description: 'Monitoreo continuo, aplicación de parches de seguridad y auditorías periódicas'
                             }
                         ].map((item, index) => (
-                            <div key={index} className="p-4 rounded-lg bg-bg/50 border border-slate-600/10">
-                                <h4 className="font-bold text-accent mb-2">{item.phase}</h4>
-                                <p className="text-sm text-muted">{item.description}</p>
+                            <div key={index} className="group/item p-6 rounded-xl bg-surface/40 border border-slate-600/20 dark:border-slate-600/20 hover:border-yellow-400/40 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-400/10 hover:-translate-y-1">
+                                <h4 className="font-bold text-lg mb-3 bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">{item.phase}</h4>
+                                <p className="text-sm text-muted leading-relaxed">{item.description}</p>
                             </div>
                         ))}
                     </div>
@@ -303,40 +350,48 @@ return (
         </section>
 
         {/* Equipo Section */}
-        <section className="py-16 md:py-24 border-t border-slate-600/20">
-            <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                    👥 <span className="text-accent">Nuestro Equipo</span>
+        <section className="py-20 md:py-28 border-t border-slate-600/30 relative">
+            <div className="text-center mb-16">
+                <div className="inline-block mb-4">
+                    <span className="text-5xl">👥</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6">
+                    <span className="bg-gradient-to-r from-yellow-400 via-amber-400 via-yellow-500 to-yellow-400 bg-clip-text text-transparent">
+                        Nuestro Equipo
+                    </span>
                 </h2>
-                <p className="text-muted text-lg max-w-2xl mx-auto mb-8">
+                <p className="text-muted text-xl max-w-3xl mx-auto mb-10 font-light">
                     Un equipo comprometido con la excelencia y la innovación en desarrollo de software seguro
                 </p>
-                <div className="max-w-3xl mx-auto p-6 rounded-xl bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20">
-                    <p className="text-lg text-text leading-relaxed">
-                        <span className="text-accent font-bold">¡Bienvenidos!</span> Somos un equipo de desarrolladores apasionados por crear soluciones tecnológicas 
+                <div className="max-w-4xl mx-auto p-8 rounded-2xl bg-gradient-to-br from-yellow-400/25 via-amber-400/15 to-orange-400/10 border-2 border-yellow-400/40 shadow-xl shadow-yellow-400/30">
+                    <p className="text-xl text-text leading-relaxed">
+                        <span className="text-yellow-400 font-bold text-2xl">¡Bienvenidos!</span> Somos un equipo de desarrolladores apasionados por crear soluciones tecnológicas 
                         que transformen la manera en que las PYMES gestionan sus operaciones. Nuestro compromiso es entregar un sistema 
                         robusto, seguro y escalable que impulse el crecimiento de tu negocio.
                     </p>
                 </div>
             </div>
 
-            <div className="space-y-8 mt-12">
+            <div className="space-y-12 mt-12">
                 {/* Líder del Proyecto - Destacado */}
                 <div className="flex justify-center">
-                    <div className="p-8 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 border-2 border-accent/40 text-center hover:border-accent/60 transition-all duration-300 hover:shadow-xl hover:shadow-accent/20 hover:-translate-y-1 max-w-sm w-full">
-                        <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-accent/40 to-accent/20 border-4 border-accent/60 flex items-center justify-center text-4xl font-bold text-accent shadow-lg">
-                            EG
+                    <div className="group relative p-10 rounded-2xl bg-gradient-to-br from-yellow-400/35 via-amber-400/25 to-orange-400/20 border-2 border-yellow-400/60 text-center hover:border-yellow-400 transition-all duration-500 hover:shadow-2xl hover:shadow-yellow-400/40 hover:-translate-y-2 max-w-sm w-full overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/15 via-transparent to-amber-400/15 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="relative z-10">
+                            <div className="w-28 h-28 mx-auto mb-6 rounded-full bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 border-4 border-yellow-300 flex items-center justify-center text-5xl font-bold text-gray-900 shadow-xl shadow-yellow-400/50 transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                EG
+                            </div>
+                            <h3 className="text-3xl font-bold mb-3 text-text">Edgar Gómez</h3>
+                            <p className="text-yellow-400 font-semibold text-lg mb-1">Líder del Proyecto</p>
+                            <p className="text-muted text-sm">Project Leader</p>
                         </div>
-                        <h3 className="text-2xl font-bold mb-2 text-text">Edgar Gómez</h3>
-                        <p className="text-accent font-semibold mb-1">Líder del Proyecto</p>
-                        <p className="text-muted text-sm">Project Leader</p>
                     </div>
                 </div>
 
                 {/* Equipo de Desarrollo */}
                 <div>
-                    <h3 className="text-xl font-semibold text-center mb-6 text-muted">Equipo de Desarrollo</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <h3 className="text-2xl font-bold text-center mb-10 bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">Equipo de Desarrollo</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {[
                             { name: 'Alexis García', role: 'Desarrollador/Tester', initials: 'AG' },
                             { name: 'Juan Castillo', role: 'Desarrollador/Tester', initials: 'JC' },
@@ -345,13 +400,16 @@ return (
                         ].map((member, index) => (
                             <div 
                                 key={index}
-                                className="p-6 rounded-xl bg-surface/50 border border-slate-600/20 text-center hover:border-accent/40 transition-all duration-300 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-1"
+                                className="group relative p-8 rounded-2xl bg-surface/60 backdrop-blur-sm border border-slate-600/30 dark:border-slate-600/30 text-center hover:border-yellow-400/50 transition-all duration-500 hover:shadow-2xl hover:shadow-yellow-400/20 hover:-translate-y-2 overflow-hidden"
                             >
-                                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-accent/30 to-accent/10 border-2 border-accent/40 flex items-center justify-center text-3xl font-bold text-accent">
-                                    {member.initials}
+                                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/8 via-transparent to-amber-400/8 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                <div className="relative z-10">
+                                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 border-3 border-yellow-300 flex items-center justify-center text-4xl font-bold text-gray-900 shadow-lg transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                        {member.initials}
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-2 text-text">{member.name}</h3>
+                                    <p className="text-muted text-sm">{member.role}</p>
                                 </div>
-                                <h3 className="text-xl font-bold mb-1 text-text">{member.name}</h3>
-                                <p className="text-muted text-sm">{member.role}</p>
                             </div>
                         ))}
                     </div>
@@ -360,56 +418,63 @@ return (
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 md:py-24 border-t border-slate-600/20 text-center">
-            <div className="max-w-2xl mx-auto space-y-6">
-                <h2 className="text-3xl md:text-4xl font-bold">
-                    ¿Listo para comenzar?
+        <section className="py-20 md:py-28 border-t border-slate-600/30 text-center relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-blue-500/5"></div>
+            <div className="max-w-3xl mx-auto space-y-8 relative z-10">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold">
+                    <span className="bg-gradient-to-r from-yellow-400 via-amber-400 via-yellow-500 to-yellow-400 bg-clip-text text-transparent">
+                        ¿Listo para comenzar?
+                    </span>
                 </h2>
-                <p className="text-lg text-muted">
+                <p className="text-xl md:text-2xl text-muted font-light">
                     Accede a la plataforma y descubre todas las herramientas que tenemos para ti
                 </p>
                 <Link 
                     to="/login" 
-                    className="btn text-lg px-8 py-3 inline-block transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-accent/30"
+                    className="group relative inline-flex items-center justify-center px-12 py-5 text-xl font-bold text-gray-900 bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-400 rounded-xl shadow-2xl shadow-yellow-400/40 transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-yellow-400/60 hover:-translate-y-1 overflow-hidden"
                 >
-                    Iniciar Sesión
+                    <span className="absolute inset-0 bg-gradient-to-r from-yellow-500/90 via-amber-500/90 to-orange-500/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                    <span className="relative z-10 flex items-center gap-3">
+                        <span className="text-2xl">⭐</span>
+                        <span>Iniciar Sesión</span>
+                    </span>
                 </Link>
             </div>
         </section>
     </main>
 
     {/* Footer */}
-    <footer className="border-t border-slate-600/20 bg-surface/30 py-12 mt-16">
+    <footer className="border-t border-slate-600/30 dark:border-slate-600/30 bg-surface/90 backdrop-blur-xl py-16 mt-20 relative">
         <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
                 {/* Información del Proyecto */}
                 <div className="text-center md:text-left">
-                    <h3 className="text-lg font-bold text-text mb-4">Apex Store</h3>
-                    <p className="text-muted text-sm mb-2">
+                    <h3 className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent mb-6">Apex Store</h3>
+                    <p className="text-muted text-base mb-3 leading-relaxed">
                         Sistema de Gestión de Inventario, Ventas y Facturación para PYMES.
                     </p>
                     <p className="text-muted text-sm">
-                        Desarrollado con ❤️ siguiendo metodologías de desarrollo seguro (S-SDLC)
+                        Desarrollado con <span className="text-red-500 text-lg">❤️</span> siguiendo metodologías de desarrollo seguro (S-SDLC)
                     </p>
                 </div>
 
                 {/* Información de la Universidad */}
                 <div className="text-center md:text-right">
-                    <h3 className="text-lg font-bold text-text mb-4">Universidad Tecnológica Santa Catarina</h3>
-                    <div className="space-y-2 text-muted text-sm">
-                        <p className="flex items-center justify-center md:justify-end gap-2">
-                            <span>📍</span>
+                    <h3 className="text-2xl font-bold text-text mb-6">Universidad Tecnológica Santa Catarina</h3>
+                    <div className="space-y-3 text-muted text-base">
+                        <p className="flex items-center justify-center md:justify-end gap-3">
+                            <span className="text-xl">📍</span>
                             <span>Carretera Saltillo-Monterrey Km. 61.5<br className="md:hidden" /> C.P. 66359, Santa Catarina, N.L.</span>
                         </p>
-                        <p className="flex items-center justify-center md:justify-end gap-2">
-                            <span>📞</span>
-                            <a href="tel:8181248400" className="hover:text-accent transition-colors">
+                        <p className="flex items-center justify-center md:justify-end gap-3">
+                            <span className="text-xl">📞</span>
+                            <a href="tel:8181248400" className="hover:text-accent transition-colors font-medium">
                                 81 8124 8400
                             </a>
                         </p>
-                        <p className="flex items-center justify-center md:justify-end gap-2">
-                            <span>✉️</span>
-                            <a href="mailto:contacto@utsc.edu.mx" className="hover:text-accent transition-colors">
+                        <p className="flex items-center justify-center md:justify-end gap-3">
+                            <span className="text-xl">✉️</span>
+                            <a href="mailto:contacto@utsc.edu.mx" className="hover:text-accent transition-colors font-medium">
                                 contacto@utsc.edu.mx
                             </a>
                         </p>
@@ -418,7 +483,7 @@ return (
             </div>
 
             {/* Copyright */}
-            <div className="border-t border-slate-600/20 pt-6 text-center">
+            <div className="border-t border-slate-600/30 pt-8 text-center">
                 <p className="text-muted text-sm">
                     © 2025 Apex Store. Todos los derechos reservados.
                 </p>

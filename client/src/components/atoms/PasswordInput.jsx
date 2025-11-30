@@ -40,13 +40,13 @@ export default function PasswordInput({
         placeholder={placeholder}
         required={required}
         autoComplete={autoComplete}
-        className={`w-full px-3 py-2 pr-10 border border-slate-600/30 rounded-md bg-surface focus:outline-none focus:ring-2 focus:ring-accent ${className}`}
+        className={`w-full px-3 py-2 pr-10 border border-slate-600/30 rounded-md bg-surface focus:outline-none focus:ring-2 focus:ring-accent text-text placeholder:text-muted ${className}`}
         {...props}
       />
       <button
         type="button"
         onClick={togglePasswordVisibility}
-        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-foreground transition-colors focus:outline-none focus:text-accent"
+        className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-muted hover:text-text transition-colors focus:outline-none focus:text-accent rounded-lg hover:bg-surface/50"
         aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
         tabIndex={-1}
       >

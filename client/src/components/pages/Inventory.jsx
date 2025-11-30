@@ -814,7 +814,6 @@ export default function Inventory() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
                   className="px-4 py-2 border border-slate-600/30 rounded-md hover:bg-surface/50"
                   disabled={saving}
                   onClick={() => {

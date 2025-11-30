@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { reportService } from '../../services/reportService'
+import { logService } from '../../services/logService'
+import { jsPDF } from 'jspdf'
+import { autoTable } from 'jspdf-autotable'
+import * as XLSX from 'xlsx'
 
 export default function Reports() {
-      const [filterBranch, setFilterBranch] = useState('');
+    const [filterBranch, setFilterBranch] = useState('');
     // Paginación para inventario
     const [inventoryPage, setInventoryPage] = useState(1);
     const pageSize = 10;
@@ -17,7 +21,7 @@ export default function Reports() {
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [filterStatus, setFilterStatus] = useState('');
-  const { hasPermission } = useAuth()
+  const { hasPermission, user } = useAuth()
 
   const reportTypes = [
     { value: 'sales', label: 'Ventas', icon: '💰' },
@@ -62,39 +66,406 @@ export default function Reports() {
     }
   }
 
-  const exportReport = async (format) => {
-    try {
-      setLoading(true)
-      const params = {
-        type: reportType,
-        format: format,
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate
+  const exportToPDF = () => {
+    if (!reportData) return
+
+    const doc = new jsPDF()
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const margin = 15
+    let yPos = 20
+
+    // Título del reporte
+    doc.setFontSize(18)
+    doc.setFont('helvetica', 'bold')
+    const reportTitle = reportTypes.find(t => t.value === reportType)?.label || 'Reporte'
+    doc.text(reportTitle, margin, yPos)
+    yPos += 10
+
+    // Información del período
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Período: ${new Date(dateRange.startDate).toLocaleDateString('es-MX')} - ${new Date(dateRange.endDate).toLocaleDateString('es-MX')}`, margin, yPos)
+    doc.text(`Generado: ${new Date().toLocaleString('es-MX')}`, margin, yPos + 5)
+    yPos += 15
+
+    // Contenido según el tipo de reporte
+    if (reportType === 'sales') {
+      // KPIs
+      const kpiData = [
+        ['Total Ventas', reportData.totalSales || 0],
+        ['Ingresos', `$${parseFloat(reportData.totalRevenue || 0).toFixed(2)}`],
+        ['Ticket Promedio', `$${parseFloat(reportData.averageTicket || 0).toFixed(2)}`],
+        ['Items Vendidos', reportData.totalItems || 0]
+      ]
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Métrica', 'Valor']],
+        body: kpiData,
+        theme: 'striped',
+        headStyles: { fillColor: [66, 139, 202] }
+      })
+      yPos = doc.lastAutoTable.finalY + 15
+
+      // Ventas por día
+      if (reportData.dailySales && reportData.dailySales.length > 0) {
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Fecha', 'Total']],
+          body: reportData.dailySales.map(day => [
+            new Date(day.date).toLocaleDateString('es-MX'),
+            `$${parseFloat(day.total || 0).toFixed(2)}`
+          ]),
+          theme: 'striped',
+          headStyles: { fillColor: [66, 139, 202] }
+        })
+        yPos = doc.lastAutoTable.finalY + 15
       }
 
-      const response = await reportService.export(params)
-      
-      if (response) {
-        const blob = new Blob([response], { type: format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `reporte_${reportType}_${new Date().toISOString().split('T')[0]}.${format}`
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
-        
-        setSuccessMessage('Reporte exportado exitosamente')
-        setTimeout(() => setSuccessMessage(''), 3000)
+      // Productos más vendidos
+      if (reportData.topProducts && reportData.topProducts.length > 0) {
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Producto', 'Cantidad', 'Ingresos']],
+          body: reportData.topProducts.map(product => [
+            product.name || 'N/A',
+            product.quantity || 0,
+            `$${parseFloat(product.revenue || 0).toFixed(2)}`
+          ]),
+          theme: 'striped',
+          headStyles: { fillColor: [66, 139, 202] }
+        })
       }
-    } catch (error) {
-      console.error('Error exporting report:', error)
-      setError(error.message || 'Error al exportar el reporte')
-      setTimeout(() => setError(''), 5000)
-    } finally {
-      setLoading(false)
+    } else if (reportType === 'inventory') {
+      const kpiData = [
+        ['Total Productos', reportData.totalProducts || 0],
+        ['Stock Bajo', reportData.lowStockItems || 0],
+        ['Sin Stock', reportData.outOfStockItems || 0],
+        ['Valor Inventario', `$${parseFloat(reportData.inventoryValue || 0).toFixed(2)}`]
+      ]
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Métrica', 'Valor']],
+        body: kpiData,
+        theme: 'striped',
+        headStyles: { fillColor: [66, 139, 202] }
+      })
+      yPos = doc.lastAutoTable.finalY + 15
+
+      // Lista de productos
+      if (reportData.productsList && reportData.productsList.length > 0) {
+        const filtered = reportData.productsList.filter(product => 
+          (!filterStatus || product.status === filterStatus) && 
+          (!filterBranch || product.branch === filterBranch)
+        )
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Producto', 'Sucursal', 'Stock', 'Stock Mín', 'Estado', 'Valor']],
+          body: filtered.map(product => [
+            product.name || 'N/A',
+            product.branch || 'N/A',
+            product.stock || 0,
+            product.min_stock || 0,
+            product.status || 'N/A',
+            `$${(product.stock * product.cost).toFixed(2)}`
+          ]),
+          theme: 'striped',
+          headStyles: { fillColor: [66, 139, 202] }
+        })
+      }
+    } else if (reportType === 'customers') {
+      const kpiData = [
+        ['Total Clientes', reportData.totalCustomers || 0],
+        ['Activos', reportData.activeCustomers || 0],
+        ['Nuevos', reportData.newCustomers || 0],
+        ['Gasto Promedio', `$${parseFloat(reportData.averageSpent || 0).toFixed(2)}`]
+      ]
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Métrica', 'Valor']],
+        body: kpiData,
+        theme: 'striped',
+        headStyles: { fillColor: [66, 139, 202] }
+      })
+      yPos = doc.lastAutoTable.finalY + 15
+
+      // Lista de clientes
+      if (reportData.customers && reportData.customers.length > 0) {
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Cliente', 'Email', 'Compras', 'Total Gastado']],
+          body: reportData.customers.map(customer => [
+            customer.name || 'N/A',
+            customer.email || 'N/A',
+            customer.totalPurchases || 0,
+            `$${parseFloat(customer.totalSpent || 0).toFixed(2)}`
+          ]),
+          theme: 'striped',
+          headStyles: { fillColor: [66, 139, 202] }
+        })
+      }
+    } else if (reportType === 'financial') {
+      const kpiData = [
+        ['Ingresos Totales', `$${parseFloat(reportData.totalIncome || 0).toFixed(2)}`],
+        ['Gastos Totales', `$${parseFloat(reportData.totalExpenses || 0).toFixed(2)}`],
+        ['Devoluciones', `$${parseFloat(reportData.totalReturns || 0).toFixed(2)}`],
+        ['Ganancia Neta', `$${parseFloat(reportData.netProfit || 0).toFixed(2)}`],
+        ['Margen de Ganancia', `${reportData.profitMargin || 0}%`]
+      ]
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Métrica', 'Valor']],
+        body: kpiData,
+        theme: 'striped',
+        headStyles: { fillColor: [66, 139, 202] }
+      })
+    } else if (reportType === 'returns' && reportData.summary) {
+      const kpiData = [
+        ['Total Devoluciones', reportData.summary.totalReturns || 0],
+        ['Aprobadas', reportData.summary.approvedReturns || 0],
+        ['Rechazadas', reportData.summary.rejectedReturns || 0],
+        ['Pendientes', reportData.summary.pendingReturns || 0],
+        ['Valor Total Devuelto', `$${parseFloat(reportData.summary.totalReturnValue || 0).toFixed(2)}`],
+        ['Items Devueltos', reportData.summary.totalReturnedQuantity || 0],
+        ['Valor Promedio', `$${parseFloat(reportData.summary.averageReturnValue || 0).toFixed(2)}`]
+      ]
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Métrica', 'Valor']],
+        body: kpiData,
+        theme: 'striped',
+        headStyles: { fillColor: [66, 139, 202] }
+      })
+      yPos = doc.lastAutoTable.finalY + 15
+
+      // Productos más devueltos
+      if (reportData.topReturnedProducts && reportData.topReturnedProducts.length > 0) {
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Producto', 'Total', 'Aprobadas', 'Rechazadas']],
+          body: reportData.topReturnedProducts.map(product => [
+            product.productName || 'N/A',
+            product.quantity || 0,
+            product.approved || 0,
+            product.rejected || 0
+          ]),
+          theme: 'striped',
+          headStyles: { fillColor: [66, 139, 202] }
+        })
+      }
     }
+
+    // Guardar el PDF
+    const fileName = `reporte_${reportType}_${new Date().toISOString().split('T')[0]}.pdf`
+    doc.save(fileName)
+    
+    // Registrar log de exportación
+    if (user?.id) {
+      const reportTypeLabel = reportTypes.find(t => t.value === reportType)?.label || reportType
+      logService.create({
+        user_id: user.id,
+        action: 'EXPORT',
+        service: 'report',
+        message: `Exportó reporte de ${reportTypeLabel} a PDF (${new Date(dateRange.startDate).toLocaleDateString('es-MX')} - ${new Date(dateRange.endDate).toLocaleDateString('es-MX')})`
+      }).catch(err => console.error('Error al registrar log:', err))
+    }
+    
+    setSuccessMessage('Reporte PDF exportado exitosamente')
+    setTimeout(() => setSuccessMessage(''), 3000)
+  }
+
+  const exportToExcel = () => {
+    if (!reportData) return
+
+    const workbook = XLSX.utils.book_new()
+    const reportTitle = reportTypes.find(t => t.value === reportType)?.label || 'Reporte'
+
+    if (reportType === 'sales') {
+      // Hoja de KPIs
+      const kpiData = [
+        ['Métrica', 'Valor'],
+        ['Total Ventas', reportData.totalSales || 0],
+        ['Ingresos', parseFloat(reportData.totalRevenue || 0).toFixed(2)],
+        ['Ticket Promedio', parseFloat(reportData.averageTicket || 0).toFixed(2)],
+        ['Items Vendidos', reportData.totalItems || 0]
+      ]
+      const kpiSheet = XLSX.utils.aoa_to_sheet(kpiData)
+      XLSX.utils.book_append_sheet(workbook, kpiSheet, 'Resumen')
+
+      // Hoja de ventas por día
+      if (reportData.dailySales && reportData.dailySales.length > 0) {
+        const dailyData = [
+          ['Fecha', 'Total']
+        ]
+        reportData.dailySales.forEach(day => {
+          dailyData.push([
+            new Date(day.date).toLocaleDateString('es-MX'),
+            parseFloat(day.total || 0).toFixed(2)
+          ])
+        })
+        const dailySheet = XLSX.utils.aoa_to_sheet(dailyData)
+        XLSX.utils.book_append_sheet(workbook, dailySheet, 'Ventas por Día')
+      }
+
+      // Hoja de productos más vendidos
+      if (reportData.topProducts && reportData.topProducts.length > 0) {
+        const productsData = [
+          ['Producto', 'Cantidad', 'Ingresos']
+        ]
+        reportData.topProducts.forEach(product => {
+          productsData.push([
+            product.name || 'N/A',
+            product.quantity || 0,
+            parseFloat(product.revenue || 0).toFixed(2)
+          ])
+        })
+        const productsSheet = XLSX.utils.aoa_to_sheet(productsData)
+        XLSX.utils.book_append_sheet(workbook, productsSheet, 'Productos Más Vendidos')
+      }
+
+      // Hoja de métodos de pago
+      if (reportData.paymentMethods && reportData.paymentMethods.length > 0) {
+        const paymentData = [
+          ['Método', 'Total', 'Cantidad']
+        ]
+        reportData.paymentMethods.forEach(method => {
+          paymentData.push([
+            method.method === 'cash' ? 'Efectivo' : method.method === 'card' ? 'Tarjeta' : 'Transferencia',
+            parseFloat(method.total || 0).toFixed(2),
+            method.count || 0
+          ])
+        })
+        const paymentSheet = XLSX.utils.aoa_to_sheet(paymentData)
+        XLSX.utils.book_append_sheet(workbook, paymentSheet, 'Métodos de Pago')
+      }
+    } else if (reportType === 'inventory') {
+      // Hoja de KPIs
+      const kpiData = [
+        ['Métrica', 'Valor'],
+        ['Total Productos', reportData.totalProducts || 0],
+        ['Stock Bajo', reportData.lowStockItems || 0],
+        ['Sin Stock', reportData.outOfStockItems || 0],
+        ['Valor Inventario', parseFloat(reportData.inventoryValue || 0).toFixed(2)]
+      ]
+      const kpiSheet = XLSX.utils.aoa_to_sheet(kpiData)
+      XLSX.utils.book_append_sheet(workbook, kpiSheet, 'Resumen')
+
+      // Hoja de productos
+      if (reportData.productsList && reportData.productsList.length > 0) {
+        const filtered = reportData.productsList.filter(product => 
+          (!filterStatus || product.status === filterStatus) && 
+          (!filterBranch || product.branch === filterBranch)
+        )
+        const productsData = [
+          ['Producto', 'Sucursal', 'Stock', 'Stock Mínimo', 'Estado', 'Valor']
+        ]
+        filtered.forEach(product => {
+          productsData.push([
+            product.name || 'N/A',
+            product.branch || 'N/A',
+            product.stock || 0,
+            product.min_stock || 0,
+            product.status || 'N/A',
+            (product.stock * product.cost).toFixed(2)
+          ])
+        })
+        const productsSheet = XLSX.utils.aoa_to_sheet(productsData)
+        XLSX.utils.book_append_sheet(workbook, productsSheet, 'Inventario')
+      }
+    } else if (reportType === 'customers') {
+      // Hoja de KPIs
+      const kpiData = [
+        ['Métrica', 'Valor'],
+        ['Total Clientes', reportData.totalCustomers || 0],
+        ['Activos', reportData.activeCustomers || 0],
+        ['Nuevos', reportData.newCustomers || 0],
+        ['Gasto Promedio', parseFloat(reportData.averageSpent || 0).toFixed(2)]
+      ]
+      const kpiSheet = XLSX.utils.aoa_to_sheet(kpiData)
+      XLSX.utils.book_append_sheet(workbook, kpiSheet, 'Resumen')
+
+      // Hoja de clientes
+      if (reportData.customers && reportData.customers.length > 0) {
+        const customersData = [
+          ['Cliente', 'Email', 'Compras', 'Total Gastado']
+        ]
+        reportData.customers.forEach(customer => {
+          customersData.push([
+            customer.name || 'N/A',
+            customer.email || 'N/A',
+            customer.totalPurchases || 0,
+            parseFloat(customer.totalSpent || 0).toFixed(2)
+          ])
+        })
+        const customersSheet = XLSX.utils.aoa_to_sheet(customersData)
+        XLSX.utils.book_append_sheet(workbook, customersSheet, 'Clientes')
+      }
+    } else if (reportType === 'financial') {
+      const financialData = [
+        ['Métrica', 'Valor'],
+        ['Ingresos Totales', parseFloat(reportData.totalIncome || 0).toFixed(2)],
+        ['Gastos Totales', parseFloat(reportData.totalExpenses || 0).toFixed(2)],
+        ['Devoluciones', parseFloat(reportData.totalReturns || 0).toFixed(2)],
+        ['Ganancia Neta', parseFloat(reportData.netProfit || 0).toFixed(2)],
+        ['Margen de Ganancia', `${reportData.profitMargin || 0}%`],
+        ['Total de Compras', reportData.totalPurchases || 0],
+        ['Compra Promedio', parseFloat(reportData.averagePurchase || 0).toFixed(2)],
+        ['Total Devoluciones', reportData.totalReturnCount || 0]
+      ]
+      const financialSheet = XLSX.utils.aoa_to_sheet(financialData)
+      XLSX.utils.book_append_sheet(workbook, financialSheet, 'Reporte Financiero')
+    } else if (reportType === 'returns' && reportData.summary) {
+      // Hoja de resumen
+      const summaryData = [
+        ['Métrica', 'Valor'],
+        ['Total Devoluciones', reportData.summary.totalReturns || 0],
+        ['Aprobadas', reportData.summary.approvedReturns || 0],
+        ['Rechazadas', reportData.summary.rejectedReturns || 0],
+        ['Pendientes', reportData.summary.pendingReturns || 0],
+        ['Valor Total Devuelto', parseFloat(reportData.summary.totalReturnValue || 0).toFixed(2)],
+        ['Items Devueltos', reportData.summary.totalReturnedQuantity || 0],
+        ['Valor Promedio', parseFloat(reportData.summary.averageReturnValue || 0).toFixed(2)],
+        ['Tasa de Aprobación', `${reportData.summary.approvalRate || 0}%`],
+        ['Tasa de Rechazo', `${reportData.summary.rejectionRate || 0}%`]
+      ]
+      const summarySheet = XLSX.utils.aoa_to_sheet(summaryData)
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Resumen')
+
+      // Hoja de productos más devueltos
+      if (reportData.topReturnedProducts && reportData.topReturnedProducts.length > 0) {
+        const productsData = [
+          ['Producto', 'Total', 'Aprobadas', 'Rechazadas', 'Pendientes']
+        ]
+        reportData.topReturnedProducts.forEach(product => {
+          productsData.push([
+            product.productName || 'N/A',
+            product.quantity || 0,
+            product.approved || 0,
+            product.rejected || 0,
+            product.pending || 0
+          ])
+        })
+        const productsSheet = XLSX.utils.aoa_to_sheet(productsData)
+        XLSX.utils.book_append_sheet(workbook, productsSheet, 'Productos Más Devueltos')
+      }
+    }
+
+    // Guardar el archivo Excel
+    const fileName = `reporte_${reportType}_${new Date().toISOString().split('T')[0]}.xlsx`
+    XLSX.writeFile(workbook, fileName)
+    
+    // Registrar log de exportación
+    if (user?.id) {
+      const reportTypeLabel = reportTypes.find(t => t.value === reportType)?.label || reportType
+      logService.create({
+        user_id: user.id,
+        action: 'EXPORT',
+        service: 'report',
+        message: `Exportó reporte de ${reportTypeLabel} a Excel (${new Date(dateRange.startDate).toLocaleDateString('es-MX')} - ${new Date(dateRange.endDate).toLocaleDateString('es-MX')})`
+      }).catch(err => console.error('Error al registrar log:', err))
+    }
+    
+    setSuccessMessage('Reporte Excel exportado exitosamente')
+    setTimeout(() => setSuccessMessage(''), 3000)
   }
 
   if (!hasPermission(['owner', 'admin', 'supervisor'])) {
@@ -117,18 +488,20 @@ export default function Reports() {
         {reportData && (
           <div className="flex gap-2">
             <button
-              onClick={() => exportReport('pdf')}
-              className="btn text-sm"
+              onClick={exportToPDF}
+              className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-lg text-red-400 font-medium transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
-              📄 PDF
+              <span>📄</span>
+              <span>Exportar PDF</span>
             </button>
             <button
-              onClick={() => exportReport('xlsx')}
-              className="btn text-sm"
+              onClick={exportToExcel}
+              className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 rounded-lg text-green-400 font-medium transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
-              📊 Excel
+              <span>📊</span>
+              <span>Exportar Excel</span>
             </button>
           </div>
         )}

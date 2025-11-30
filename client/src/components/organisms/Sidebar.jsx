@@ -14,7 +14,7 @@ export default function Sidebar() {
     { icon: '📦', label: 'Productos', path: '/products', roles: ['owner', 'admin', 'supervisor', 'cashier'] },
     { icon: '📊', label: 'Inventario', path: '/inventory', roles: ['owner', 'admin', 'supervisor'] },
     { icon: '👤', label: 'Clientes', path: '/customers', roles: ['owner', 'supervisor', 'cashier'] },
-    { icon: '💰', label: 'Ventas', path: '/sales', roles: ['supervisor'] },    
+    { icon: '💰', label: 'Ventas', path: '/sales', roles: ['supervisor', 'cashier'] },    
     { icon: '📋', label: 'Compras', path: '/purchases', roles: ['owner'] },
     { icon: '🛒', label: 'POS', path: '/pos', roles: ['cashier'] },
     { icon: '↩️', label: 'Devoluciones', path: '/returns', roles: ['owner', 'admin', 'supervisor', 'cashier'] },

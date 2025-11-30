@@ -140,6 +140,15 @@ const createLog = async (req, res) => {
             })
         }
 
+        // Verificar que el usuario autenticado solo puede crear logs para sí mismo
+        // (a menos que sea owner o admin)
+        if (req.user.role !== 'owner' && req.user.role !== 'admin' && req.user.id !== user_id) {
+            return res.status(403).json({
+                success: false,
+                message: 'No tienes permisos para crear logs de otros usuarios'
+            })
+        }
+
         // Verificar que el usuario existe
         const userExists = await User.findByPk(user_id)
         if (!userExists) {

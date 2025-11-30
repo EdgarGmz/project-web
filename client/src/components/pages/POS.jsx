@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { productService } from '../../services/productService'
 import { customerService } from '../../services/customerService'
 import { saleService } from '../../services/saleServices'
 import { inventoryService } from '../../services/inventoryService'
 import SuccessModal from '../molecules/SuccessModal'
+import { jsPDF } from 'jspdf'
 
 export default function POS() {
   const [products, setProducts] = useState([])
@@ -34,6 +35,13 @@ export default function POS() {
     notes: ''
   })
   const [creatingCustomer, setCreatingCustomer] = useState(false)
+  const [cartWidth, setCartWidth] = useState(() => {
+    // Cargar el ancho guardado del localStorage o usar el valor por defecto
+    const savedWidth = localStorage.getItem('pos_cart_width')
+    return savedWidth ? parseInt(savedWidth) : 450
+  })
+  const [isResizing, setIsResizing] = useState(false)
+  const cartScrollRef = useRef(null)
   const { user } = useAuth()
 
   useEffect(() => {
@@ -46,6 +54,68 @@ export default function POS() {
       fetchInventory()
     }
   }, [user])
+
+  // Guardar el ancho del carrito en localStorage cuando cambie
+  useEffect(() => {
+    localStorage.setItem('pos_cart_width', cartWidth.toString())
+  }, [cartWidth])
+
+  // Restaurar la posición de scroll del carrito al cargar
+  useEffect(() => {
+    if (cartScrollRef.current) {
+      const savedScrollPosition = localStorage.getItem('pos_cart_scroll')
+      if (savedScrollPosition) {
+        // Usar setTimeout para asegurar que el DOM esté completamente renderizado
+        setTimeout(() => {
+          if (cartScrollRef.current) {
+            cartScrollRef.current.scrollTop = parseInt(savedScrollPosition)
+          }
+        }, 100)
+      }
+    }
+  }, [cart.length]) // Restaurar cuando cambie el contenido del carrito
+
+  // Guardar la posición de scroll cuando el usuario hace scroll
+  const handleCartScroll = () => {
+    if (cartScrollRef.current) {
+      localStorage.setItem('pos_cart_scroll', cartScrollRef.current.scrollTop.toString())
+    }
+  }
+
+  // Manejar el redimensionamiento del carrito
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isResizing) return
+      
+      // Calcular el nuevo ancho basado en la posición del mouse
+      const newWidth = window.innerWidth - e.clientX
+      
+      // Limitar el ancho entre 300px y 800px
+      const minWidth = 300
+      const maxWidth = 800
+      const clampedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth))
+      
+      setCartWidth(clampedWidth)
+    }
+
+    const handleMouseUp = () => {
+      setIsResizing(false)
+    }
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [isResizing])
 
   const fetchProducts = async () => {
     try {
@@ -156,7 +226,6 @@ export default function POS() {
   const getProductStock = (productId) => {
     const key = `${productId}_${user?.branch_id}`
     const stock = inventory[key] || 0
-    console.log(`Stock para producto ${productId} en sucursal ${user?.branch_id}: ${stock}`)
     return stock
   }
 
@@ -233,6 +302,442 @@ export default function POS() {
     return received - total
   }
 
+  const generateTicketPDF = (saleData, cartItems, totalAmount, customer, paymentMethodParam, amountReceivedParam, changeAmount) => {
+    try {
+      console.log('🖨️ Iniciando generación de PDF...', { 
+        saleData: saleData ? 'existe' : 'null',
+        cartItemsCount: cartItems?.length || 0,
+        totalAmount,
+        customer: customer ? 'existe' : 'null'
+      })
+      
+      // Validar que tenemos los datos necesarios
+      if (!saleData) {
+        console.error('❌ No hay datos de venta para generar el ticket')
+        return
+      }
+
+      if (!cartItems || cartItems.length === 0) {
+        console.error('❌ No hay items en el carrito para generar el ticket')
+        return
+      }
+
+      console.log('✅ Datos validados, creando PDF...')
+
+      // Crear PDF con formato de ticket (80mm de ancho)
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      })
+      
+      // Configuración del ticket
+      const ticketWidth = 80
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const margin = 8
+      const contentWidth = ticketWidth - 2 * margin
+      let yPos = margin
+
+      // ========== ENCABEZADO ==========
+      // Fondo del encabezado (simulado con rectángulo)
+      doc.setDrawColor(50, 50, 50)
+      doc.setFillColor(30, 30, 30)
+      doc.rect(margin, yPos - 2, ticketWidth - 2 * margin, 12, 'F')
+      
+      // Título principal
+      doc.setTextColor(255, 255, 255)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(16)
+      doc.text('APEX STORE', pageWidth / 2, yPos + 4, { align: 'center' })
+      
+      // Subtítulo
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'normal')
+      doc.text('Sistema de Punto de Venta', pageWidth / 2, yPos + 7, { align: 'center' })
+      
+      yPos += 12
+      doc.setTextColor(0, 0, 0) // Volver a color negro
+
+      // Información de la sucursal
+      if (user?.branch) {
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(9)
+        doc.setTextColor(60, 60, 60)
+        doc.text(user.branch.name || 'Sucursal', pageWidth / 2, yPos, { align: 'center' })
+        yPos += 4
+        
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(7)
+        doc.setTextColor(80, 80, 80)
+        
+        if (user.branch.address) {
+          const addressLines = doc.splitTextToSize(user.branch.address, contentWidth)
+          addressLines.forEach(line => {
+            doc.text(line, pageWidth / 2, yPos, { align: 'center' })
+            yPos += 3
+          })
+        }
+        
+        if (user.branch.city && user.branch.state) {
+          doc.text(`${user.branch.city}, ${user.branch.state}`, pageWidth / 2, yPos, { align: 'center' })
+          yPos += 3
+        }
+        
+        if (user.branch.phone) {
+          doc.text(`📞 ${user.branch.phone}`, pageWidth / 2, yPos, { align: 'center' })
+          yPos += 3
+        }
+        
+        if (user.branch.email) {
+          doc.text(`✉ ${user.branch.email}`, pageWidth / 2, yPos, { align: 'center' })
+          yPos += 3
+        }
+      }
+
+      yPos += 2
+      doc.setTextColor(0, 0, 0)
+      
+      // Línea separadora decorativa
+      doc.setDrawColor(200, 200, 200)
+      doc.setLineWidth(0.3)
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 4
+
+      // Información del ticket
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(10)
+      doc.setTextColor(40, 40, 40)
+      doc.text('TICKET DE COMPRA', pageWidth / 2, yPos, { align: 'center' })
+      yPos += 5
+
+      // Información de la transacción en formato de tabla
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(60, 60, 60)
+      
+      // Usar created_at si sale_date no existe
+      const saleDate = saleData.sale_date || saleData.created_at ? new Date(saleData.sale_date || saleData.created_at) : new Date()
+      const dateStr = saleDate.toLocaleDateString('es-MX', { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      })
+      const timeStr = saleDate.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+      
+      // Fecha y hora
+      doc.setFont('helvetica', 'bold')
+      doc.text('Fecha:', margin, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(`${dateStr} ${timeStr}`, margin + 20, yPos)
+      yPos += 4
+
+      // Referencia de transacción
+      if (saleData.transaction_reference) {
+        doc.setFont('helvetica', 'bold')
+        doc.text('Ticket:', margin, yPos)
+        doc.setFont('helvetica', 'normal')
+        doc.setFont('courier', 'normal') // Fuente monoespaciada para referencia
+        doc.text(saleData.transaction_reference, margin + 20, yPos)
+        doc.setFont('helvetica', 'normal')
+        yPos += 4
+      }
+
+      // Información del cliente
+      doc.setFont('helvetica', 'bold')
+      doc.text('Cliente:', margin, yPos)
+      doc.setFont('helvetica', 'normal')
+      if (customer) {
+        doc.text(`${customer.first_name} ${customer.last_name}`, margin + 20, yPos)
+      } else {
+        doc.text('Público en General', margin + 20, yPos)
+      }
+      yPos += 4
+
+      // Cajero
+      if (user) {
+        doc.setFont('helvetica', 'bold')
+        doc.text('Cajero:', margin, yPos)
+        doc.setFont('helvetica', 'normal')
+        doc.text(`${user.first_name} ${user.last_name}`, margin + 20, yPos)
+        yPos += 4
+      }
+
+      yPos += 2
+      // Línea separadora
+      doc.setDrawColor(200, 200, 200)
+      doc.setLineWidth(0.3)
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 4
+
+      // Items de la venta - Encabezado de tabla
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(8)
+      doc.setTextColor(40, 40, 40)
+      doc.text('PRODUCTOS', margin, yPos)
+      yPos += 5
+
+      // Línea de encabezado de tabla
+      doc.setDrawColor(100, 100, 100)
+      doc.setLineWidth(0.5)
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 3
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(0, 0, 0)
+      
+      cartItems.forEach((item, index) => {
+        // Verificar si hay espacio suficiente en la página
+        if (yPos > doc.internal.pageSize.getHeight() - 30) {
+          doc.addPage()
+          yPos = margin
+        }
+
+        const itemName = item.name || 'Producto'
+        const quantity = item.quantity || 1
+        const unitPrice = parseFloat(item.unit_price || item.price || 0)
+        const subtotal = unitPrice * quantity
+
+        // Fondo alternado para filas (simulado)
+        if (index % 2 === 0) {
+          doc.setFillColor(250, 250, 250)
+          doc.rect(margin, yPos - 2, ticketWidth - 2 * margin, 8, 'F')
+        }
+
+        // Cantidad (izquierda)
+        doc.setFont('helvetica', 'bold')
+        doc.text(`${quantity}`, margin + 2, yPos)
+        
+        // Nombre del producto (centro)
+        doc.setFont('helvetica', 'normal')
+        const nameWidth = contentWidth - 35 // Espacio para cantidad y precio
+        const nameLines = doc.splitTextToSize(itemName, nameWidth)
+        doc.text(nameLines[0], margin + 12, yPos)
+        
+        // Subtotal (derecha, alineado)
+        doc.setFont('helvetica', 'bold')
+        const subtotalText = `$${subtotal.toFixed(2)}`
+        doc.text(subtotalText, pageWidth - margin - 2, yPos, { align: 'right' })
+        yPos += 3.5
+
+        // Si el nombre es muy largo, agregar líneas adicionales
+        if (nameLines.length > 1) {
+          doc.setFont('helvetica', 'normal')
+          for (let i = 1; i < nameLines.length; i++) {
+            if (yPos > doc.internal.pageSize.getHeight() - 30) {
+              doc.addPage()
+              yPos = margin
+            }
+            doc.text(nameLines[i], margin + 12, yPos)
+            yPos += 3
+          }
+        }
+
+        // Precio unitario (pequeño, debajo del nombre)
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(6)
+        doc.setTextColor(120, 120, 120)
+        doc.text(`@ $${unitPrice.toFixed(2)} c/u`, margin + 12, yPos)
+        doc.setFontSize(7)
+        doc.setTextColor(0, 0, 0)
+        yPos += 4
+
+        // Línea separadora sutil entre items
+        if (index < cartItems.length - 1) {
+          doc.setDrawColor(230, 230, 230)
+          doc.setLineWidth(0.2)
+          doc.line(margin + 10, yPos - 1, pageWidth - margin - 10, yPos - 1)
+        }
+      })
+
+      yPos += 2
+      // Línea separadora doble antes de totales
+      doc.setDrawColor(100, 100, 100)
+      doc.setLineWidth(0.5)
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 1
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 4
+
+      // Totales - Sección destacada
+      const total = parseFloat(saleData.total_amount || totalAmount || 0)
+      
+      // Fondo para total
+      doc.setFillColor(240, 240, 240)
+      doc.rect(margin, yPos - 3, ticketWidth - 2 * margin, 8, 'F')
+      
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(11)
+      doc.setTextColor(40, 40, 40)
+      doc.text('TOTAL', margin + 5, yPos + 2)
+      doc.text(`$${total.toFixed(2)}`, pageWidth - margin - 5, yPos + 2, { align: 'right' })
+      yPos += 8
+
+      // Método de pago
+      yPos += 2
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(60, 60, 60)
+      const paymentMethodLabel = {
+        'cash': '💵 Efectivo',
+        'card': '💳 Tarjeta',
+        'transfer': '🏦 Transferencia',
+        'mixed': '💰 Mixto'
+      }[paymentMethodParam] || paymentMethodParam || '💵 Efectivo'
+      
+      doc.setFont('helvetica', 'bold')
+      doc.text('Método de pago:', margin, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(paymentMethodLabel, margin + 35, yPos)
+      yPos += 4
+
+      if (paymentMethodParam === 'cash' && amountReceivedParam) {
+        const received = parseFloat(amountReceivedParam)
+        const change = changeAmount !== undefined ? changeAmount : (received - total)
+        
+        doc.setFont('helvetica', 'bold')
+        doc.text('Recibido:', margin, yPos)
+        doc.setFont('helvetica', 'normal')
+        doc.text(`$${received.toFixed(2)}`, margin + 25, yPos)
+        yPos += 3.5
+        
+        doc.setFont('helvetica', 'bold')
+        doc.text('Cambio:', margin, yPos)
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(0, 120, 0)
+        doc.text(`$${change.toFixed(2)}`, margin + 25, yPos)
+        doc.setTextColor(0, 0, 0)
+        yPos += 4
+      }
+
+      yPos += 3
+      // Línea separadora decorativa
+      doc.setDrawColor(200, 200, 200)
+      doc.setLineWidth(0.3)
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 5
+
+      // Mensaje de gratitud - destacado
+      doc.setFillColor(245, 245, 245)
+      doc.rect(margin, yPos - 2, ticketWidth - 2 * margin, 8, 'F')
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(10)
+      doc.setTextColor(50, 50, 50)
+      doc.text('¡GRACIAS POR SU COMPRA!', pageWidth / 2, yPos + 3, { align: 'center' })
+      yPos += 8
+
+      // Información de garantía
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(7)
+      doc.setTextColor(60, 60, 60)
+      doc.text('📋 GARANTÍA', pageWidth / 2, yPos, { align: 'center' })
+      yPos += 4
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(6)
+      doc.setTextColor(80, 80, 80)
+      const warrantyText = 'Este producto tiene 6 meses de garantía en esta sucursal. Para hacer válida la garantía, presente este ticket al momento de la reclamación.'
+      const warrantyLines = doc.splitTextToSize(warrantyText, contentWidth)
+      warrantyLines.forEach((line) => {
+        if (yPos > doc.internal.pageSize.getHeight() - 15) {
+          doc.addPage()
+          yPos = margin
+        }
+        doc.text(line, pageWidth / 2, yPos, { align: 'center' })
+        yPos += 3
+      })
+
+      // Información de contacto adicional
+      yPos += 4
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(7)
+      doc.setTextColor(60, 60, 60)
+      doc.text('📞 CONTACTO', pageWidth / 2, yPos, { align: 'center' })
+      yPos += 4
+
+      if (user?.branch) {
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(6)
+        doc.setTextColor(80, 80, 80)
+        if (user.branch.phone) {
+          doc.text(`📞 ${user.branch.phone}`, pageWidth / 2, yPos, { align: 'center' })
+          yPos += 3
+        }
+        if (user.branch.email) {
+          doc.text(`✉ ${user.branch.email}`, pageWidth / 2, yPos, { align: 'center' })
+          yPos += 3
+        }
+        if (user.branch.address) {
+          const addressLines = doc.splitTextToSize(user.branch.address, contentWidth)
+          addressLines.forEach((line) => {
+            if (yPos > doc.internal.pageSize.getHeight() - 10) {
+              doc.addPage()
+              yPos = margin
+            }
+            doc.text(line, pageWidth / 2, yPos, { align: 'center' })
+            yPos += 3
+          })
+        }
+      }
+
+      // Pie de página
+      yPos += 4
+      doc.setDrawColor(200, 200, 200)
+      doc.setLineWidth(0.3)
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 3
+      doc.setFont('helvetica', 'italic')
+      doc.setFontSize(6)
+      doc.setTextColor(120, 120, 120)
+      doc.text('Conserve este ticket para garantía', pageWidth / 2, yPos, { align: 'center' })
+      yPos += 3
+      doc.text('Este documento es válido como comprobante fiscal', pageWidth / 2, yPos, { align: 'center' })
+
+      // Guardar el PDF
+      const fileName = `ticket_${saleData.transaction_reference || saleData.id || Date.now()}.pdf`
+      console.log('💾 Guardando PDF con nombre:', fileName)
+      
+      try {
+        doc.save(fileName)
+        console.log('✅ PDF generado y descargado exitosamente:', fileName)
+      } catch (saveError) {
+        console.error('⚠️ Error al guardar PDF con doc.save(), intentando método alternativo:', saveError)
+        try {
+          // Intentar método alternativo
+          const pdfBlob = doc.output('blob')
+          const url = URL.createObjectURL(pdfBlob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = fileName
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+          console.log('✅ PDF generado usando método alternativo:', fileName)
+        } catch (altError) {
+          console.error('❌ Error en método alternativo de guardado:', altError)
+          // Intentar abrir en nueva ventana como último recurso
+          try {
+            const pdfDataUri = doc.output('datauristring')
+            const newWindow = window.open()
+            if (newWindow) {
+              newWindow.document.write(`<iframe width='100%' height='100%' src='${pdfDataUri}'></iframe>`)
+              console.log('✅ PDF abierto en nueva ventana')
+            }
+          } catch (finalError) {
+            console.error('❌ Error crítico al generar PDF:', finalError)
+            alert('Error al generar el PDF del ticket. Por favor, contacte al administrador.')
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error crítico al generar ticket PDF:', error)
+      console.error('Stack trace:', error.stack)
+      console.error('Datos recibidos:', { saleData, cartItems, totalAmount, customer })
+      alert('Error al generar el PDF del ticket. Por favor, verifique la consola para más detalles.')
+    }
+  }
+
   const processSale = async () => {
     if (cart.length === 0) {
       setError('El carrito está vacío')
@@ -272,14 +777,75 @@ export default function POS() {
       console.log('Respuesta del servidor:', response)
       
       if (response.success) {
+        console.log('✅ Venta procesada exitosamente')
+        console.log('📦 Datos de respuesta completa:', response)
+        console.log('📦 Datos de respuesta.data:', response.data)
+        
+        // Guardar datos antes de limpiar el carrito
+        const cartItemsForPDF = [...cart] // Copia del carrito
+        const totalForPDF = response.data?.total_amount || getCartTotal()
+        const customerForPDF = response.data?.customer || selectedCustomer
+        
+        // Crear objeto de venta para el PDF (usar datos del servidor o crear uno sintético)
+        let saleDataForPDF = response.data || response.sale
+        
+        // Si no hay datos del servidor, crear un objeto sintético con los datos disponibles
+        if (!saleDataForPDF) {
+          console.log('⚠️ response.data es null, creando objeto de venta sintético')
+          saleDataForPDF = {
+            id: response.id || `temp-${Date.now()}`,
+            transaction_reference: response.transaction_reference || `TXN-${Date.now()}`,
+            total_amount: totalForPDF,
+            created_at: new Date().toISOString(),
+            sale_date: new Date().toISOString(),
+            payment_method: paymentMethod,
+            customer: customerForPDF,
+            user: user,
+            branch: user?.branch
+          }
+        }
+        
+        console.log('📄 Preparando datos para PDF:', {
+          saleDataForPDF: saleDataForPDF ? 'existe' : 'null',
+          saleDataKeys: saleDataForPDF ? Object.keys(saleDataForPDF) : [],
+          cartItemsCount: cartItemsForPDF.length,
+          totalForPDF,
+          customerForPDF: customerForPDF ? 'existe' : 'null'
+        })
+        
+        // Generar PDF del ticket siempre que tengamos items en el carrito
+        if (cartItemsForPDF.length > 0) {
+          console.log('🚀 Llamando a generateTicketPDF en 100ms...')
+          const changeAmount = paymentMethod === 'cash' && amountReceived ? getChange() : undefined
+          setTimeout(() => {
+            console.log('⏰ Ejecutando generateTicketPDF ahora...')
+            generateTicketPDF(
+              saleDataForPDF, 
+              cartItemsForPDF, 
+              totalForPDF, 
+              customerForPDF,
+              paymentMethod,
+              amountReceived,
+              changeAmount
+            )
+          }, 100) // Pequeño delay para asegurar que los datos estén disponibles
+        } else {
+          console.warn('⚠️ No se pudo generar el PDF: carrito vacío')
+        }
+        
         setSuccessModal({ 
           isOpen: true, 
-          message: `Venta procesada exitosamente. Total: $${getCartTotal().toFixed(2)}` 
+          message: `Venta procesada exitosamente. Total: $${totalForPDF.toFixed(2)}` 
         })
         setCart([])
         setSelectedCustomer(null)
         setAmountReceived('')
         setShowPayment(false)
+        // Resetear la posición de scroll cuando se vacía el carrito
+        localStorage.removeItem('pos_cart_scroll')
+        if (cartScrollRef.current) {
+          cartScrollRef.current.scrollTop = 0
+        }
         fetchInventory() // Actualizar inventario
       }
     } catch (error) {
@@ -501,8 +1067,36 @@ export default function POS() {
           </div>
         </div>
 
-        {/* Panel de carrito mejorado */}
-        <div className="w-[450px] border-l-2 border-slate-600/30 flex flex-col bg-gradient-to-b from-surface/50 to-surface/30 shadow-2xl">
+        {/* Panel de carrito mejorado con redimensionamiento */}
+        <div 
+          className="relative flex flex-col bg-gradient-to-b from-surface/50 to-surface/30 shadow-2xl"
+          style={{ width: `${cartWidth}px` }}
+        >
+          {/* Handle de redimensionamiento */}
+          <div
+            onMouseDown={(e) => {
+              e.preventDefault()
+              setIsResizing(true)
+            }}
+            className={`absolute left-0 top-0 bottom-0 w-2 cursor-col-resize transition-all z-10 group ${
+              isResizing 
+                ? 'bg-accent/70 w-3' 
+                : 'bg-slate-600/30 hover:bg-accent/50 hover:w-3'
+            }`}
+            title="Arrastra para ajustar el ancho del carrito"
+          >
+            <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity ${
+              isResizing ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            }`}>
+              <div className="flex flex-col gap-1.5">
+                <div className="w-1 h-5 bg-accent rounded-full"></div>
+                <div className="w-1 h-5 bg-accent rounded-full"></div>
+                <div className="w-1 h-5 bg-accent rounded-full"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border-l-2 border-slate-600/30 flex flex-col h-full">
           {/* Header del carrito */}
           <div className="p-6 border-b-2 border-slate-600/30 bg-gradient-to-r from-accent/10 to-blue-500/5">
             <div className="flex items-center justify-between mb-6">
@@ -583,7 +1177,11 @@ export default function POS() {
           </div>
 
           {/* Items del carrito mejorados */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div 
+            ref={cartScrollRef}
+            onScroll={handleCartScroll}
+            className="flex-1 overflow-y-auto p-4"
+          >
             {cart.length === 0 ? (
               <div className="text-center py-16">
                 <div className="text-6xl mb-4 animate-bounce-slow">🛒</div>
@@ -662,6 +1260,7 @@ export default function POS() {
               </button>
             </div>
           )}
+          </div>
         </div>
       </div>
 
