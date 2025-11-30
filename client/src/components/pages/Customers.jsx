@@ -3,6 +3,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import ConfirmModal from '../molecules/ConfirmModal'
 import SuccessModal from '../molecules/SuccessModal'
 import CancelledModal from '../molecules/CancelledModal'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 
 export default function Customers() {
   const [customers, setCustomers] = useState([])
@@ -152,11 +154,9 @@ export default function Customers() {
     customer.document_number?.includes(searchTerm)
   )
 
-  if (loading) {
-    return <div className="card text-center py-8">Cargando clientes...</div>
-  }
-
   return (
+    <>
+      <LoadingModal isOpen={loading} message="Cargando clientes..." />
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -264,7 +264,26 @@ export default function Customers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-600/20">
-              {filteredCustomers.map((customer) => (
+              {customers.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="py-12">
+                    <NotFound 
+                      message="No hay clientes registrados"
+                      subtitle="Crea el primer cliente para comenzar"
+                    />
+                  </td>
+                </tr>
+              ) : filteredCustomers.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="py-12">
+                    <NotFound 
+                      message="No se encontraron clientes"
+                      subtitle="Intenta ajustar el término de búsqueda"
+                    />
+                  </td>
+                </tr>
+              ) : (
+                filteredCustomers.map((customer) => (
                 <tr key={customer.id} className="group hover:bg-gradient-to-r hover:from-slate-800/40 hover:to-slate-700/20 transition-all duration-200 border-b border-slate-600/10">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
@@ -375,7 +394,8 @@ export default function Customers() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -685,5 +705,6 @@ export default function Customers() {
         message={cancelledModal.message}
       />
     </div>
+    </>
   )
 }

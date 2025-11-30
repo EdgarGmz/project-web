@@ -6,6 +6,8 @@ import { userService } from '../../services/userService'
 import ConfirmModal from '../molecules/ConfirmModal'
 import SuccessModal from '../molecules/SuccessModal'
 import CancelledModal from '../molecules/CancelledModal'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 
 export default function Purchases() {
   const { hasPermission, user } = useAuth()
@@ -232,7 +234,9 @@ export default function Purchases() {
   const pendingPurchases = filteredPurchases.filter(p => p.status === 'pending').length
 
   return (
-    <div className="space-y-6">
+    <>
+      <LoadingModal isOpen={loading} message="Cargando compras..." />
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -350,12 +354,11 @@ export default function Purchases() {
 
       {/* Lista de compras */}
       <div className="card overflow-hidden border border-slate-600/20 shadow-xl">
-        {loading ? (
-          <div className="text-center py-8 text-muted">Cargando compras...</div>
-        ) : filteredPurchases.length === 0 ? (
-          <div className="text-center py-8 text-muted">
-            No hay compras registradas
-          </div>
+        {filteredPurchases.length === 0 ? (
+          <NotFound 
+            message="No hay compras registradas"
+            subtitle="Aún no se han registrado compras en el sistema"
+          />
         ) : (
           <>
             <div className="overflow-x-auto">
@@ -683,5 +686,6 @@ export default function Purchases() {
         message={cancelledModal.message}
       />
     </div>
+    </>
   )
 }

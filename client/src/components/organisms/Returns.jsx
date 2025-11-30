@@ -5,6 +5,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import ConfirmModal from '../molecules/ConfirmModal'
 import PromptModal from '../molecules/PromptModal'
 import SuccessModal from '../molecules/SuccessModal'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 
 export default function Returns() {
   const [returns, setReturns] = useState([])
@@ -352,7 +354,9 @@ export default function Returns() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <>
+      <LoadingModal isOpen={loading} message="Cargando devoluciones..." />
+      <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 bg-gradient-to-r from-slate-800/50 via-slate-700/30 to-slate-800/50 rounded-xl border border-slate-700/50 shadow-lg">
         <div>
@@ -494,10 +498,11 @@ export default function Returns() {
 
       {/* Tabla */}
       <div className="card border border-slate-600/20 shadow-xl">
-        {loading ? (
-          <div className="text-center py-8 text-muted">Cargando devoluciones...</div>
-        ) : returns.length === 0 ? (
-          <div className="text-center py-8 text-muted">No hay devoluciones registradas.</div>
+        {returns.length === 0 ? (
+          <NotFound 
+            message="No hay devoluciones registradas"
+            subtitle="Aún no se han registrado devoluciones en el sistema"
+          />
         ) : (
           <>
             <div className="overflow-x-auto">
@@ -1048,5 +1053,6 @@ export default function Returns() {
         message={successModal.message}
       />
     </div>
+    </>
   )
 }

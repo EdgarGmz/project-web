@@ -4,6 +4,8 @@ import { saleService } from '../../services/saleServices'
 import { branchService } from '../../services/branchService'
 import { userService } from '../../services/userService'
 import { jsPDF } from 'jspdf'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 
 export default function Sales() {
   const { hasPermission, user } = useAuth()
@@ -445,12 +447,10 @@ export default function Sales() {
   const totalAmount = sales.reduce((sum, sale) => sum + Number(sale.total_amount || 0), 0)
   const averageTicket = totalSales > 0 ? totalAmount / totalSales : 0
 
-  if (loading) {
-    return <div className="card text-center py-8">Cargando ventas...</div>
-  }
-
   return (
-    <div className="space-y-6">
+    <>
+      <LoadingModal isOpen={loading} message="Cargando ventas..." />
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -574,12 +574,11 @@ export default function Sales() {
 
       {/* Lista de ventas */}
       <div className="card overflow-hidden border border-slate-600/20 shadow-xl">
-        {loading ? (
-          <div className="text-center py-8 text-muted">Cargando ventas...</div>
-        ) : sales.length === 0 ? (
-          <div className="text-center py-8 text-muted">
-            No hay ventas registradas
-          </div>
+        {sales.length === 0 ? (
+          <NotFound 
+            message="No hay ventas registradas"
+            subtitle="Aún no se han registrado ventas en el sistema"
+          />
         ) : (
           <>
             <div className="overflow-x-auto">
@@ -917,5 +916,6 @@ export default function Sales() {
         </div>
       )}
     </div>
+    </>
   )
 }

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { logService } from '../../services/logService'
 import { userService } from '../../services/userService'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 
 export default function Logs() {
     const [logs, setLogs] = useState([])
@@ -230,7 +232,9 @@ export default function Logs() {
     }
 
     return (
-        <div className="space-y-6">
+        <>
+            <LoadingModal isOpen={loading} message="Cargando logs..." />
+            <div className="space-y-6">
             {/* Header */}
             <header className="flex justify-between items-center">
                 <div>
@@ -396,11 +400,11 @@ export default function Logs() {
                                 </tr>
                             ) : logs.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="text-center py-12">
-                                        <div className="flex flex-col items-center justify-center gap-2">
-                                            <span className="text-4xl">📭</span>
-                                            <span className="text-muted font-medium">No se encontraron logs con los filtros aplicados</span>
-                                        </div>
+                                    <td colSpan="5" className="py-12">
+                                        <NotFound 
+                                          message="No se encontraron logs"
+                                          subtitle="No se encontraron logs con los filtros aplicados"
+                                        />
                                     </td>
                                 </tr>
                             ) : (
@@ -500,5 +504,6 @@ export default function Logs() {
                 )}
             </div>
         </div>
+        </>
     )
 }

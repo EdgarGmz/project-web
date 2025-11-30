@@ -6,6 +6,8 @@ import { inventoryService } from '../../services/inventoryService'
 import ConfirmModal from '../molecules/ConfirmModal'
 import SuccessModal from '../molecules/SuccessModal'
 import CancelledModal from '../molecules/CancelledModal'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 import Modal from '../molecules/Modal'
 
 export default function Products() {
@@ -278,11 +280,9 @@ export default function Products() {
     }
   }
 
-  if (loading && products.length === 0) {
-    return <div className="card text-center py-8">Cargando productos...</div>
-  }
-
   return (
+    <>
+      <LoadingModal isOpen={loading && products.length === 0} message="Cargando productos..." />
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -409,12 +409,15 @@ export default function Products() {
       {/* Lista de productos */}
       <div className="card overflow-hidden border border-slate-600/20 shadow-xl">
         {products.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="flex flex-col items-center justify-center gap-2">
-              <span className="text-4xl">📦</span>
-              <span className="text-muted font-medium">No se encontraron productos con los filtros aplicados</span>
-            </div>
-          </div>
+          <NotFound 
+            message="No hay productos registrados"
+            subtitle="Crea el primer producto para comenzar"
+          />
+        ) : filteredProducts.length === 0 ? (
+          <NotFound 
+            message="No se encontraron productos"
+            subtitle="Intenta ajustar los filtros de búsqueda"
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -830,13 +833,11 @@ export default function Products() {
                   <p className="mt-4 text-muted text-lg">Cargando inventario...</p>
                 </div>
               ) : inventoryModal.inventory.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16">
-                  <div className="text-6xl mb-4">📭</div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Sin Inventario</h3>
-                  <p className="text-muted text-center max-w-md">
-                    No hay inventario registrado para este producto en ninguna sucursal.
-                  </p>
-                </div>
+                <NotFound 
+                  message="Sin Inventario"
+                  subtitle="No hay inventario registrado para este producto en ninguna sucursal"
+                  size="lg"
+                />
               ) : (
                 <div className="space-y-6">
                   {/* Información del producto */}
@@ -1022,5 +1023,6 @@ export default function Products() {
         </div>
       )}
     </div>
+    </>
   )
 }

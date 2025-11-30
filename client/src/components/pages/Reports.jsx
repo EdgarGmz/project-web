@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { reportService } from '../../services/reportService'
 import { logService } from '../../services/logService'
+import LoadingModal from '../molecules/LoadingModal'
 import { jsPDF } from 'jspdf'
 import { autoTable } from 'jspdf-autotable'
 import * as XLSX from 'xlsx'
@@ -479,7 +480,9 @@ export default function Reports() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <LoadingModal isOpen={loading} message="Generando reporte..." />
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Reportes</h1>
@@ -558,12 +561,7 @@ export default function Reports() {
       </div>
 
       {/* Contenido del reporte */}
-      {loading ? (
-        <div className="card text-center py-8">
-          <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-muted">Generando reporte...</p>
-        </div>
-      ) : reportData ? (
+      {reportData ? (
         <div className="space-y-6">
           {/* Reporte de Ventas */}
           {reportType === 'sales' && (
@@ -989,5 +987,6 @@ export default function Reports() {
         </div>
       )}
     </div>
+    </>
   )
 }

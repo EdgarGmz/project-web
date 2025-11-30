@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import deniedImage from '../../assets/img/denied.png'
+import LoadingModal from './LoadingModal'
 
 // Componente para mostrar acceso denegado con redirección
 function AccessDeniedPage({ navigate, userRole }) {
@@ -52,11 +53,7 @@ export default function ProtectedRoute({ children, roles = [] }) {
     const navigate = useNavigate()
 
     if (loading) {
-        return (
-        <div className="min-h-screen bg-bg flex items-center justify-center">
-            <div className="text-accent">Cargando...</div>
-        </div>
-        )
+        return <LoadingModal isOpen={true} message="Cargando..." />
     }
 
     if (!user) {

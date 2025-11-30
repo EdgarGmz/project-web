@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { api } from '../../services/api'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 
 export default function Dashboard() {
   const { user, hasPermission } = useAuth()
@@ -129,15 +131,9 @@ export default function Dashboard() {
     return ((current - previous) / previous * 100).toFixed(1)
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full"></div>
-      </div>
-    )
-  }
-
   return (
+    <>
+      <LoadingModal isOpen={loading} message="Cargando información del dashboard..." />
     <div className="space-y-6">
       {/* Header */}
       <div>
@@ -318,16 +314,17 @@ export default function Dashboard() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <div className="text-4xl mb-4">🛒</div>
-              <p className="text-muted">No hay ventas registradas hoy</p>
+            <NotFound 
+              message="No hay ventas registradas hoy"
+              subtitle="Comienza a realizar ventas para verlas aquí"
+            >
               <button 
                 onClick={() => handleNavigation('/pos')}
-                className="btn mt-4"
+                className="btn"
               >
                 Realizar Primera Venta
               </button>
-            </div>
+            </NotFound>
           )}
         </div>
 
@@ -359,10 +356,10 @@ export default function Dashboard() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <div className="text-4xl mb-4">📊</div>
-              <p className="text-muted">Sin datos de productos</p>
-            </div>
+            <NotFound 
+              message="Sin datos de productos"
+              subtitle="No hay productos con ventas registradas"
+            />
           )}
         </div>
       </div>
@@ -450,5 +447,6 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+    </>
   )
 }

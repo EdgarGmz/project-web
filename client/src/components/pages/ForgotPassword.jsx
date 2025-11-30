@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../../services/api'
+import LoadingModal from '../molecules/LoadingModal'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -30,7 +31,9 @@ export default function ForgotPassword() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20">
+    <>
+      <LoadingModal isOpen={loading} message="Enviando enlace de recuperación..." />
+      <main className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20">
       <section className="w-full max-w-md">
         <article className="w-full space-y-6 backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-8 shadow-xl">
           
@@ -107,5 +110,6 @@ export default function ForgotPassword() {
         </article>
       </section>
     </main>
+    </>
   )
 }

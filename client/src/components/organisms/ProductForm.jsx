@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import LoadingModal from '../molecules/LoadingModal'
 
 export default function ProductForm() {
   const { id } = useParams()
@@ -85,7 +86,9 @@ export default function ProductForm() {
   }
 
   return (
-    <div className="card max-w-lg mx-auto">
+    <>
+      <LoadingModal isOpen={loading} message="Guardando producto..." />
+      <div className="card max-w-lg mx-auto">
       <h1 className="text-2xl font-semibold mb-4">
         {id ? 'Editar Producto' : 'Nuevo Producto'}
       </h1>
@@ -214,5 +217,6 @@ export default function ProductForm() {
         </div>
       </form>
     </div>
+    </>
   )
 }

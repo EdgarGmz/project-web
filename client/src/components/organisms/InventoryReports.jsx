@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 
 export default function InventoryReports() {
   const [report, setReport] = useState(null)
@@ -47,12 +49,14 @@ export default function InventoryReports() {
           className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface"
         />
       </div>
-      {loading ? (
-        <div className="text-center py-8 text-muted">Cargando reporte...</div>
-      ) : error ? (
+      <LoadingModal isOpen={loading} message="Cargando reporte..." />
+      {error ? (
         <div className="text-center py-8 text-red-500">{error}</div>
       ) : !report || !filteredProducts.length ? (
-        <div className="text-center py-8 text-muted">No hay datos de inventario.</div>
+        <NotFound 
+          message="No hay datos de inventario"
+          subtitle="No se encontraron productos en el inventario"
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

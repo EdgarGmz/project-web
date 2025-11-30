@@ -152,7 +152,9 @@ export default function UserForm({ user, onSuccess, onCancel }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <>
+      <LoadingModal isOpen={loading} message="Guardando usuario..." />
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="card max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-semibold">
@@ -366,5 +368,6 @@ export default function UserForm({ user, onSuccess, onCancel }) {
         </form>
       </div>
     </div>
+    </>
   )
 }
