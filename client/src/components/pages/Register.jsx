@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import ThemeToggle from '../atoms/ThemeToggle'
 import PasswordInput from '../atoms/PasswordInput'
+import LoadingModal from '../molecules/LoadingModal'
 
 export default function Register() {
 const [formData, setFormData] = useState({
@@ -68,19 +69,24 @@ const handleSubmit = async (e) => {
 
 if (success) {
     return (
-    <div className="min-h-screen bg-bg text-text flex items-center justify-center p-8">
-        <div className="card text-center max-w-md">
-        <div className="text-4xl mb-4">✅</div>
-        <h2 className="text-xl font-semibold mb-2">¡Registro Exitoso!</h2>
-        <p className="text-muted mb-4">Tu cuenta ha sido creada correctamente</p>
-        <Link to="/login" className="btn inline-block">Iniciar Sesión</Link>
-        </div>
-    </div>
+        <>
+            <LoadingModal isOpen={loading} message="Creando cuenta..." />
+            <div className="min-h-screen bg-bg text-text flex items-center justify-center p-8">
+                <div className="card text-center max-w-md">
+                    <div className="text-4xl mb-4">✅</div>
+                    <h2 className="text-xl font-semibold mb-2">¡Registro Exitoso!</h2>
+                    <p className="text-muted mb-4">Tu cuenta ha sido creada correctamente</p>
+                    <Link to="/login" className="btn inline-block">Iniciar Sesión</Link>
+                </div>
+            </div>
+        </>
     )
 }
 
 return (
-    <div className="min-h-screen bg-bg text-text flex">
+    <>
+        <LoadingModal isOpen={loading} message="Creando cuenta..." />
+        <div className="min-h-screen bg-bg text-text flex">
     <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-accent/20 to-surface p-8 items-center justify-center">
         <div className="text-center space-y-6">
         <div className="h-16 w-16 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center mx-auto">
@@ -194,5 +200,6 @@ return (
         </div>
     </div>
     </div>
-)
+    </>
+    )
 }

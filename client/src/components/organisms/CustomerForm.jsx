@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import LoadingModal from '../molecules/LoadingModal'
 
 export default function CustomerForm() {
   const { id } = useParams()
@@ -85,7 +86,9 @@ export default function CustomerForm() {
   }
 
   return (
-    <div className="card max-w-lg mx-auto">
+    <>
+      <LoadingModal isOpen={loading} message="Guardando cliente..." />
+      <div className="card max-w-lg mx-auto">
       <h1 className="text-2xl font-semibold mb-4">
         {id ? 'Editar Cliente' : 'Nuevo Cliente'}
       </h1>
@@ -211,5 +214,6 @@ export default function CustomerForm() {
         </div>
       </form>
     </div>
+    </>
   )
 }

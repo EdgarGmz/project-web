@@ -5,6 +5,8 @@ import { userService } from '../../services/userService'
 import ConfirmModal from '../molecules/ConfirmModal'
 import SuccessModal from '../molecules/SuccessModal'
 import CancelledModal from '../molecules/CancelledModal'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 
 export default function Branches() {
   const [branches, setBranches] = useState([])
@@ -226,11 +228,9 @@ export default function Branches() {
     }
   }
 
-  if (loading) {
-    return <div className="card text-center py-8">Cargando sucursales...</div>
-  }
-
   return (
+    <>
+      <LoadingModal isOpen={loading} message="Cargando sucursales..." />
     <div className="space-y-6">
       {/* Mensajes de éxito y error */}
       {success && (
@@ -316,8 +316,14 @@ export default function Branches() {
       </div>
 
       {/* Lista de sucursales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {branches.map((branch) => (
+      {branches.length === 0 ? (
+        <NotFound 
+          message="No hay sucursales registradas"
+          subtitle={searchTerm ? "No se encontraron sucursales con ese término de búsqueda" : "Crea la primera sucursal para comenzar"}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {branches.map((branch) => (
           <div 
             key={branch.id} 
             className={`card group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
@@ -468,7 +474,8 @@ export default function Branches() {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
 
       {/* Paginación */}
       {totalPages > 1 && (
@@ -764,5 +771,6 @@ export default function Branches() {
         message={cancelledModal.message}
       />
     </div>
+    </>
   )
 }

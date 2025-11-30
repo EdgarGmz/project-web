@@ -7,6 +7,8 @@ import ConfirmModal from '../molecules/ConfirmModal'
 import SuccessModal from '../molecules/SuccessModal'
 import CancelledModal from '../molecules/CancelledModal'
 import ErrorModal from '../molecules/ErrorModal'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 
 export default function Inventory() {
   const [inventory, setInventory] = useState([])
@@ -313,11 +315,9 @@ export default function Inventory() {
     item.stock_current <= 0
   ).length
 
-  if (loading) {
-    return <div className="card text-center py-8">Cargando inventario...</div>
-  }
-
   return (
+    <>
+      <LoadingModal isOpen={loading} message="Cargando inventario..." />
     <div className="space-y-6">
       {/* Mensajes de éxito y error */}
       {success && (
@@ -526,15 +526,19 @@ export default function Inventory() {
                   (hasPermission(['owner', 'admin']) ? 1 : 0) + // Acciones
                   (user?.role !== 'supervisor' ? 1 : 0) + // Sucursal
                   5 // Producto, Stock Actual, Stock Mínimo, Reservado, Estado
-                } className="py-12 text-center">
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <span className="text-4xl">📭</span>
-                    <span className="text-muted font-medium">
-                      {filterSearch || filterProduct || (user?.role !== 'supervisor' && filterBranch) || filterLowStock 
-                        ? 'No se encontraron resultados con los filtros aplicados' 
-                        : 'No hay registros de inventario'}
-                    </span>
-                  </div>
+                } className="py-12">
+                  <NotFound 
+                    message={
+                      filterSearch || filterProduct || (user?.role !== 'supervisor' && filterBranch) || filterLowStock 
+                        ? 'No se encontraron resultados' 
+                        : 'No hay registros de inventario'
+                    }
+                    subtitle={
+                      filterSearch || filterProduct || (user?.role !== 'supervisor' && filterBranch) || filterLowStock 
+                        ? 'Intenta ajustar los filtros de búsqueda' 
+                        : 'Agrega productos al inventario para comenzar'
+                    }
+                  />
                 </td>
               </tr>
             ) : (
@@ -870,5 +874,6 @@ export default function Inventory() {
         message={errorModal.message}
       />
     </div>
+    </>
   )
 }

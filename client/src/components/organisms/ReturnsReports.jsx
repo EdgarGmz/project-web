@@ -89,9 +89,8 @@ export default function ReturnsReports() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="card text-center py-8 text-muted">Cargando reporte...</div>
-      ) : error ? (
+      <LoadingModal isOpen={loading} message="Cargando reporte..." />
+      {error ? (
         <div className="card text-center py-8 text-red-500">{error}</div>
       ) : !report ? (
         <div className="card text-center py-8 text-muted">Selecciona un rango de fechas para generar el reporte.</div>

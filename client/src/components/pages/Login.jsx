@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import ThemeToggle from '../atoms/ThemeToggle'
 import PasswordInput from '../atoms/PasswordInput'
+import LoadingModal from '../molecules/LoadingModal'
 import logo from '../../assets/img/logo.png'
 
 export default function Login() {
@@ -35,7 +36,9 @@ const handleSubmit = async (e) => {
 }
 
 return (
-    <main className="min-h-screen bg-gradient-to-br from-bg via-surface/50 to-bg text-text flex relative overflow-hidden">
+    <>
+      <LoadingModal isOpen={loading} message="Iniciando sesión..." />
+      <main className="min-h-screen bg-gradient-to-br from-bg via-surface/50 to-bg text-text flex relative overflow-hidden">
         {/* Enhanced Background Effects - Mario Bros Yellow Theme */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-br from-yellow-400/25 via-yellow-500/15 to-transparent rounded-full blur-3xl animate-pulse"></div>
@@ -235,5 +238,6 @@ return (
             </article>
         </section>
     </main>
+    </>
 )
 }

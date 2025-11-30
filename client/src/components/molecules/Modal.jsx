@@ -7,25 +7,38 @@ import { useEffect } from 'react'
  * @param {Function} props.onClose - Función para cerrar el modal
  * @param {React.ReactNode} props.children - Contenido del modal
  * @param {string} props.size - Tamaño del modal (sm, md, lg)
+ * @param {boolean} props.closeOnBackdropClick - Si se puede cerrar haciendo click fuera (default: true)
+ * @param {boolean} props.closeOnEscape - Si se puede cerrar con la tecla Escape (default: true)
  */
-export default function Modal({ isOpen, onClose, children, size = 'md' }) {
+export default function Modal({ 
+  isOpen, 
+  onClose, 
+  children, 
+  size = 'md',
+  closeOnBackdropClick = true,
+  closeOnEscape = true
+}) {
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape' && isOpen && closeOnEscape) {
         onClose()
       }
     }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape)
+      if (closeOnEscape) {
+        document.addEventListener('keydown', handleEscape)
+      }
       document.body.style.overflow = 'hidden'
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape)
+      if (closeOnEscape) {
+        document.removeEventListener('keydown', handleEscape)
+      }
       document.body.style.overflow = 'unset'
     }
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, closeOnEscape])
 
   if (!isOpen) return null
 
@@ -39,7 +52,7 @@ export default function Modal({ isOpen, onClose, children, size = 'md' }) {
   return (
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
-      onClick={onClose}
+      onClick={closeOnBackdropClick ? onClose : undefined}
     >
       <div 
         className={`${sizeClasses[size]} w-full bg-surface border border-slate-600/30 rounded-xl shadow-2xl animate-scale-in`}

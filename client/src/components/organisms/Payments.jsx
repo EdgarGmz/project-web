@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 
 export default function Payments() {
   const [payments, setPayments] = useState([])
@@ -42,29 +44,32 @@ export default function Payments() {
   )
 
   return (
-    <section className="card">
-      <header>
-        <h1 className="text-2xl font-semibold mb-4">Pagos</h1>
-      </header>
-      
-      <form className="mb-4">
-        <input
-          type="text"
-          placeholder="Buscar por cliente, método o referencia..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface"
-        />
-      </form>
+    <>
+      <LoadingModal isOpen={loading} message="Cargando pagos..." />
+      <section className="card">
+        <header>
+          <h1 className="text-2xl font-semibold mb-4">Pagos</h1>
+        </header>
+        
+        <form className="mb-4">
+          <input
+            type="text"
+            placeholder="Buscar por cliente, método o referencia..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface"
+          />
+        </form>
 
-      <main>
-        {loading ? (
-          <p className="text-center py-8 text-muted">Cargando pagos...</p>
-        ) : error ? (
-          <p className="text-center py-8 text-red-500">{error}</p>
-        ) : filteredPayments.length === 0 ? (
-          <p className="text-center py-8 text-muted">No hay pagos registrados.</p>
-        ) : (
+        <main>
+          {error ? (
+            <p className="text-center py-8 text-red-500">{error}</p>
+          ) : filteredPayments.length === 0 ? (
+            <NotFound 
+              message="No hay pagos registrados"
+              subtitle="Aún no se han registrado pagos en el sistema"
+            />
+          ) : (
           <section className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -126,5 +131,6 @@ export default function Payments() {
         )}
       </main>
     </section>
+    </>
   )
 }

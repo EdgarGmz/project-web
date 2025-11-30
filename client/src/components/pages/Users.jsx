@@ -5,6 +5,8 @@ import { userService } from '../../services/userService'
 import { branchService } from '../../services/branchService'
 import SuccessModal from '../molecules/SuccessModal'
 import CancelledModal from '../molecules/CancelledModal'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 
 export default function Users() {
 const [users, setUsers] = useState([])
@@ -203,18 +205,9 @@ const canEditStatus = (targetUser) => {
     return false
 }
 
-if (loading) {
-    return (
-    <div className="card">
-        <div className="text-center py-8">
-        <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full mx-auto mb-4"></div>
-        <div className="text-accent">Cargando usuarios...</div>
-        </div>
-    </div>
-    )
-}
-
 return (
+    <>
+      <LoadingModal isOpen={loading} message="Cargando usuarios..." />
     <div className="space-y-6">
     <div className="flex items-center justify-between">
         <div>
@@ -398,21 +391,15 @@ return (
     {/* Tabla de usuarios */}
     <div className="card overflow-hidden border border-slate-600/20 shadow-xl">
         {filteredUsers.length === 0 && users.length > 0 ? (
-        <div className="text-center py-12">
-            <div className="flex flex-col items-center justify-center gap-2">
-                <span className="text-4xl">🔍</span>
-                <h3 className="font-semibold mb-2">No se encontraron usuarios</h3>
-                <p className="text-muted">Intenta ajustar los filtros de búsqueda</p>
-            </div>
-        </div>
+        <NotFound 
+          message="No se encontraron usuarios"
+          subtitle="Intenta ajustar los filtros de búsqueda"
+        />
         ) : users.length === 0 ? (
-        <div className="text-center py-12">
-            <div className="flex flex-col items-center justify-center gap-2">
-                <span className="text-4xl">👤</span>
-                <h3 className="font-semibold mb-2">No hay usuarios</h3>
-                <p className="text-muted">Crea el primer usuario del sistema</p>
-            </div>
-        </div>
+        <NotFound 
+          message="No hay usuarios"
+          subtitle="Crea el primer usuario del sistema"
+        />
         ) : (
         <div className="overflow-x-auto">
             <table className="w-full">
@@ -613,5 +600,6 @@ return (
         message={cancelledModal.message}
       />
     </div>
+    </>
 )
 }

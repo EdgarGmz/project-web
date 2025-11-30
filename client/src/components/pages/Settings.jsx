@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import SuccessModal from '../molecules/SuccessModal'
+import LoadingModal from '../molecules/LoadingModal'
 import { api } from '../../services/api'
 
 export default function Settings() {
@@ -54,7 +55,9 @@ export default function Settings() {
   }, [])
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <>
+      <LoadingModal isOpen={loading} message="Guardando configuración..." />
+      <div className="space-y-6 max-w-4xl">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold">Configuración</h1>
@@ -260,5 +263,6 @@ export default function Settings() {
         message={successModal.message}
       />
     </div>
+    </>
   )
 }

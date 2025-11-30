@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import PasswordInput from '../atoms/PasswordInput'
 import SuccessModal from '../molecules/SuccessModal'
+import LoadingModal from '../molecules/LoadingModal'
 
 export default function Profile() {
   const { user, updateUser } = useAuth()
@@ -164,7 +165,9 @@ export default function Profile() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <>
+      <LoadingModal isOpen={loading || loadingPassword} message={loading ? "Guardando perfil..." : "Cambiando contraseña..."} />
+      <div className="space-y-6 max-w-4xl">
       <div>
         <h1 className="text-2xl font-semibold">Mi Perfil</h1>
         <p className="text-muted">Administra tu información personal</p>
@@ -423,5 +426,6 @@ export default function Profile() {
         message="Contraseña actualizada correctamente"
       />
     </div>
+    </>
   )
 }

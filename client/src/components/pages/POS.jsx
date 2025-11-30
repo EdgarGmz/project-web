@@ -5,6 +5,8 @@ import { customerService } from '../../services/customerService'
 import { saleService } from '../../services/saleServices'
 import { inventoryService } from '../../services/inventoryService'
 import SuccessModal from '../molecules/SuccessModal'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 import { jsPDF } from 'jspdf'
 
 export default function POS() {
@@ -876,20 +878,10 @@ export default function POS() {
     return matchesSearch && hasStock
   })
 
-  if (loading || !inventoryLoaded) {
-    return (
-      <div className="min-h-screen bg-bg flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-accent border-t-transparent mx-auto mb-4"></div>
-          <p className="text-xl text-muted font-medium">Cargando productos e inventario...</p>
-          <p className="text-sm text-muted mt-2">Por favor espera un momento</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="h-screen flex flex-col bg-bg">
+    <>
+      <LoadingModal isOpen={loading || !inventoryLoaded} message="Cargando productos e inventario..." />
+      <div className="h-screen flex flex-col bg-bg">
       {/* Header mejorado */}
       <div className="relative p-6 bg-gradient-to-r from-accent/20 via-blue-500/10 to-purple-500/10 border-b border-slate-600/30 shadow-lg">
         <div className="flex items-center justify-between">
@@ -989,15 +981,11 @@ export default function POS() {
           {/* Grid de productos mejorado */}
           <div className="flex-1 overflow-y-auto">
             {filteredProducts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center py-16">
-                <div className="text-6xl mb-4 animate-bounce-slow">📦</div>
-                <p className="text-xl font-semibold text-muted mb-2">
-                  {searchTerm ? 'No se encontraron productos' : 'No hay productos disponibles'}
-                </p>
-                <p className="text-sm text-muted">
-                  {searchTerm ? 'Intenta con otro término de búsqueda' : 'Contacta al administrador para agregar productos'}
-                </p>
-              </div>
+              <NotFound 
+                message={searchTerm ? 'No se encontraron productos' : 'No hay productos disponibles'}
+                subtitle={searchTerm ? 'Intenta con otro término de búsqueda' : 'Contacta al administrador para agregar productos'}
+                size="lg"
+              />
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {filteredProducts.map((product) => {
@@ -1568,5 +1556,6 @@ export default function POS() {
         </div>
       )}
     </div>
+    </>
   )
 }

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import LoadingModal from '../molecules/LoadingModal'
+import NotFound from '../molecules/NotFound'
 
 export default function SalesReports() {
   const [report, setReport] = useState(null)
@@ -48,12 +50,14 @@ export default function SalesReports() {
           className="w-full px-3 py-2 border border-slate-600/30 rounded-md bg-surface"
         />
       </div>
-      {loading ? (
-        <div className="text-center py-8 text-muted">Cargando reporte...</div>
-      ) : error ? (
+      <LoadingModal isOpen={loading} message="Cargando reporte..." />
+      {error ? (
         <div className="text-center py-8 text-red-500">{error}</div>
       ) : !report || !filteredSales.length ? (
-        <div className="text-center py-8 text-muted">No hay datos de ventas.</div>
+        <NotFound 
+          message="No hay datos de ventas"
+          subtitle="No se encontraron ventas con los filtros seleccionados"
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
