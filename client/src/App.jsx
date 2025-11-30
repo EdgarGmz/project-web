@@ -193,7 +193,7 @@ export default function App() {
 
           {/* Sistema de ventas */}
           <Route path="/sales" element={
-            <ProtectedRoute roles={['supervisor']}>
+            <ProtectedRoute roles={['supervisor', 'cashier']}>
               <DashboardLayout>
                 <Sales />
               </DashboardLayout>

@@ -116,7 +116,7 @@ router.use(authenticate)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/', authorize('supervisor'), saleController.getAllSales)
+router.get('/', authorize('supervisor', 'cashier'), saleController.getAllSales)
 
 /**
  * @swagger
@@ -147,7 +147,7 @@ router.get('/', authorize('supervisor'), saleController.getAllSales)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/:id', authorize('supervisor'), saleController.getSaleById)
+router.get('/:id', authorize('supervisor', 'cashier'), saleController.getSaleById)
 
 /**
  * @swagger

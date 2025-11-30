@@ -1,6 +1,7 @@
 const db = require('../database/models');
 const { Report, Branch, Sale, Product, Inventory, SaleItem, Customer, User, Purchase, Return } = db;
 const { Op } = require('sequelize');
+const { logReport } = require('../../services/logService');
 
 // Generar reporte dinámico
 const generateDynamicReport = async (type, startDate, endDate, branch_id) => {
@@ -552,6 +553,20 @@ const getAllReports = async (req, res) => {
     // Si hay parámetros de tipo y fechas, generar reporte dinámico
     if (type && startDate && endDate) {
       const reportData = await generateDynamicReport(type, startDate, endDate, branch_id);
+      
+      // Registrar log de generación de reporte
+      const reportTypeLabel = {
+        'sales': 'Ventas',
+        'inventory': 'Inventario',
+        'customers': 'Clientes',
+        'financial': 'Financiero',
+        'returns': 'Devoluciones'
+      }[type] || type;
+      
+      await logReport.view(
+        req.user.id,
+        `Generó reporte de ${reportTypeLabel} del ${new Date(startDate).toLocaleDateString('es-MX')} al ${new Date(endDate).toLocaleDateString('es-MX')}`
+      );
       
       return res.json({
         success: true,

@@ -3,9 +3,10 @@ import { useAuth } from '../../contexts/AuthContext'
 import { saleService } from '../../services/saleServices'
 import { branchService } from '../../services/branchService'
 import { userService } from '../../services/userService'
+import { jsPDF } from 'jspdf'
 
 export default function Sales() {
-  const { hasPermission } = useAuth()
+  const { hasPermission, user } = useAuth()
   const [sales, setSales] = useState([])
   const [branches, setBranches] = useState([])
   const [users, setUsers] = useState([])
@@ -27,9 +28,12 @@ export default function Sales() {
   const [filterDateTo, setFilterDateTo] = useState('')
 
   useEffect(() => {
-    fetchBranches()
+    // Solo cargar sucursales si el usuario no es cashier (cashier solo ve su sucursal)
+    if (user?.role !== 'cashier') {
+      fetchBranches()
+    }
     fetchUsers()
-  }, []) // Solo cargar una vez al montar
+  }, [user]) // Depender de user para saber si es cashier
 
   useEffect(() => {
     fetchSales()
@@ -145,6 +149,297 @@ export default function Sales() {
     return badges[status] || { color: 'bg-gray-500/20 text-gray-400', label: status }
   }
 
+  // Función para generar el PDF del ticket
+  const generateTicketPDF = (sale) => {
+    try {
+      if (!sale) {
+        console.error('❌ No hay datos de venta para generar el ticket')
+        return
+      }
+
+      // Crear PDF con formato de ticket
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      })
+      
+      // Configuración del ticket
+      const ticketWidth = 80
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const margin = 8
+      const contentWidth = ticketWidth - 2 * margin
+      let yPos = margin
+
+      // ========== ENCABEZADO ==========
+      doc.setDrawColor(50, 50, 50)
+      doc.setFillColor(30, 30, 30)
+      doc.rect(margin, yPos - 2, ticketWidth - 2 * margin, 12, 'F')
+      
+      doc.setTextColor(255, 255, 255)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(16)
+      doc.text('APEX STORE', pageWidth / 2, yPos + 4, { align: 'center' })
+      
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'normal')
+      doc.text('Sistema de Punto de Venta', pageWidth / 2, yPos + 7, { align: 'center' })
+      
+      yPos += 12
+      doc.setTextColor(0, 0, 0)
+
+      // Información de la sucursal
+      if (sale.branch) {
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(9)
+        doc.setTextColor(60, 60, 60)
+        doc.text(sale.branch.name || 'Sucursal', pageWidth / 2, yPos, { align: 'center' })
+        yPos += 4
+        
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(7)
+        doc.setTextColor(80, 80, 80)
+        
+        if (sale.branch.address) {
+          const addressLines = doc.splitTextToSize(sale.branch.address, contentWidth)
+          addressLines.forEach(line => {
+            doc.text(line, pageWidth / 2, yPos, { align: 'center' })
+            yPos += 3
+          })
+        }
+      }
+
+      yPos += 2
+      doc.setTextColor(0, 0, 0)
+      doc.setDrawColor(200, 200, 200)
+      doc.setLineWidth(0.3)
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 4
+
+      // Información del ticket
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(10)
+      doc.setTextColor(40, 40, 40)
+      doc.text('TICKET DE COMPRA', pageWidth / 2, yPos, { align: 'center' })
+      yPos += 5
+
+      // Información de la transacción
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(60, 60, 60)
+      
+      const saleDate = sale.sale_date || sale.created_at ? new Date(sale.sale_date || sale.created_at) : new Date()
+      const dateStr = saleDate.toLocaleDateString('es-MX', { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      })
+      const timeStr = saleDate.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+      
+      doc.setFont('helvetica', 'bold')
+      doc.text('Fecha:', margin, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(`${dateStr} ${timeStr}`, margin + 20, yPos)
+      yPos += 4
+
+      if (sale.transaction_reference) {
+        doc.setFont('helvetica', 'bold')
+        doc.text('Ticket:', margin, yPos)
+        doc.setFont('helvetica', 'normal')
+        doc.setFont('courier', 'normal')
+        doc.text(sale.transaction_reference, margin + 20, yPos)
+        doc.setFont('helvetica', 'normal')
+        yPos += 4
+      }
+
+      // Cliente
+      doc.setFont('helvetica', 'bold')
+      doc.text('Cliente:', margin, yPos)
+      doc.setFont('helvetica', 'normal')
+      if (sale.customer) {
+        doc.text(`${sale.customer.first_name} ${sale.customer.last_name}`, margin + 20, yPos)
+      } else {
+        doc.text('Público en General', margin + 20, yPos)
+      }
+      yPos += 4
+
+      // Cajero
+      if (sale.user) {
+        doc.setFont('helvetica', 'bold')
+        doc.text('Cajero:', margin, yPos)
+        doc.setFont('helvetica', 'normal')
+        doc.text(`${sale.user.first_name} ${sale.user.last_name}`, margin + 20, yPos)
+        yPos += 4
+      }
+
+      yPos += 2
+      doc.setDrawColor(200, 200, 200)
+      doc.setLineWidth(0.3)
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 4
+
+      // Items de la venta
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(8)
+      doc.setTextColor(40, 40, 40)
+      doc.text('PRODUCTOS', margin, yPos)
+      yPos += 5
+
+      doc.setDrawColor(100, 100, 100)
+      doc.setLineWidth(0.5)
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 3
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(0, 0, 0)
+      
+      sale.items?.forEach((item, index) => {
+        if (yPos > doc.internal.pageSize.getHeight() - 30) {
+          doc.addPage()
+          yPos = margin
+        }
+
+        const itemName = item.product?.name || item.product_name || 'Producto'
+        const quantity = item.quantity || 1
+        const unitPrice = parseFloat(item.unit_price || 0)
+        const subtotal = unitPrice * quantity
+
+        if (index % 2 === 0) {
+          doc.setFillColor(250, 250, 250)
+          doc.rect(margin, yPos - 2, ticketWidth - 2 * margin, 8, 'F')
+        }
+
+        doc.setFont('helvetica', 'bold')
+        doc.text(`${quantity}`, margin + 2, yPos)
+        
+        doc.setFont('helvetica', 'normal')
+        const nameWidth = contentWidth - 35
+        const nameLines = doc.splitTextToSize(itemName, nameWidth)
+        doc.text(nameLines[0], margin + 12, yPos)
+        
+        doc.setFont('helvetica', 'bold')
+        const subtotalText = `$${subtotal.toFixed(2)}`
+        doc.text(subtotalText, pageWidth - margin - 2, yPos, { align: 'right' })
+        yPos += 3.5
+
+        if (nameLines.length > 1) {
+          doc.setFont('helvetica', 'normal')
+          for (let i = 1; i < nameLines.length; i++) {
+            if (yPos > doc.internal.pageSize.getHeight() - 30) {
+              doc.addPage()
+              yPos = margin
+            }
+            doc.text(nameLines[i], margin + 12, yPos)
+            yPos += 3
+          }
+        }
+
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(6)
+        doc.setTextColor(120, 120, 120)
+        doc.text(`@ $${unitPrice.toFixed(2)} c/u`, margin + 12, yPos)
+        doc.setFontSize(7)
+        doc.setTextColor(0, 0, 0)
+        yPos += 4
+
+        if (index < (sale.items?.length || 0) - 1) {
+          doc.setDrawColor(230, 230, 230)
+          doc.setLineWidth(0.2)
+          doc.line(margin + 10, yPos - 1, pageWidth - margin - 10, yPos - 1)
+        }
+      })
+
+      yPos += 2
+      doc.setDrawColor(100, 100, 100)
+      doc.setLineWidth(0.5)
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 1
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 4
+
+      // Totales
+      const total = parseFloat(sale.total_amount || 0)
+      
+      doc.setFillColor(240, 240, 240)
+      doc.rect(margin, yPos - 3, ticketWidth - 2 * margin, 8, 'F')
+      
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(11)
+      doc.setTextColor(40, 40, 40)
+      doc.text('TOTAL', margin + 5, yPos + 2)
+      doc.text(`$${total.toFixed(2)}`, pageWidth - margin - 5, yPos + 2, { align: 'right' })
+      yPos += 8
+
+      // Método de pago
+      yPos += 2
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(60, 60, 60)
+      const paymentMethodLabel = {
+        'cash': '💵 Efectivo',
+        'card': '💳 Tarjeta',
+        'transfer': '🏦 Transferencia',
+        'mixed': '💰 Mixto'
+      }[sale.payment_method] || sale.payment_method || '💵 Efectivo'
+      
+      doc.setFont('helvetica', 'bold')
+      doc.text('Método de pago:', margin, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(paymentMethodLabel, margin + 35, yPos)
+      yPos += 4
+
+      yPos += 3
+      doc.setDrawColor(200, 200, 200)
+      doc.setLineWidth(0.3)
+      doc.line(margin, yPos, pageWidth - margin, yPos)
+      yPos += 5
+
+      // Mensaje de gratitud
+      doc.setFillColor(245, 245, 245)
+      doc.rect(margin, yPos - 2, ticketWidth - 2 * margin, 8, 'F')
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(10)
+      doc.setTextColor(50, 50, 50)
+      doc.text('¡GRACIAS POR SU COMPRA!', pageWidth / 2, yPos + 3, { align: 'center' })
+      yPos += 8
+
+      // Guardar el PDF
+      const fileName = `ticket_${sale.transaction_reference || sale.id || Date.now()}.pdf`
+      
+      try {
+        doc.save(fileName)
+        console.log('✅ PDF generado y descargado exitosamente:', fileName)
+        setSuccess('Ticket reimpreso exitosamente')
+        setTimeout(() => setSuccess(''), 3000)
+      } catch (saveError) {
+        console.error('⚠️ Error al guardar PDF:', saveError)
+        try {
+          const pdfBlob = doc.output('blob')
+          const url = URL.createObjectURL(pdfBlob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = fileName
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+          setSuccess('Ticket reimpreso exitosamente')
+          setTimeout(() => setSuccess(''), 3000)
+        } catch (altError) {
+          console.error('❌ Error en método alternativo:', altError)
+          setError('Error al generar el PDF del ticket')
+          setTimeout(() => setError(''), 5000)
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error crítico al generar ticket PDF:', error)
+      setError('Error al generar el PDF del ticket')
+      setTimeout(() => setError(''), 5000)
+    }
+  }
+
   // Calcular estadísticas de la página actual
   const totalSales = sales.length
   const totalAmount = sales.reduce((sum, sale) => sum + Number(sale.total_amount || 0), 0)
@@ -191,19 +486,22 @@ export default function Sales() {
           )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Sucursal</label>
-            <select
-              value={filterBranch}
-              onChange={(e) => setFilterBranch(e.target.value)}
-              className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
-            >
-              <option value="">Todas las sucursales</option>
-              {branches.map(branch => (
-                <option key={branch.id} value={branch.id}>{branch.name}</option>
-              ))}
-            </select>
-          </div>
+          {/* Solo mostrar filtro de sucursal si el usuario no es cashier */}
+          {user?.role !== 'cashier' && (
+            <div>
+              <label className="block text-sm font-medium mb-2">Sucursal</label>
+              <select
+                value={filterBranch}
+                onChange={(e) => setFilterBranch(e.target.value)}
+                className="w-full px-3 py-2 bg-surface border border-slate-600/30 rounded-md"
+              >
+                <option value="">Todas las sucursales</option>
+                {branches.map(branch => (
+                  <option key={branch.id} value={branch.id}>{branch.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium mb-2">Cajero</label>
             <select
@@ -421,13 +719,22 @@ export default function Sales() {
                         </span>
                       </td>
                       <td className="py-4 px-6">
-                        <button
-                          onClick={() => viewSaleDetails(sale.id)}
-                          className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-all hover:scale-110"
-                          title="Ver detalles"
-                        >
-                          👁️
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => viewSaleDetails(sale.id)}
+                            className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-all hover:scale-110"
+                            title="Ver detalles"
+                          >
+                            👁️
+                          </button>
+                          <button
+                            onClick={() => generateTicketPDF(sale)}
+                            className="p-2 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-400 hover:text-green-300 transition-all hover:scale-110"
+                            title="Reimprimir ticket"
+                          >
+                            🖨️
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )})}
@@ -592,6 +899,12 @@ export default function Sales() {
               )}
 
               <div className="flex gap-3">
+                <button
+                  onClick={() => generateTicketPDF(selectedSale)}
+                  className="btn flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                >
+                  🖨️ Reimprimir Ticket
+                </button>
                 <button
                   onClick={() => setShowDetails(false)}
                   className="btn flex-1"

@@ -201,7 +201,8 @@ router.get('/:id', authorize('owner'), logController.getLogById)
  *       500:
  *         description: Error del servidor
  */
-router.post('/', authorize('owner'), logController.createLog)
+// Permitir que cualquier usuario autenticado cree logs (pero solo para su propio user_id)
+router.post('/', authenticate, logController.createLog)
 
 /**
  * @swagger
