@@ -284,4 +284,36 @@ router.post('/forgot-password', authController.forgotPassword)
  */
 router.post('/reset-password', authController.resetPassword)
 
+/**
+ * @swagger
+ * /auth/verify-reset-token/{token}:
+ *   get:
+ *     summary: Verificar si un token de reset es válido
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Token de recuperación de contraseña
+ *     responses:
+ *       200:
+ *         description: Token válido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Token válido"
+ *       400:
+ *         description: Token inválido o expirado
+ */
+router.get('/verify-reset-token/:token', authController.verifyResetToken)
+
 module.exports = router

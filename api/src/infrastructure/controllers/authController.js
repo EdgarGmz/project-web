@@ -398,9 +398,13 @@ const resetPassword = async (req, res) => {
             });
         }
 
+        // Invalidar el token INMEDIATAMENTE para evitar reutilización
+        // Esto se hace antes de actualizar la contraseña para mayor seguridad
+        user.clearResetToken();
+        await user.save();
+
         // Actualizar contraseña
         user.password = await bcrypt.hash(newPassword, 10);
-        user.clearResetToken();
         await user.save();
 
         // Log de éxito por consola
@@ -431,6 +435,43 @@ const resetPassword = async (req, res) => {
     }
 };
 
+// Verificar si el token de reset es válido (sin restablecer la contraseña)
+const verifyResetToken = async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token es requerido'
+            });
+        }
+
+        // Buscar usuario por token
+        const user = await User.scope('withPassword').findOne({
+            where: { reset_token: token }
+        });
+
+        if (!user || !user.isResetTokenValid()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token inválido o expirado'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Token válido'
+        });
+    } catch (error) {
+        console.error('Error en verifyResetToken:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error en el servidor'
+        });
+    }
+};
+
 module.exports = {
     login,
     getProfile,
@@ -440,4 +481,5 @@ module.exports = {
     verifyPassword,
     forgotPassword,
     resetPassword,
+    verifyResetToken,
 };

@@ -12,8 +12,10 @@ export default function ResetPassword() {
     confirmPassword: ''
   })
   const [loading, setLoading] = useState(false)
+  const [validatingToken, setValidatingToken] = useState(true)
   const [message, setMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
+  const [tokenValid, setTokenValid] = useState(false)
 
   const handleInputChange = (e) => {
     setFormData({
@@ -69,16 +71,44 @@ export default function ResetPassword() {
     }
   }
 
+  // Validar token cuando se carga la página
   useEffect(() => {
-    if (!token) {
-      setMessage('Token no proporcionado')
-      setIsSuccess(false)
+    const validateToken = async () => {
+      if (!token) {
+        setMessage('Token no proporcionado')
+        setIsSuccess(false)
+        setValidatingToken(false)
+        setTokenValid(false)
+        return
+      }
+
+      try {
+        setValidatingToken(true)
+        const response = await api.get(`/auth/verify-reset-token/${token}`)
+        
+        if (response.success) {
+          setTokenValid(true)
+          setMessage('')
+        } else {
+          setTokenValid(false)
+          setMessage('Token inválido o expirado. Este enlace ya fue utilizado o ha caducado.')
+          setIsSuccess(false)
+        }
+      } catch (error) {
+        setTokenValid(false)
+        setMessage(error.response?.data?.message || 'Token inválido o expirado. Este enlace ya fue utilizado o ha caducado.')
+        setIsSuccess(false)
+      } finally {
+        setValidatingToken(false)
+      }
     }
+
+    validateToken()
   }, [token])
 
   return (
     <>
-      <LoadingModal isOpen={loading} message="Restableciendo contraseña..." />
+      <LoadingModal isOpen={loading || validatingToken} message={validatingToken ? "Verificando token..." : "Restableciendo contraseña..."} />
       <main className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20">
       <section className="w-full max-w-md">
         <article className="w-full space-y-6 backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-8 shadow-xl">
@@ -110,7 +140,7 @@ export default function ResetPassword() {
             </div>
           )}
 
-          {!isSuccess && (
+          {!isSuccess && tokenValid && !validatingToken && (
             <form onSubmit={handleSubmit} className="space-y-4">
               <fieldset>
                 <label className="block text-sm font-medium mb-2">Nueva Contraseña</label>
@@ -136,10 +166,24 @@ export default function ResetPassword() {
                 />
               </fieldset>
 
-              <button type="submit" disabled={loading || !token} className="w-full btn py-3 disabled:opacity-50">
+              <button type="submit" disabled={loading || !token || !tokenValid} className="w-full btn py-3 disabled:opacity-50">
                 {loading ? 'Restableciendo...' : 'Restablecer Contraseña'}
               </button>
             </form>
+          )}
+
+          {!tokenValid && !validatingToken && (
+            <div className="text-center">
+              <p className="text-sm text-muted mb-4">
+                Si necesitas restablecer tu contraseña, por favor solicita un nuevo enlace de recuperación.
+              </p>
+              <Link 
+                to="/forgot-password" 
+                className="text-accent hover:text-accent/80 transition text-sm font-medium"
+              >
+                Solicitar nuevo enlace de recuperación
+              </Link>
+            </div>
           )}
 
           <footer className="text-center">
@@ -151,7 +195,7 @@ export default function ResetPassword() {
             </Link>
           </footer>
 
-          {token && (
+          {token && tokenValid && !validatingToken && (
             <div className="bg-blue-500/10 border border-blue-500/30 rounded-md p-4">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
@@ -161,9 +205,9 @@ export default function ResetPassword() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-blue-400">
-                    <strong>Token detectado:</strong> {token.slice(0, 8)}...
+                    <strong>Token válido:</strong> {token.slice(0, 8)}...
                     <br />
-                    <strong>Para la demostración:</strong> Este token fue generado por el sistema y es válido por 30 minutos.
+                    <strong>Importante:</strong> Este token solo puede usarse una vez. Después de restablecer la contraseña, el enlace dejará de funcionar.
                   </p>
                 </div>
               </div>
