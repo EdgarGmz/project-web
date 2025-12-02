@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { userService } from '../../services/userService'
 import { branchService } from '../../services/branchService'
 import PasswordInput from '../atoms/PasswordInput'
+import LoadingModal from '../molecules/LoadingModal'
 
 export default function UserForm({ user, onSuccess, onCancel }) {
   const [form, setForm] = useState({
