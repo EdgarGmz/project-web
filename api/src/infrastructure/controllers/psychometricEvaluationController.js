@@ -76,7 +76,8 @@ const getAllPsychometricEvaluations = async (req, res) => {
                 {
                     model: Branch,
                     as: 'branch',
-                    attributes: ['id', 'name', 'code']
+                    attributes: ['id', 'name', 'code'],
+                    required: false
                 }
             ]
         });
@@ -124,7 +125,8 @@ const getPsychometricEvaluationById = async (req, res) => {
                 {
                     model: Branch,
                     as: 'branch',
-                    attributes: ['id', 'name', 'code', 'city']
+                    attributes: ['id', 'name', 'code', 'city'],
+                    required: false
                 }
             ]
         });
@@ -251,7 +253,8 @@ const createPsychometricEvaluation = async (req, res) => {
                 {
                     model: Branch,
                     as: 'branch',
-                    attributes: ['id', 'name', 'code']
+                    attributes: ['id', 'name', 'code'],
+                    required: false
                 }
             ]
         });
@@ -353,7 +356,8 @@ const updatePsychometricEvaluation = async (req, res) => {
                 {
                     model: Branch,
                     as: 'branch',
-                    attributes: ['id', 'name', 'code']
+                    attributes: ['id', 'name', 'code'],
+                    required: false
                 }
             ]
         });
