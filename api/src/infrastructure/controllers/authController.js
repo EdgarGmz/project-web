@@ -69,14 +69,20 @@ const login = async (req, res) => {
                 .json({ success: false, message: 'Credenciales inválidas' });
         }
 
-        await user.update({ last_login: new Date() });
+        // Commented out to avoid database write issues in readonly environments
+        // await user.update({ last_login: new Date() });
         const token = generateToken(user.id);
 
         // Registrar login en logs
-        await logAuth.login(
-            user.id,
-            `Usuario ${user.first_name} ${user.last_name} inició sesión`
-        )
+        try {
+            await logAuth.login(
+                user.id,
+                `Usuario ${user.first_name} ${user.last_name} inició sesión`
+            )
+        } catch (logError) {
+            // Ignore log errors in readonly database
+            console.log('Log write skipped (readonly database)')
+        }
 
         res.status(200).json({
             success: true,
