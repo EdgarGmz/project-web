@@ -157,6 +157,24 @@ if (db.TherapySession) {
   }
 }
 
+// Asociaciones PsychometricEvaluation
+if (db.PsychometricEvaluation) {
+  if (db.Customer) {
+    db.Customer.hasMany(db.PsychometricEvaluation, { foreignKey: 'customer_id', as: 'psychometricEvaluations' })
+    db.PsychometricEvaluation.belongsTo(db.Customer, { foreignKey: 'customer_id', as: 'customer' })
+  }
+  
+  if (db.User) {
+    db.User.hasMany(db.PsychometricEvaluation, { foreignKey: 'evaluator_id', as: 'psychometricEvaluations' })
+    db.PsychometricEvaluation.belongsTo(db.User, { foreignKey: 'evaluator_id', as: 'evaluator' })
+  }
+  
+  if (db.Branch) {
+    db.Branch.hasMany(db.PsychometricEvaluation, { foreignKey: 'branch_id', as: 'psychometricEvaluations' })
+    db.PsychometricEvaluation.belongsTo(db.Branch, { foreignKey: 'branch_id', as: 'branch' })
+  }
+}
+
 // Exportar instancia y modelos
 db.sequelize = sequelize
 db.Sequelize = Sequelize

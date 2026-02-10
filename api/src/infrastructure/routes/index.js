@@ -17,6 +17,7 @@ const settingsRoutes = require('./settingsRoute')
 const dashboardRoutes = require('./dashboardRoute')
 const logsRoutes = require('./logsRoute')
 const therapySessionRoutes = require('./therapySessionRoute')
+const psychometricEvaluationRoutes = require('./psychometricEvaluationRoute')
 
 // Rutas de la API
 router.get('/', (req, res) => {
@@ -38,7 +39,8 @@ router.get('/', (req, res) => {
             settings: '/api/settings',
             dashboard: '/api/dashboard',
             logs: '/api/logs',
-            therapy_sessions: '/api/therapy-sessions'
+            therapy_sessions: '/api/therapy-sessions',
+            psychometric_evaluations: '/api/psychometric-evaluations'
         }
     })
 })
@@ -59,5 +61,6 @@ router.use('/settings', settingsRoutes)
 router.use('/dashboard', dashboardRoutes)
 router.use('/logs', logsRoutes)
 router.use('/therapy-sessions', therapySessionRoutes)
+router.use('/psychometric-evaluations', psychometricEvaluationRoutes)
 
 module.exports = router
