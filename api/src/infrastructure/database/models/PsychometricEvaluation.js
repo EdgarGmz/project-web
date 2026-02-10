@@ -52,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
             validate: {
                 isIn: {
                     args: [['personality', 'intelligence', 'aptitude', 'neuropsychological', 'projective', 'clinical', 'vocational', 'other']],
-                    msg: "El tipo de prueba debe ser: 'personality', 'intelligence', 'aptitude', 'neuropsychological', 'projective', 'clinical', 'vocational', u 'other'"
+                    msg: "El tipo de prueba debe ser: 'personality', 'intelligence', 'aptitude', 'neuropsychological', 'projective', 'clinical', 'vocational', o 'other'"
                 }
             }
         },
@@ -61,8 +61,8 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             defaultValue: 60,
             validate: {
-                min: 15,
-                max: 480
+                min: 15,  // 15 minutos mínimo para evaluaciones breves
+                max: 480  // 480 minutos (8 horas) máximo para baterías completas
             }
         },
         status: {
