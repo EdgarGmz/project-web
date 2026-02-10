@@ -139,6 +139,24 @@ if (db.Branch && db.Report) {
   db.Report.belongsTo(db.Branch, { foreignKey: 'branch_id', as: 'branch' })
 }
 
+// Asociaciones TherapySession
+if (db.TherapySession) {
+  if (db.Customer) {
+    db.Customer.hasMany(db.TherapySession, { foreignKey: 'customer_id', as: 'therapySessions' })
+    db.TherapySession.belongsTo(db.Customer, { foreignKey: 'customer_id', as: 'customer' })
+  }
+  
+  if (db.User) {
+    db.User.hasMany(db.TherapySession, { foreignKey: 'therapist_id', as: 'therapySessions' })
+    db.TherapySession.belongsTo(db.User, { foreignKey: 'therapist_id', as: 'therapist' })
+  }
+  
+  if (db.Branch) {
+    db.Branch.hasMany(db.TherapySession, { foreignKey: 'branch_id', as: 'therapySessions' })
+    db.TherapySession.belongsTo(db.Branch, { foreignKey: 'branch_id', as: 'branch' })
+  }
+}
+
 // Exportar instancia y modelos
 db.sequelize = sequelize
 db.Sequelize = Sequelize
