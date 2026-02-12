@@ -3,6 +3,14 @@ const router = express.Router()
 
 const userController = require('../controllers/userController')
 const { authenticate, authorize } = require('../../middleware/auth')
+const {
+    createUserValidator,
+    updateUserValidator,
+    deleteUserValidator,
+    getUserValidator,
+    listUsersValidator,
+    handleValidationErrors
+} = require('../../validators')
 
 // Todas las rutas requieren autenticación
 router.use(authenticate)
@@ -117,7 +125,7 @@ router.use(authenticate)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/', authorize('owner'), userController.getAllUsers)
+router.get('/', authorize('owner'), listUsersValidator, handleValidationErrors, userController.getAllUsers)
 
 /**
  * @swagger
@@ -154,7 +162,7 @@ router.get('/', authorize('owner'), userController.getAllUsers)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/:id', authorize('owner'), userController.getUserById)
+router.get('/:id', authorize('owner'), getUserValidator, handleValidationErrors, userController.getUserById)
 
 /**
  * @swagger
@@ -191,7 +199,7 @@ router.get('/:id', authorize('owner'), userController.getUserById)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', authorize('owner'), userController.createUser)
+router.post('/', authorize('owner'), createUserValidator, handleValidationErrors, userController.createUser)
 
 /**
  * @swagger
@@ -238,7 +246,7 @@ router.post('/', authorize('owner'), userController.createUser)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.put('/:id', authorize('owner'), userController.updateUser)
+router.put('/:id', authorize('owner'), updateUserValidator, handleValidationErrors, userController.updateUser)
 
 /**
  * @swagger
@@ -274,6 +282,6 @@ router.put('/:id', authorize('owner'), userController.updateUser)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.delete('/:id', authorize('owner'), userController.deleteUser)
+router.delete('/:id', authorize('owner'), deleteUserValidator, handleValidationErrors, userController.deleteUser)
 
 module.exports = router

@@ -4,6 +4,11 @@ const router = express.Router()
 // Importar controlador y middleware
 const authController = require('../controllers/authController')
 const { authenticate } = require('../../middleware/auth')
+const {
+    loginValidator,
+    changePasswordValidator,
+    handleValidationErrors
+} = require('../../validators')
 
 /**
  * @swagger
@@ -95,7 +100,7 @@ const { authenticate } = require('../../middleware/auth')
  *       401:
  *         description: Credenciales inválidas
  */
-router.post('/login', authController.login)
+router.post('/login', loginValidator, handleValidationErrors, authController.login)
 
 // El endpoint de registro se elimina por lógica de negocio.
 // El primer usuario (dueño) se crea manualmente y solo usuarios autenticados con permisos pueden crear más usuarios.
@@ -165,7 +170,7 @@ router.put('/profile', authenticate, authController.updateProfile)
  *       200:
  *         description: Contraseña actualizada exitosamente
  */
-router.put('/change-password', authenticate, authController.changePassword)
+router.put('/change-password', authenticate, changePasswordValidator, handleValidationErrors, authController.changePassword)
 
 /**
  * @swagger

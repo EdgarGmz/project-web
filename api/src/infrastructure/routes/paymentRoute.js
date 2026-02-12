@@ -3,6 +3,14 @@ const router = express.Router()
 
 const paymentController = require('../controllers/paymentController')
 const { authenticate, authorize } = require('../../middleware/auth')
+const {
+    createPaymentValidator,
+    getPaymentValidator,
+    listPaymentsValidator,
+    updatePaymentValidator,
+    deletePaymentValidator,
+    handleValidationErrors
+} = require('../../validators')
 
 /**
  * @swagger
@@ -63,7 +71,7 @@ const { authenticate, authorize } = require('../../middleware/auth')
  *                   items:
  *                     $ref: '#/components/schemas/Payment'
  */
-router.get('/', authenticate, authorize('owner'), paymentController.getAllPayments)
+router.get('/', authenticate, authorize('owner'), listPaymentsValidator, handleValidationErrors, paymentController.getAllPayments)
 
 /**
  * @swagger
@@ -96,7 +104,7 @@ router.get('/', authenticate, authorize('owner'), paymentController.getAllPaymen
  *       404:
  *         description: Pago no encontrado
  */
-router.get('/:id', authenticate, authorize('owner'), paymentController.getPaymentById)
+router.get('/:id', authenticate, authorize('owner'), getPaymentValidator, handleValidationErrors, paymentController.getPaymentById)
 
 /**
  * @swagger
@@ -142,7 +150,7 @@ router.get('/:id', authenticate, authorize('owner'), paymentController.getPaymen
  *                 data:
  *                   $ref: '#/components/schemas/Payment'
  */
-router.post('/', authenticate, authorize('owner'), paymentController.createPayment)
+router.post('/', authenticate, authorize('owner'), createPaymentValidator, handleValidationErrors, paymentController.createPayment)
 
 /**
  * @swagger
@@ -193,7 +201,7 @@ router.post('/', authenticate, authorize('owner'), paymentController.createPayme
  *       404:
  *         description: Pago no encontrado
  */
-router.put('/:id', authenticate, authorize('owner'), paymentController.updatePayment)
+router.put('/:id', authenticate, authorize('owner'), updatePaymentValidator, handleValidationErrors, paymentController.updatePayment)
 
 /**
  * @swagger
@@ -224,6 +232,6 @@ router.put('/:id', authenticate, authorize('owner'), paymentController.updatePay
  *       404:
  *         description: Pago no encontrado
  */
-router.delete('/:id', authenticate, authorize('owner'), paymentController.deletePayment)
+router.delete('/:id', authenticate, authorize('owner'), deletePaymentValidator, handleValidationErrors, paymentController.deletePayment)
 
 module.exports = router

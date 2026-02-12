@@ -4,6 +4,14 @@ const router = express.Router()
 // Importar controlador
 const customerController = require('../controllers/customerController')
 const { authenticate, authorize } = require('../../middleware/auth')
+const {
+    createCustomerValidator,
+    updateCustomerValidator,
+    deleteCustomerValidator,
+    getCustomerValidator,
+    listCustomersValidator,
+    handleValidationErrors
+} = require('../../validators')
 
 // Autenticación para todas las rutas
 router.use(authenticate)

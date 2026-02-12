@@ -4,6 +4,15 @@ const router = express.Router()
 // Importar controlador
 const inventoryController = require('../controllers/inventoryController')
 const { authenticate, authorize, checkBranchAccess } = require('../../middleware/auth')
+const {
+    listInventoryValidator,
+    getInventoryValidator,
+    inventoryHistoryValidator,
+    updateInventoryValidator,
+    deleteInventoryValidator,
+    adjustStockValidator,
+    handleValidationErrors
+} = require('../../validators')
 
 // Todas las rutas requieren autenticación
 router.use(authenticate)
@@ -71,7 +80,7 @@ router.use(authenticate)
  *                     limit: { type: integer }
  *                     pages: { type: integer }
  */
-router.get('/', checkBranchAccess, inventoryController.getAllInventory)
+router.get('/', listInventoryValidator, handleValidationErrors, checkBranchAccess, inventoryController.getAllInventory)
 
 /**
  * @swagger
@@ -98,7 +107,7 @@ router.get('/', checkBranchAccess, inventoryController.getAllInventory)
  *       404:
  *         description: No encontrado
  */
-router.get('/:id', checkBranchAccess, inventoryController.getInventoryById)
+router.get('/:id', getInventoryValidator, handleValidationErrors, checkBranchAccess, inventoryController.getInventoryById)
 
 /**
  * @swagger
@@ -177,7 +186,7 @@ router.post('/', authorize('admin'), checkBranchAccess, inventoryController.crea
  *       500:
  *         description: Error interno
  */
-router.put('/:id', authorize('owner', 'admin'), checkBranchAccess, inventoryController.updateInventory)
+router.put('/:id', authorize('owner', 'admin'), updateInventoryValidator, handleValidationErrors, checkBranchAccess, inventoryController.updateInventory)
 
 /**
  * @swagger
@@ -207,7 +216,7 @@ router.put('/:id', authorize('owner', 'admin'), checkBranchAccess, inventoryCont
  *       500:
  *         description: Error interno
  */
-router.delete('/:id', authorize('owner', 'admin'), checkBranchAccess, inventoryController.deleteInventory)
+router.delete('/:id', authorize('owner', 'admin'), deleteInventoryValidator, handleValidationErrors, checkBranchAccess, inventoryController.deleteInventory)
 
 /**
  * @swagger
@@ -256,6 +265,6 @@ router.delete('/:id', authorize('owner', 'admin'), checkBranchAccess, inventoryC
  *       500:
  *         description: Error interno
  */
-router.put('/:id/adjust', authorize('owner', 'admin'), checkBranchAccess, inventoryController.adjustStock)
+router.put('/:id/adjust', authorize('owner', 'admin'), adjustStockValidator, handleValidationErrors, checkBranchAccess, inventoryController.adjustStock)
 
 module.exports = router

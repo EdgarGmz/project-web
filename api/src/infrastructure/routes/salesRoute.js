@@ -3,6 +3,14 @@ const router = express.Router()
 
 const saleController = require('../controllers/saleController')
 const { authenticate, authorize } = require('../../middleware/auth')
+const {
+    createSaleValidator,
+    updateSaleValidator,
+    cancelSaleValidator,
+    getSaleValidator,
+    listSalesValidator,
+    handleValidationErrors
+} = require('../../validators')
 
 router.use(authenticate)
 
@@ -116,7 +124,7 @@ router.use(authenticate)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/', authorize('supervisor', 'cashier'), saleController.getAllSales)
+router.get('/', authorize('supervisor', 'cashier'), listSalesValidator, handleValidationErrors, saleController.getAllSales)
 
 /**
  * @swagger
@@ -147,7 +155,7 @@ router.get('/', authorize('supervisor', 'cashier'), saleController.getAllSales)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/:id', authorize('supervisor', 'cashier'), saleController.getSaleById)
+router.get('/:id', authorize('supervisor', 'cashier'), getSaleValidator, handleValidationErrors, saleController.getSaleById)
 
 /**
  * @swagger
@@ -179,7 +187,7 @@ router.get('/:id', authorize('supervisor', 'cashier'), saleController.getSaleByI
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', authorize('cashier'), saleController.createSale)
+router.post('/', authorize('cashier'), createSaleValidator, handleValidationErrors, saleController.createSale)
 
 /**
  * @swagger
@@ -221,7 +229,7 @@ router.post('/', authorize('cashier'), saleController.createSale)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.put('/:id', authorize('cashier'), saleController.updateSale)
+router.put('/:id', authorize('cashier'), updateSaleValidator, handleValidationErrors, saleController.updateSale)
 
 /**
  * @swagger
@@ -257,6 +265,6 @@ router.put('/:id', authorize('cashier'), saleController.updateSale)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.delete('/:id', authorize('cashier'), saleController.cancelSale)
+router.delete('/:id', authorize('cashier'), cancelSaleValidator, handleValidationErrors, saleController.cancelSale)
 
 module.exports = router
