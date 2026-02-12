@@ -1,4 +1,4 @@
-const { param, query } = require('express-validator');
+const { body, param, query } = require('express-validator');
 
 /**
  * Validación para obtener inventario por ID de producto
