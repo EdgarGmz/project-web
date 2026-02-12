@@ -4,6 +4,13 @@ const router = express.Router()
 // Importar controlador
 const purchaseController = require('../controllers/purchaseController')
 const { authenticate, authorize } = require('../../middleware/auth')
+const {
+    createPurchaseValidator,
+    updatePurchaseValidator,
+    getPurchaseValidator,
+    listPurchasesValidator,
+    handleValidationErrors
+} = require('../../validators')
 
 // Autenticación para todas las rutas
 router.use(authenticate)
@@ -96,7 +103,7 @@ router.use(authenticate)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/', authorize('owner'), purchaseController.getAllPurchases)
+router.get('/', authorize('owner'), listPurchasesValidator, handleValidationErrors, purchaseController.getAllPurchases)
 
 /**
  * @swagger
@@ -129,7 +136,7 @@ router.get('/', authorize('owner'), purchaseController.getAllPurchases)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.get('/:id', authorize('owner'), purchaseController.getPurchaseById)
+router.get('/:id', authorize('owner'), getPurchaseValidator, handleValidationErrors, purchaseController.getPurchaseById)
 
 /**
  * @swagger
@@ -161,7 +168,7 @@ router.get('/:id', authorize('owner'), purchaseController.getPurchaseById)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', authorize('owner'), purchaseController.createPurchase)
+router.post('/', authorize('owner'), createPurchaseValidator, handleValidationErrors, purchaseController.createPurchase)
 
 /**
  * @swagger
@@ -199,7 +206,7 @@ router.post('/', authorize('owner'), purchaseController.createPurchase)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.put('/:id', authorize('owner'), purchaseController.updatePurchase)
+router.put('/:id', authorize('owner'), updatePurchaseValidator, handleValidationErrors, purchaseController.updatePurchase)
 
 /**
  * @swagger
@@ -231,6 +238,6 @@ router.put('/:id', authorize('owner'), purchaseController.updatePurchase)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.delete('/:id', authorize('owner'), purchaseController.deletePurchase)
+router.delete('/:id', authorize('owner'), getPurchaseValidator, handleValidationErrors, purchaseController.deletePurchase)
 
 module.exports = router

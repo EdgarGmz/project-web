@@ -3,6 +3,14 @@ const router = express.Router()
 
 const branchController = require('../controllers/branchController')
 const { authenticate, authorize } = require('../../middleware/auth')
+const {
+    createBranchValidator,
+    updateBranchValidator,
+    deleteBranchValidator,
+    getBranchValidator,
+    listBranchesValidator,
+    handleValidationErrors
+} = require('../../validators')
 
 // Todas las rutas requieren autenticación
 router.use(authenticate)
@@ -40,7 +48,7 @@ router.use(authenticate)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', branchController.getAllBranches)
+router.get('/', listBranchesValidator, handleValidationErrors, branchController.getAllBranches)
 
 /**
  * @swagger
@@ -86,7 +94,7 @@ router.get('/', branchController.getAllBranches)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/:id', branchController.getBranchById)
+router.get('/:id', getBranchValidator, handleValidationErrors, branchController.getBranchById)
 
 /**
  * @swagger
@@ -133,7 +141,7 @@ router.get('/:id', branchController.getBranchById)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', authorize('owner'), branchController.createBranch)
+router.post('/', authorize('owner'), createBranchValidator, handleValidationErrors, branchController.createBranch)
 
 /**
  * @swagger
@@ -193,7 +201,7 @@ router.post('/', authorize('owner'), branchController.createBranch)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', authorize('owner'), branchController.updateBranch)
+router.put('/:id', authorize('owner'), updateBranchValidator, handleValidationErrors, branchController.updateBranch)
 
 /**
  * @swagger
@@ -241,7 +249,7 @@ router.put('/:id', authorize('owner'), branchController.updateBranch)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete('/:id', authorize('owner'), branchController.deleteBranch)
+router.delete('/:id', authorize('owner'), deleteBranchValidator, handleValidationErrors, branchController.deleteBranch)
 
 /**
  * @swagger

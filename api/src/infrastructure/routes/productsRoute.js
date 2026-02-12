@@ -4,6 +4,14 @@ const router = express.Router()
 // Importar controlador
 const productController = require('../controllers/productController')
 const { authenticate, authorize } = require('../../middleware/auth')
+const {
+    createProductValidator,
+    updateProductValidator,
+    deleteProductValidator,
+    getProductValidator,
+    listProductsValidator,
+    handleValidationErrors
+} = require('../../validators')
 
 router.use(authenticate)
 
@@ -97,7 +105,7 @@ router.use(authenticate)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', productController.getAllProducts)
+router.get('/', listProductsValidator, handleValidationErrors, productController.getAllProducts)
 
 /**
  * @swagger
@@ -135,7 +143,7 @@ router.get('/', productController.getAllProducts)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/:id', productController.getProductById)
+router.get('/:id', getProductValidator, handleValidationErrors, productController.getProductById)
 
 /**
  * @swagger
@@ -175,7 +183,7 @@ router.get('/:id', productController.getProductById)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', authorize('owner'), productController.createProduct)
+router.post('/', authorize('owner'), createProductValidator, handleValidationErrors, productController.createProduct)
 
 /**
  * @swagger
@@ -221,7 +229,7 @@ router.post('/', authorize('owner'), productController.createProduct)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', authorize('owner', 'supervisor'), productController.updateProduct)
+router.put('/:id', authorize('owner', 'supervisor'), updateProductValidator, handleValidationErrors, productController.updateProduct)
 
 router.patch('/:id/toggle-status', authorize('owner', 'supervisor'), productController.toggleProductStatus)
 
@@ -262,6 +270,6 @@ router.patch('/:id/toggle-status', authorize('owner', 'supervisor'), productCont
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete('/:id', authorize('owner', 'supervisor'), productController.deleteProduct)
+router.delete('/:id', authorize('owner', 'supervisor'), deleteProductValidator, handleValidationErrors, productController.deleteProduct)
 
 module.exports = router
