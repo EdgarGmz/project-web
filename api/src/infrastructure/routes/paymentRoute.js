@@ -7,6 +7,8 @@ const {
     createPaymentValidator,
     getPaymentValidator,
     listPaymentsValidator,
+    updatePaymentValidator,
+    deletePaymentValidator,
     handleValidationErrors
 } = require('../../validators')
 
@@ -199,7 +201,7 @@ router.post('/', authenticate, authorize('owner'), createPaymentValidator, handl
  *       404:
  *         description: Pago no encontrado
  */
-router.put('/:id', authenticate, authorize('owner'), getPaymentValidator, handleValidationErrors, paymentController.updatePayment)
+router.put('/:id', authenticate, authorize('owner'), updatePaymentValidator, handleValidationErrors, paymentController.updatePayment)
 
 /**
  * @swagger
@@ -230,6 +232,6 @@ router.put('/:id', authenticate, authorize('owner'), getPaymentValidator, handle
  *       404:
  *         description: Pago no encontrado
  */
-router.delete('/:id', authenticate, authorize('owner'), getPaymentValidator, handleValidationErrors, paymentController.deletePayment)
+router.delete('/:id', authenticate, authorize('owner'), deletePaymentValidator, handleValidationErrors, paymentController.deletePayment)
 
 module.exports = router

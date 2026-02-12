@@ -6,6 +6,11 @@ const inventoryController = require('../controllers/inventoryController')
 const { authenticate, authorize, checkBranchAccess } = require('../../middleware/auth')
 const {
     listInventoryValidator,
+    getInventoryValidator,
+    inventoryHistoryValidator,
+    updateInventoryValidator,
+    deleteInventoryValidator,
+    adjustStockValidator,
     handleValidationErrors
 } = require('../../validators')
 
@@ -102,7 +107,7 @@ router.get('/', listInventoryValidator, handleValidationErrors, checkBranchAcces
  *       404:
  *         description: No encontrado
  */
-router.get('/:id', handleValidationErrors, checkBranchAccess, inventoryController.getInventoryById)
+router.get('/:id', getInventoryValidator, handleValidationErrors, checkBranchAccess, inventoryController.getInventoryById)
 
 /**
  * @swagger
@@ -181,7 +186,7 @@ router.post('/', authorize('admin'), checkBranchAccess, inventoryController.crea
  *       500:
  *         description: Error interno
  */
-router.put('/:id', authorize('owner', 'admin'), handleValidationErrors, checkBranchAccess, inventoryController.updateInventory)
+router.put('/:id', authorize('owner', 'admin'), updateInventoryValidator, handleValidationErrors, checkBranchAccess, inventoryController.updateInventory)
 
 /**
  * @swagger
@@ -211,7 +216,7 @@ router.put('/:id', authorize('owner', 'admin'), handleValidationErrors, checkBra
  *       500:
  *         description: Error interno
  */
-router.delete('/:id', authorize('owner', 'admin'), handleValidationErrors, checkBranchAccess, inventoryController.deleteInventory)
+router.delete('/:id', authorize('owner', 'admin'), deleteInventoryValidator, handleValidationErrors, checkBranchAccess, inventoryController.deleteInventory)
 
 /**
  * @swagger
@@ -260,6 +265,6 @@ router.delete('/:id', authorize('owner', 'admin'), handleValidationErrors, check
  *       500:
  *         description: Error interno
  */
-router.put('/:id/adjust', authorize('owner', 'admin'), handleValidationErrors, checkBranchAccess, inventoryController.adjustStock)
+router.put('/:id/adjust', authorize('owner', 'admin'), adjustStockValidator, handleValidationErrors, checkBranchAccess, inventoryController.adjustStock)
 
 module.exports = router

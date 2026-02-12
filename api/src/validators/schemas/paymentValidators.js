@@ -93,8 +93,39 @@ const listPaymentsValidator = [
         .withMessage('El límite debe ser un número entre 1 y 100')
 ];
 
+/**
+ * Validación para actualizar pago
+ */
+const updatePaymentValidator = [
+    param('id')
+        .isInt({ min: 1 })
+        .withMessage('El ID debe ser un número entero positivo'),
+    
+    body('payment_status')
+        .optional()
+        .isIn(['pending', 'completed', 'failed', 'refunded'])
+        .withMessage('El estado de pago debe ser pending, completed, failed o refunded'),
+    
+    body('notes')
+        .optional()
+        .trim()
+        .isLength({ max: 500 })
+        .withMessage('Las notas no pueden exceder 500 caracteres')
+];
+
+/**
+ * Validación para eliminar pago
+ */
+const deletePaymentValidator = [
+    param('id')
+        .isInt({ min: 1 })
+        .withMessage('El ID debe ser un número entero positivo')
+];
+
 module.exports = {
     createPaymentValidator,
     getPaymentValidator,
-    listPaymentsValidator
+    listPaymentsValidator,
+    updatePaymentValidator,
+    deletePaymentValidator
 };

@@ -238,6 +238,6 @@ router.put('/:id', authorize('owner'), updatePurchaseValidator, handleValidation
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.delete('/:id', authorize('owner'), getPurchaseValidator, handleValidationErrors, purchaseController.deletePurchase)
+router.delete('/:id', authorize('owner'), deletePurchaseValidator, handleValidationErrors, purchaseController.deletePurchase)
 
 module.exports = router

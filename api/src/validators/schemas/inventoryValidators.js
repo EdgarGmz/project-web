@@ -84,8 +84,66 @@ const inventoryHistoryValidator = [
         .withMessage('El límite debe ser un número entre 1 y 100')
 ];
 
+/**
+ * Validación para actualizar inventario
+ */
+const updateInventoryValidator = [
+    param('id')
+        .isInt({ min: 1 })
+        .withMessage('El ID debe ser un número entero positivo'),
+    
+    body('quantity')
+        .optional()
+        .isInt({ min: 0 })
+        .withMessage('La cantidad debe ser un número entero mayor o igual a 0'),
+    
+    body('min_stock')
+        .optional()
+        .isInt({ min: 0 })
+        .withMessage('El stock mínimo debe ser un número entero mayor o igual a 0'),
+    
+    body('notes')
+        .optional()
+        .trim()
+        .isLength({ max: 500 })
+        .withMessage('Las notas no pueden exceder 500 caracteres')
+];
+
+/**
+ * Validación para eliminar inventario
+ */
+const deleteInventoryValidator = [
+    param('id')
+        .isInt({ min: 1 })
+        .withMessage('El ID debe ser un número entero positivo')
+];
+
+/**
+ * Validación para ajustar stock
+ */
+const adjustStockValidator = [
+    param('id')
+        .isInt({ min: 1 })
+        .withMessage('El ID debe ser un número entero positivo'),
+    
+    body('adjustment')
+        .notEmpty()
+        .withMessage('El ajuste es requerido')
+        .isInt()
+        .withMessage('El ajuste debe ser un número entero'),
+    
+    body('reason')
+        .optional()
+        .trim()
+        .isLength({ max: 200 })
+        .withMessage('La razón no puede exceder 200 caracteres')
+];
+
 module.exports = {
     getInventoryValidator,
     listInventoryValidator,
-    inventoryHistoryValidator
+    inventoryHistoryValidator,
+    updateInventoryValidator,
+    deleteInventoryValidator,
+    adjustStockValidator
 };

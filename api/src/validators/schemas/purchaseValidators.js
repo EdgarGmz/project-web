@@ -125,9 +125,19 @@ const listPurchasesValidator = [
         .withMessage('El límite debe ser un número entre 1 y 100')
 ];
 
+/**
+ * Validación para eliminar compra
+ */
+const deletePurchaseValidator = [
+    param('id')
+        .isInt({ min: 1 })
+        .withMessage('El ID debe ser un número entero positivo')
+];
+
 module.exports = {
     createPurchaseValidator,
     updatePurchaseValidator,
     getPurchaseValidator,
-    listPurchasesValidator
+    listPurchasesValidator,
+    deletePurchaseValidator
 };
